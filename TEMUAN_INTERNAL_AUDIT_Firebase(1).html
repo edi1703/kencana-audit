@@ -1,0 +1,2613 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Audit Internal — CV. Kencana Print</title>
+
+<!-- ===== FIREBASE SDK ===== -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, onSnapshot }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // ── CONFIG ─────────────────────────────────────────────────
+  const firebaseConfig = {
+    apiKey: "AIzaSyB_l4EjaappeWV3zdR32SKRLrz8u9-sJaA",
+    authDomain: "kencana-audit.firebaseapp.com",
+    projectId: "kencana-audit",
+    storageBucket: "kencana-audit.firebasestorage.app",
+    messagingSenderId: "721570435655",
+    appId: "1:721570435655:web:2c61867da477b161369762",
+    measurementId: "G-VSJM7DD3T1"
+  };
+
+  // ── ADMIN EMAIL (hanya ini yang bisa edit) ─────────────────
+  const ADMIN_EMAIL = "edisetiawansakunmm@gmail.com";
+
+  // ── INIT ───────────────────────────────────────────────────
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  const provider = new GoogleAuthProvider();
+
+  // ── EXPOSE ke window agar fungsi non-module bisa akses ─────
+  window._fbAuth    = auth;
+  window._fbDb      = db;
+  window._fbDocRef  = () => doc(db, "dashboard", "main");
+  window._fbSopRef  = () => doc(db, "dashboard", "sop");
+  window._adminEmail = ADMIN_EMAIL;
+  window._fbSetDoc  = setDoc;
+  window._fbGetDoc  = getDoc;
+  window._fbOnSnap  = onSnapshot;
+
+  // ── LOGIN ──────────────────────────────────────────────────
+  window.fbLogin = async function(){
+    try{
+      await signInWithPopup(auth, provider);
+    } catch(e){
+      alert("Login gagal: " + e.message);
+    }
+  };
+
+  // ── LOGOUT ─────────────────────────────────────────────────
+  window.fbLogout = async function(){
+    await signOut(auth);
+  };
+
+  // ── AUTH STATE LISTENER ────────────────────────────────────
+  onAuthStateChanged(auth, user => {
+    window._currentUser = user || null;
+    window._isAdmin = user && user.email === ADMIN_EMAIL;
+    renderAuthBar();
+    if(user){
+      startFirestoreSync();
+    } else {
+      // Non-login user: load from Firestore read-only (tanpa auth)
+      loadDataReadOnly();
+    }
+    applyReadOnlyMode();
+  });
+
+  // ── LOAD DATA READ-ONLY (untuk viewer tanpa login) ─────────
+  async function loadDataReadOnly(){
+    try{
+      const snap = await getDoc(doc(db,"dashboard","main"));
+      if(snap.exists()){
+        const d = snap.data();
+        if(d.appData)  { window.appData  = d.appData;  migrateDocs(); renderAll(); }
+        if(d.COLS)     { window.COLS     = d.COLS; }
+        if(d.DEPARTMENTS) { window.DEPARTMENTS = d.DEPARTMENTS; }
+      }
+      const sopSnap = await getDoc(doc(db,"dashboard","sop"));
+      if(sopSnap.exists() && sopSnap.data().sopData){
+        window.sopData = sopSnap.data().sopData;
+      }
+      renderAll();
+    }catch(e){
+      console.warn("Firebase read-only load failed, pakai localStorage:", e);
+      // fallback ke localStorage
+    }
+  }
+
+  // ── REALTIME SYNC (untuk admin) ────────────────────────────
+  let _unsubMain = null;
+  let _unsubSop  = null;
+  function startFirestoreSync(){
+    if(_unsubMain) _unsubMain();
+    if(_unsubSop)  _unsubSop();
+
+    _unsubMain = onSnapshot(doc(db,"dashboard","main"), snap => {
+      if(!snap.exists()) return;
+      const d = snap.data();
+      // Jangan overwrite kalau sedang edit
+      if(window.editingCell) return;
+      if(d.appData)     { window.appData     = d.appData;     migrateDocs(); }
+      if(d.COLS)        { window.COLS        = d.COLS; }
+      if(d.DEPARTMENTS) { window.DEPARTMENTS = d.DEPARTMENTS; }
+      renderAll();
+    });
+
+    _unsubSop = onSnapshot(doc(db,"dashboard","sop"), snap => {
+      if(!snap.exists()) return;
+      const d = snap.data();
+      if(d.sopData) { window.sopData = d.sopData; renderSopPage(); }
+    });
+  }
+</script>
+<!-- ===== END FIREBASE ===== -->
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;font-size:14px;background:#F0F4FF;min-height:100vh;}
+::-webkit-scrollbar{width:7px;height:7px;}
+::-webkit-scrollbar-track{background:#F1F5F9;}
+::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:#94A3B8;}
+
+/* ===== HEADER ===== */
+#header{background:linear-gradient(135deg,#1A237E 0%,#283593 50%,#1565C0 100%);color:#fff;padding:14px 20px;box-shadow:0 4px 20px rgba(0,0,0,0.25);position:sticky;top:0;z-index:200;}
+#header-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+#logo-area{display:flex;align-items:center;gap:14px;}
+#logo-box{background:#fff;border-radius:10px;padding:5px 12px;display:flex;align-items:center;justify-content:center;flex-direction:column;min-width:90px;}
+#logo-text{font-size:11px;font-weight:900;color:#1A237E;letter-spacing:0.5px;line-height:1.2;text-align:center;}
+#logo-sub{font-size:9px;color:#1565C0;font-weight:700;letter-spacing:1px;}
+#logo-print{font-size:17px;font-weight:900;color:#F59E0B;letter-spacing:1px;}
+#header-title h1{font-size:19px;font-weight:800;letter-spacing:0.5px;text-shadow:0 2px 8px rgba(0,0,0,0.2);}
+#header-title p{font-size:11px;opacity:0.85;margin-top:2px;}
+#header-stats{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.stat-box{border-radius:10px;padding:6px 14px;text-align:center;cursor:default;}
+.stat-box .num{font-size:18px;font-weight:800;}
+.stat-box .lbl{font-size:10px;}
+.stat-blue{background:rgba(255,255,255,0.15);}
+.stat-yellow{background:#FFF3CD;color:#856404;}
+.stat-green{background:#D1FAE5;color:#065F46;}
+.stat-inprog{background:#DBEAFE;color:#1E40AF;}
+#btn-save{background:#F59E0B;color:#fff;border:none;border-radius:8px;padding:7px 15px;cursor:pointer;font-weight:700;font-size:13px;transition:all 0.2s;position:relative;}
+#btn-save:hover{background:#D97706;}
+#btn-save.saved{background:#22C55E;}
+#btn-save.unsaved{animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.5);}50%{box-shadow:0 0 0 6px rgba(245,158,11,0);}}
+#btn-reset{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.4);border-radius:8px;padding:7px 12px;cursor:pointer;font-weight:600;font-size:12px;}
+#btn-reset:hover{background:rgba(255,255,255,0.25);}
+
+/* ===== NAV TABS ===== */
+#nav-tabs{background:#1E3A8A;display:flex;gap:2px;padding:0 16px;overflow-x:auto;border-bottom:3px solid #1565C0;}
+.nav-tab{padding:10px 18px;color:rgba(255,255,255,0.7);cursor:pointer;font-weight:600;font-size:13px;border-bottom:3px solid transparent;margin-bottom:-3px;white-space:nowrap;transition:all 0.15s;}
+.nav-tab:hover{color:#fff;background:rgba(255,255,255,0.08);}
+.nav-tab.active{color:#fff;border-bottom-color:#F59E0B;background:rgba(255,255,255,0.1);}
+
+/* ===== LAYOUT ===== */
+#layout{display:flex;height:calc(100vh - 118px);}
+
+/* ===== SIDEBAR WRAP ===== */
+#sidebar-wrap{position:relative;display:flex;flex-shrink:0;}
+
+/* ===== SIDEBAR ===== */
+#sidebar{width:220px;background:#fff;border-right:2px solid #E2E8F0;overflow-y:auto;flex-shrink:0;box-shadow:2px 0 10px rgba(0,0,0,0.05);transition:width 0.25s;}
+#sidebar-title{padding:10px 12px;background:#F8FAFC;border-bottom:1px solid #E2E8F0;font-weight:800;font-size:10px;color:#64748B;letter-spacing:1px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;}
+#btn-add-dept{background:#3B82F6;color:#fff;border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;}
+#btn-add-dept:hover{background:#2563EB;}
+.dept-item{padding:10px 12px;cursor:pointer;border-left:5px solid transparent;border-bottom:1px solid #F1F5F9;transition:all 0.15s;}
+.dept-item:hover{background:#F8FAFC;}
+.dept-item.active{border-left-width:5px;}
+.dept-name{font-weight:600;font-size:12px;color:#374151;margin-bottom:3px;}
+.dept-item.active .dept-name{font-weight:800;}
+.dept-badges{display:flex;gap:4px;flex-wrap:wrap;}
+.dept-pct{font-size:10px;color:#64748B;margin-top:3px;}
+.dept-pct-bar{height:4px;background:#E2E8F0;border-radius:2px;margin-top:2px;overflow:hidden;}
+.dept-pct-fill{height:100%;border-radius:2px;transition:width 0.4s;}
+.badge{border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700;}
+.badge-total{background:#F3F4F6;color:#374151;}
+.badge-open{background:#FFF3CD;color:#856404;}
+.badge-close{background:#D1FAE5;color:#065F46;}
+
+/* ===== PAGES ===== */
+.page{display:none;flex:1;overflow-y:auto;}
+.page.active-page{display:flex;}
+#page-temuan{flex-direction:row;}
+#page-sop,#page-export{flex-direction:column;padding:20px;}
+
+/* ===== MAIN ===== */
+#main{flex:1;overflow-y:auto;padding:16px 18px;}
+#toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+#dept-title{font-size:17px;font-weight:800;}
+#dept-subtitle{font-size:12px;color:#64748B;}
+#toolbar-right{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+#search-input{border:2px solid #E2E8F0;border-radius:8px;padding:6px 12px;font-size:13px;width:170px;outline:none;font-family:inherit;}
+#search-input:focus{border-color:#3B82F6;box-shadow:0 0 0 3px rgba(59,130,246,0.15);}
+#status-filter{border:2px solid #E2E8F0;border-radius:8px;padding:6px 10px;font-size:13px;outline:none;font-family:inherit;cursor:pointer;}
+#btn-add{color:#fff;border:none;border-radius:8px;padding:7px 15px;cursor:pointer;font-weight:700;font-size:13px;white-space:nowrap;transition:all 0.2s;}
+#btn-add:hover{opacity:0.88;}
+
+/* ===== TABLE ===== */
+#table-wrap{overflow-x:auto;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.10);border:2px solid #E2E8F0;}
+table{border-collapse:collapse;width:100%;min-width:2500px;background:#fff;}
+thead tr th{padding:11px 10px;text-align:left;font-weight:800;font-size:13px;white-space:nowrap;border-right:1px solid rgba(255,255,255,0.18);color:#fff;}
+thead tr th:first-child{text-align:center;min-width:40px;}
+thead tr th:last-child{text-align:center;min-width:70px;border-right:none;}
+tbody tr{transition:background 0.12s;}
+tbody tr:nth-child(even){background:#F8FAFC;}
+tbody tr:hover{background:#EFF6FF;}
+tbody td{padding:8px 10px;border-right:1px solid #F1F5F9;border-bottom:1px solid #F1F5F9;vertical-align:top;font-size:13px;color:#1E293B;line-height:1.5;}
+tbody td:first-child{text-align:center;font-weight:700;color:#64748B;}
+tbody td:last-child{text-align:center;border-right:none;}
+td.editable{cursor:pointer;}
+td.editable:hover{background:rgba(59,130,246,0.07);}
+td textarea.cell-editor{width:100%;min-height:55px;border:2px solid #3B82F6;border-radius:6px;padding:6px;font-size:13px;font-family:inherit;resize:vertical;outline:none;box-sizing:border-box;background:#fff;}
+select.status-sel{border-radius:8px;padding:4px 8px;font-weight:700;font-size:12px;cursor:pointer;outline:none;border-width:2px;border-style:solid;width:100%;}
+.cell-text{white-space:pre-wrap;word-break:break-word;}
+.cell-placeholder{font-style:italic;color:#CBD5E1;font-size:12px;}
+.btn-del{background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;border-radius:6px;padding:4px 8px;cursor:pointer;font-weight:700;font-size:12px;transition:all 0.15s;}
+.btn-del:hover{background:#991B1B;color:#fff;}
+
+/* Photo cell */
+.photo-cell{display:flex;flex-direction:column;align-items:center;gap:5px;}
+.photo-thumb{width:60px;height:60px;object-fit:cover;border-radius:6px;border:2px solid #E2E8F0;cursor:pointer;transition:transform 0.15s;}
+.photo-thumb:hover{transform:scale(1.08);}
+.photo-count{font-size:10px;color:#64748B;}
+.btn-upload-photo{background:#EFF6FF;color:#2563EB;border:1px dashed #93C5FD;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px;}
+.btn-upload-photo:hover{background:#DBEAFE;}
+
+/* Pct cell */
+.pct-badge{display:inline-flex;align-items:center;gap:5px;font-weight:700;font-size:12px;}
+.pct-bar{height:6px;background:#E2E8F0;border-radius:3px;overflow:hidden;width:60px;display:inline-block;}
+.pct-fill{height:100%;border-radius:3px;}
+
+/* ===== FOOTER ===== */
+#footer-note{margin-top:12px;padding:10px 14px;background:#EFF6FF;border:2px solid #BFDBFE;border-radius:10px;color:#1E40AF;font-size:12px;}
+
+/* ===== FORMAT TOOLBAR (Word/Excel style) ===== */
+#format-toolbar{
+  display:none;
+  position:fixed;
+  top:0; left:0;
+  background:#F8FAFC;
+  border-bottom:2px solid #E2E8F0;
+  padding:4px 12px;
+  gap:4px;
+  align-items:center;
+  z-index:1000;
+  flex-wrap:wrap;
+  width:100%;
+  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  box-sizing:border-box;
+}
+#format-toolbar.visible{display:flex;}
+.fmt-sep{width:1px;height:22px;background:#CBD5E1;margin:0 4px;}
+.fmt-label{font-size:11px;color:#64748B;font-weight:600;margin-right:2px;}
+.fmt-btn{
+  background:#fff;border:1px solid #CBD5E1;border-radius:4px;
+  padding:3px 9px;cursor:pointer;font-size:13px;line-height:1.4;
+  color:#1E293B;transition:all 0.15s;min-width:28px;text-align:center;
+}
+.fmt-btn:hover{background:#EFF6FF;border-color:#93C5FD;}
+.fmt-btn.active{background:#DBEAFE;border-color:#3B82F6;color:#1E40AF;}
+.fmt-btn b{font-weight:900;}
+.fmt-btn i{font-style:italic;}
+.fmt-btn u{text-decoration:underline;}
+.fmt-select{
+  border:1px solid #CBD5E1;border-radius:4px;padding:3px 6px;
+  font-size:12px;outline:none;font-family:inherit;cursor:pointer;
+  background:#fff;color:#1E293B;
+}
+.fmt-select:focus{border-color:#3B82F6;}
+#fmt-editing-hint{font-size:11px;color:#94A3B8;margin-left:8px;font-style:italic;}
+
+/* ===== AUTH BAR ===== */
+#auth-bar{background:#0F172A;color:#fff;padding:6px 20px;display:flex;align-items:center;justify-content:space-between;font-size:12px;flex-wrap:wrap;gap:6px;min-height:34px;}
+#auth-bar .auth-left{display:flex;align-items:center;gap:8px;}
+#auth-bar .auth-status{font-size:11px;opacity:0.75;}
+#auth-badge{border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:5px;}
+.badge-admin{background:#22C55E;color:#fff;}
+.badge-viewer{background:#64748B;color:#fff;}
+#btn-fb-login{background:#4285F4;color:#fff;border:none;border-radius:6px;padding:5px 14px;cursor:pointer;font-weight:700;font-size:11px;}
+#btn-fb-login:hover{background:#357ABD;}
+#btn-fb-logout{background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:11px;}
+#btn-fb-logout:hover{background:rgba(255,255,255,0.22);}
+#auth-sync-dot{width:7px;height:7px;border-radius:50%;background:#22C55E;display:inline-block;margin-right:3px;}
+
+/* ===== READONLY MODE ===== */
+body.readonly-mode td.editable{cursor:default!important;}
+body.readonly-mode td.editable:hover{background:inherit!important;}
+body.readonly-mode .btn-del{display:none!important;}
+body.readonly-mode #btn-add{display:none!important;}
+body.readonly-mode #btn-save{display:none!important;}
+body.readonly-mode #btn-reset{display:none!important;}
+body.readonly-mode #btn-add-dept{display:none!important;}
+body.readonly-mode .btn-upload-photo{display:none!important;}
+body.readonly-mode .btn-upload-support{display:none!important;}
+body.readonly-mode .sop-upload-zone{display:none!important;}
+body.readonly-mode .btn-sop-del{display:none!important;}
+body.readonly-mode #unsaved-banner{display:none!important;}
+body.readonly-mode select.status-sel{pointer-events:none!important;}
+#readonly-notice{display:none;background:#FFF3CD;border-bottom:2px solid #FFECB5;padding:7px 16px;text-align:center;font-size:12px;color:#856404;font-weight:600;}
+body.readonly-mode #readonly-notice{display:block!important;}
+
+/* ===== SIDEBAR TOGGLE (Fix 5) ===== */
+#sidebar.collapsed{width:0;overflow:hidden;border-right:none;}
+#sidebar.collapsed #sidebar-title,#sidebar.collapsed #dept-list{display:none;}
+#sidebar-toggle{position:absolute;top:50%;transform:translateY(-50%);background:#1E3A8A;color:#fff;border:none;border-radius:0 6px 6px 0;width:18px;height:48px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;z-index:100;box-shadow:2px 0 8px rgba(0,0,0,0.15);transition:background 0.15s;}
+#sidebar-toggle:hover{background:#2563EB;}
+#sidebar-wrap{position:relative;display:flex;flex-shrink:0;}
+#unsaved-banner{display:none;position:fixed;bottom:0;left:0;right:0;background:#F59E0B;color:#fff;text-align:center;padding:8px;font-weight:700;font-size:13px;z-index:500;box-shadow:0 -4px 12px rgba(0,0,0,0.15);}
+#unsaved-banner button{background:#fff;color:#F59E0B;border:none;border-radius:6px;padding:4px 14px;cursor:pointer;font-weight:700;margin-left:12px;}
+
+/* ===== NOTIFICATION ===== */
+#notif{position:fixed;top:18px;right:18px;z-index:9999;border-radius:10px;padding:10px 20px;font-weight:700;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,0.15);display:none;animation:fadeIn 0.3s;}
+.notif-success{background:#D1FAE5;color:#065F46;border:2px solid #A7F3D0;}
+.notif-error{background:#FEE2E2;color:#991B1B;border:2px solid #FECACA;}
+.notif-info{background:#DBEAFE;color:#1E40AF;border:2px solid #BFDBFE;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+.empty-row td{text-align:center;padding:36px;color:#94A3B8;font-size:14px;}
+
+/* ===== LIGHTBOX ===== */
+#lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:10000;align-items:center;justify-content:center;flex-direction:column;gap:12px;}
+#lightbox.open{display:flex;}
+#lightbox-img-wrap{display:flex;align-items:center;justify-content:center;max-width:90vw;max-height:82vh;}
+#lightbox-img{max-width:90vw;max-height:82vh;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,0.5);cursor:zoom-out;}
+#lightbox-close{position:absolute;top:18px;right:22px;color:#fff;font-size:28px;cursor:pointer;font-weight:900;line-height:1;z-index:10001;background:rgba(0,0,0,0.4);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;}
+#lightbox-close:hover{background:rgba(220,38,38,0.7);}
+#lightbox-nav{display:flex;gap:14px;align-items:center;}
+#lightbox-nav button{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:6px 18px;cursor:pointer;font-size:15px;}
+#lightbox-nav button:hover{background:rgba(255,255,255,0.28);}
+#lightbox-caption{color:rgba(255,255,255,0.75);font-size:12px;text-align:center;}
+
+/* ===== MODAL ADD DEPT ===== */
+#modal-dept{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:8000;align-items:center;justify-content:center;}
+#modal-dept.open{display:flex;}
+.modal-box{background:#fff;border-radius:14px;padding:28px;width:360px;box-shadow:0 10px 40px rgba(0,0,0,0.2);}
+.modal-box h3{font-size:16px;font-weight:800;margin-bottom:16px;color:#1E293B;}
+.modal-box input,.modal-box select{width:100%;border:2px solid #E2E8F0;border-radius:8px;padding:8px 12px;font-size:14px;font-family:inherit;outline:none;margin-bottom:12px;}
+.modal-box input:focus,.modal-box select:focus{border-color:#3B82F6;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+.btn-primary{background:#3B82F6;color:#fff;border:none;border-radius:8px;padding:8px 20px;cursor:pointer;font-weight:700;font-size:13px;}
+.btn-primary:hover{background:#2563EB;}
+.btn-secondary{background:#F1F5F9;color:#374151;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;font-size:13px;}
+.btn-secondary:hover{background:#E2E8F0;}
+
+/* ===== SOP PAGE ===== */
+#page-sop{background:#F8FAFC;}
+.sop-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+.sop-header h2{font-size:18px;font-weight:800;color:#1E293B;}
+.sop-stats-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+.sop-stat{background:#fff;border-radius:10px;padding:14px 20px;border:2px solid #E2E8F0;text-align:center;min-width:120px;}
+.sop-stat .snum{font-size:22px;font-weight:800;color:#1A237E;}
+.sop-stat .slbl{font-size:11px;color:#64748B;margin-top:2px;}
+.sop-upload-zone{border:2px dashed #93C5FD;border-radius:12px;background:#fff;padding:32px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:20px;}
+.sop-upload-zone:hover{border-color:#3B82F6;background:#EFF6FF;}
+.sop-upload-zone .uz-icon{font-size:36px;margin-bottom:8px;}
+.sop-upload-zone p{color:#64748B;font-size:14px;}
+.sop-upload-zone strong{color:#2563EB;}
+.sop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.sop-card{background:#fff;border-radius:12px;border:2px solid #E2E8F0;padding:16px;transition:box-shadow 0.2s;position:relative;}
+.sop-card:hover{box-shadow:0 4px 20px rgba(0,0,0,0.10);}
+.sop-card-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
+.sop-file-icon{font-size:28px;flex-shrink:0;}
+.sop-card-title{font-weight:700;font-size:13px;color:#1E293B;word-break:break-word;line-height:1.4;}
+.sop-card-meta{font-size:11px;color:#64748B;margin-top:2px;}
+.sop-card-dept{display:inline-block;border-radius:5px;padding:2px 8px;font-size:10px;font-weight:700;margin-top:4px;}
+.sop-card-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+.btn-sop-preview{background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;}
+.btn-sop-preview:hover{background:#DBEAFE;}
+.btn-sop-del{background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;}
+.btn-sop-del:hover{background:#991B1B;color:#fff;}
+.sop-filter-row{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+.sop-filter-row select,.sop-filter-row input{border:2px solid #E2E8F0;border-radius:8px;padding:6px 12px;font-size:13px;outline:none;font-family:inherit;}
+.sop-filter-row select:focus,.sop-filter-row input:focus{border-color:#3B82F6;}
+
+/* ===== SOP PREVIEW MODAL ===== */
+#modal-sop-preview{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9000;align-items:center;justify-content:center;}
+#modal-sop-preview.open{display:flex;}
+.sop-preview-box{background:#fff;border-radius:14px;width:min(700px,95vw);max-height:85vh;display:flex;flex-direction:column;box-shadow:0 14px 50px rgba(0,0,0,0.25);}
+.sop-preview-head{padding:18px 22px;border-bottom:2px solid #E2E8F0;display:flex;align-items:center;justify-content:space-between;}
+.sop-preview-head h3{font-size:16px;font-weight:800;color:#1E293B;}
+.sop-preview-body{padding:22px;overflow-y:auto;flex:1;}
+.sop-preview-close{background:none;border:none;font-size:22px;cursor:pointer;color:#94A3B8;}
+.sop-preview-close:hover{color:#1E293B;}
+.sop-detail-row{margin-bottom:12px;}
+.sop-detail-row label{font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:3px;}
+.sop-detail-row .val{font-size:14px;color:#1E293B;line-height:1.6;}
+.sop-embed{width:100%;height:400px;border:1px solid #E2E8F0;border-radius:8px;margin-top:8px;}
+.sop-no-preview{background:#F8FAFC;border:2px solid #E2E8F0;border-radius:8px;padding:24px;text-align:center;color:#64748B;}
+
+/* ===== EXPORT PAGE ===== */
+#page-export{background:#F8FAFC;}
+.import-card{background:#fff;border-radius:14px;border:2px solid #E2E8F0;padding:28px;max-width:780px;margin:0 auto;}
+.import-card h2{font-size:17px;font-weight:800;color:#1E293B;margin-bottom:6px;}
+.import-card p{font-size:13px;color:#64748B;margin-bottom:20px;line-height:1.6;}
+.import-preview-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px;}
+.import-preview-table th{background:#1A237E;color:#fff;padding:8px 10px;text-align:left;white-space:nowrap;}
+.import-preview-table td{padding:7px 10px;border-bottom:1px solid #F1F5F9;color:#1E293B;}
+.import-preview-table tr:nth-child(even) td{background:#F8FAFC;}
+
+/* Data Pendukung cell */
+.support-cell{display:flex;flex-direction:column;align-items:flex-start;gap:5px;}
+.support-item{display:flex;align-items:center;gap:6px;background:#F0F9FF;border:1px solid #BAE6FD;border-radius:6px;padding:3px 8px;font-size:11px;color:#0369A1;cursor:pointer;max-width:130px;overflow:hidden;}
+.support-item:hover{background:#E0F2FE;}
+.support-item-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90px;}
+.btn-upload-support{background:#F0FDF4;color:#16A34A;border:1px dashed #86EFAC;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px;}
+.btn-upload-support:hover{background:#DCFCE7;}
+.support-count{font-size:10px;color:#64748B;}
+
+/* Modal Data Pendukung Preview */
+#modal-support-preview{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9500;align-items:center;justify-content:center;}
+#modal-support-preview.open{display:flex;}
+.support-preview-box{background:#fff;border-radius:14px;width:min(720px,96vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 14px 50px rgba(0,0,0,0.25);}
+.support-preview-head{padding:16px 20px;border-bottom:2px solid #E2E8F0;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.support-preview-head h3{font-size:15px;font-weight:800;color:#1E293B;word-break:break-word;}
+.support-preview-body{padding:16px;overflow-y:auto;flex:1;display:flex;flex-direction:column;align-items:stretch;}
+.support-preview-close{background:none;border:none;font-size:22px;cursor:pointer;color:#94A3B8;flex-shrink:0;}
+.support-preview-close:hover{color:#1E293B;}
+</style>
+</head>
+<body>
+<!-- ===== AUTH BAR ===== -->
+<div id="auth-bar">
+  <div class="auth-left">
+    <span id="auth-sync-dot"></span>
+    <span id="auth-badge" class="badge-viewer">&#128065;&#65039; Mode View</span>
+    <span id="auth-status-text" class="auth-status">Memuat status...</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span style="font-size:10px;opacity:0.5;">CV. Kencana Print &mdash; Audit Dashboard</span>
+    <button id="btn-fb-login" onclick="fbLogin()" style="display:none;">&#128273; Login Admin</button>
+    <button id="btn-fb-logout" onclick="fbLogout()" style="display:none;">Logout</button>
+  </div>
+</div>
+<!-- ===== READONLY NOTICE ===== -->
+<div id="readonly-notice">&#128065;&#65039; Anda dalam mode <strong>View Only</strong>. Login dengan email admin untuk mengedit.</div>
+
+<!-- FORMAT TOOLBAR (Word/Excel style, muncul saat edit sel) -->
+<div id="format-toolbar">
+  <span class="fmt-label">Format:</span>
+  <button class="fmt-btn" id="fmt-bold" title="Bold (Ctrl+B)" onmousedown="event.preventDefault();fmtApply('bold')"><b>B</b></button>
+  <button class="fmt-btn" id="fmt-italic" title="Italic (Ctrl+I)" onmousedown="event.preventDefault();fmtApply('italic')"><i>I</i></button>
+  <button class="fmt-btn" id="fmt-underline" title="Underline (Ctrl+U)" onmousedown="event.preventDefault();fmtApply('underline')"><u>U</u></button>
+  <button class="fmt-btn" id="fmt-strike" title="Strikethrough" onmousedown="event.preventDefault();fmtApply('strike')"><s>S</s></button>
+  <div class="fmt-sep"></div>
+  <button class="fmt-btn" id="fmt-ul" title="Bullet list" onmousedown="event.preventDefault();fmtApply('ul')">• List</button>
+  <button class="fmt-btn" id="fmt-ol" title="Numbered list" onmousedown="event.preventDefault();fmtApply('ol')">1. List</button>
+  <div class="fmt-sep"></div>
+  <button class="fmt-btn" id="fmt-upper" title="HURUF KAPITAL SEMUA" onmousedown="event.preventDefault();fmtApply('upper')">AA</button>
+  <button class="fmt-btn" id="fmt-lower" title="huruf kecil semua" onmousedown="event.preventDefault();fmtApply('lower')">aa</button>
+  <button class="fmt-btn" id="fmt-title" title="Huruf Kapital Tiap Kata" onmousedown="event.preventDefault();fmtApply('title')">Aa</button>
+  <div class="fmt-sep"></div>
+  <select class="fmt-select" id="fmt-font-size" onmousedown="event.stopPropagation()" onchange="fmtFontSize(this.value)" title="Ukuran teks (hanya tampilan)">
+    <option value="">Ukuran</option>
+    <option value="small">Kecil</option>
+    <option value="normal" selected>Normal</option>
+    <option value="large">Besar</option>
+  </select>
+  <div class="fmt-sep"></div>
+  <button class="fmt-btn" id="fmt-clear" title="Hapus semua format" onmousedown="event.preventDefault();fmtApply('clear')" style="color:#DC2626;">✕ Clear</button>
+  <span id="fmt-editing-hint">— klik sel untuk mulai edit</span>
+</div>
+
+<!-- NOTIFICATION -->
+<div id="notif" class="notif-success" style="display: none;">Data berhasil disimpan! ✅</div>
+
+<!-- UNSAVED BANNER -->
+<div id="unsaved-banner" style="display: none;">
+  ⚠️ Ada perubahan yang belum disimpan!
+  <button onclick="saveData()">💾 Simpan Sekarang</button>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <span id="lightbox-close" onclick="closeLightbox()">✕</span>
+  <div id="lightbox-img-wrap" style="display:flex;align-items:center;justify-content:center;max-width:90vw;max-height:82vh;">
+    <img id="lightbox-img" src="" alt="" style="max-width:90vw;max-height:82vh;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,0.5);display:block;">
+    <div id="lightbox-error" style="display:none;color:#fff;font-size:16px;text-align:center;padding:40px;">❌ Gagal memuat gambar.<br><span style="font-size:12px;color:rgba(255,255,255,0.6);">File mungkin terlalu besar atau format tidak didukung.</span></div>
+  </div>
+  <div id="lightbox-nav">
+    <button onclick="lightboxNav(-1)">◀ Prev</button>
+    <button id="lightbox-del-btn" onclick="lightboxDeleteCurrent()" style="background:rgba(220,38,38,0.7);color:#fff;border:1px solid rgba(255,100,100,0.4);border-radius:8px;padding:6px 14px;cursor:pointer;font-size:13px;">🗑 Hapus Foto Ini</button>
+    <button onclick="lightboxOpenTab()" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:6px 14px;cursor:pointer;font-size:13px;">🔗 Buka Tab Baru</button>
+    <button onclick="lightboxNav(1)">Next ▶</button>
+  </div>
+  <div id="lightbox-caption"></div>
+</div>
+
+<!-- MODAL ADD DEPT -->
+<div id="modal-dept">
+  <div class="modal-box">
+    <h3>➕ Tambah Departemen Baru</h3>
+    <input id="new-dept-name" type="text" placeholder="Nama departemen (contoh: QC, Logistik...)">
+    <label style="font-size:12px;font-weight:600;color:#64748B;display:block;margin-bottom:6px;">Warna Departemen</label>
+    <select id="new-dept-color">
+      <option value="#E53E3E">🔴 Merah</option>
+      <option value="#DD6B20">🟠 Oranye</option>
+      <option value="#D69E2E">🟡 Kuning</option>
+      <option value="#38A169">🟢 Hijau</option>
+      <option value="#3182CE">🔵 Biru</option>
+      <option value="#7B2FBE">🟣 Ungu</option>
+      <option value="#00B4D8">🩵 Cyan</option>
+      <option value="#805AD5">💜 Violet</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal(&#39;modal-dept&#39;)">Batal</button>
+      <button class="btn-primary" onclick="confirmAddDept()">Tambah</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SUPPORT PREVIEW -->
+<div id="modal-support-preview">
+  <div class="support-preview-box">
+    <div class="support-preview-head">
+      <h3 id="support-preview-title">Preview Data Pendukung</h3>
+      <button class="support-preview-close" onclick="closeModal(&#39;modal-support-preview&#39;)">✕</button>
+    </div>
+    <div class="support-preview-body" id="support-preview-body"></div>
+  </div>
+</div>
+
+<!-- MODAL SOP PREVIEW -->
+<div id="modal-sop-preview">
+  <div class="sop-preview-box">
+    <div class="sop-preview-head">
+      <h3 id="sop-preview-title">Detail SOP / IK</h3>
+      <button class="sop-preview-close" onclick="closeModal(&#39;modal-sop-preview&#39;)">✕</button>
+    </div>
+    <div class="sop-preview-body" id="sop-preview-body"></div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div id="header">
+  <div id="header-inner">
+    <div id="logo-area">
+      <div id="logo-box">
+        <div id="logo-text">CV.</div>
+        <div id="logo-print">KENCANA</div>
+        <div id="logo-sub">PRINT</div>
+      </div>
+      <div id="header-title">
+        <h1>📋 DASHBOARD AUDIT INTERNAL</h1>
+        <p>Monitoring &amp; Tracking Temuan Internal Audit — Real-time Editable</p>
+      </div>
+    </div>
+    <div id="header-stats">
+      <div class="stat-box stat-blue"><div class="num" id="stat-total">40</div><div class="lbl">Total Temuan</div></div>
+      <div class="stat-box stat-yellow"><div class="num" id="stat-open">9</div><div class="lbl">OPEN</div></div>
+      <div class="stat-box stat-inprog"><div class="num" id="stat-inprog">21</div><div class="lbl">IN PROGRESS</div></div>
+      <div class="stat-box stat-green"><div class="num" id="stat-close">10</div><div class="lbl">CLOSE</div></div>
+      <button id="btn-save" onclick="saveData()" class="">💾 Simpan</button>
+      <button id="btn-undo" onclick="undoAction()" title="Undo perubahan terakhir (termasuk tambah/hapus kolom & baris)" disabled style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.4);border-radius:8px;padding:7px 12px;cursor:pointer;font-weight:600;font-size:12px;">↩ Undo</button>
+      <button id="btn-reset" onclick="resetData()">↺ Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAV TABS -->
+<div id="nav-tabs">
+  <div class="nav-tab active" onclick="switchPage(&#39;temuan&#39;,this)">📋 Temuan Audit</div>
+  <div class="nav-tab" onclick="switchPage(&#39;sop&#39;,this)">📄 Dokumen Regulasi &amp; Prosedur</div>
+  <div class="nav-tab" onclick="switchPage(&#39;export&#39;,this)">📤 Export Excel</div>
+</div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+  <!-- PAGE: TEMUAN -->
+  <div id="page-temuan" class="page active-page">
+    <!-- SIDEBAR WRAP -->
+    <div id="sidebar-wrap">
+    <div id="sidebar">
+      <div id="sidebar-title">
+        Departemen
+        <button id="btn-add-dept" onclick="openModal(&#39;modal-dept&#39;)" title="Tambah Departemen">+ Dept</button>
+      </div>
+      <div id="dept-list"><div class="dept-item">
+      <div class="dept-name" style="color:#374151">Marketing</div>
+      <div class="dept-badges">
+        <span class="badge badge-total">6 temuan</span>
+        
+        <span class="badge badge-close">4 close</span>
+      </div>
+      <div class="dept-pct">80% selesai</div>
+      <div class="dept-pct-bar"><div class="dept-pct-fill" style="width:80%;background:#FF6B35"></div></div></div><div class="dept-item">
+      <div class="dept-name" style="color:#374151">Purchasing</div>
+      <div class="dept-badges">
+        <span class="badge badge-total">2 temuan</span>
+        
+        
+      </div>
+      <div class="dept-pct">80% selesai</div>
+      <div class="dept-pct-bar"><div class="dept-pct-fill" style="width:80%;background:#C8860A"></div></div></div><div class="dept-item">
+      <div class="dept-name" style="color:#374151">Finance &amp; Accounting</div>
+      <div class="dept-badges">
+        <span class="badge badge-total">4 temuan</span>
+        <span class="badge badge-open">1 open</span>
+        
+      </div>
+      <div class="dept-pct">48% selesai</div>
+      <div class="dept-pct-bar"><div class="dept-pct-fill" style="width:48%;background:#00B4D8"></div></div></div><div class="dept-item">
+      <div class="dept-name" style="color:#374151">HRGA</div>
+      <div class="dept-badges">
+        <span class="badge badge-total">6 temuan</span>
+        
+        <span class="badge badge-close">1 close</span>
+      </div>
+      <div class="dept-pct">52% selesai</div>
+      <div class="dept-pct-bar"><div class="dept-pct-fill" style="width:52%;background:#7B2FBE"></div></div></div><div class="dept-item">
+      <div class="dept-name" style="color:#374151">Warehouse</div>
+      <div class="dept-badges">
+        <span class="badge badge-total">7 temuan</span>
+        
+        <span class="badge badge-close">2 close</span>
+      </div>
+      <div class="dept-pct">66% selesai</div>
+      <div class="dept-pct-bar"><div class="dept-pct-fill" style="width:66%;background:#2D9A67"></div></div></div><div class="dept-item">
+      <div class="dept-name" style="color:#374151">Produksi P1</div>
+      <div class="dept-badges">
+        <span class="badge badge-total">2 temuan</span>
+        
+        <span class="badge badge-close">1 close</span>
+      </div>
+      <div class="dept-pct">60% selesai</div>
+      <div class="dept-pct-bar"><div class="dept-pct-fill" style="width:60%;background:#E53E3E"></div></div></div><div class="dept-item active" style="background: rgb(255, 250, 240); border-left-color: rgb(221, 107, 32);">
+      <div class="dept-name" style="color:#DD6B20">Produksi P2</div>
+      <div class="dept-badges">
+        <span class="badge badge-total">4 temuan</span>
+        
+        <span class="badge badge-close">1 close</span>
+      </div>
+      <div class="dept-pct">43% selesai</div>
+      <div class="dept-pct-bar"><div class="dept-pct-fill" style="width:43%;background:#DD6B20"></div></div></div><div class="dept-item">
+      <div class="dept-name" style="color:#374151">Produksi P4</div>
+      <div class="dept-badges">
+        <span class="badge badge-total">4 temuan</span>
+        <span class="badge badge-open">3 open</span>
+        <span class="badge badge-close">1 close</span>
+      </div>
+      <div class="dept-pct">43% selesai</div>
+      <div class="dept-pct-bar"><div class="dept-pct-fill" style="width:43%;background:#3182CE"></div></div></div><div class="dept-item">
+      <div class="dept-name" style="color:#374151">Produksi P5</div>
+      <div class="dept-badges">
+        <span class="badge badge-total">2 temuan</span>
+        <span class="badge badge-open">2 open</span>
+        
+      </div>
+      <div class="dept-pct">40% selesai</div>
+      <div class="dept-pct-bar"><div class="dept-pct-fill" style="width:40%;background:#38A169"></div></div></div><div class="dept-item">
+      <div class="dept-name" style="color:#374151">IT</div>
+      <div class="dept-badges">
+        <span class="badge badge-total">3 temuan</span>
+        <span class="badge badge-open">3 open</span>
+        
+      </div>
+      <div class="dept-pct">12% selesai</div>
+      <div class="dept-pct-bar"><div class="dept-pct-fill" style="width:12%;background:#805AD5"></div></div></div></div>
+    </div>
+    <button id="sidebar-toggle" onclick="toggleSidebar()" title="Tampilkan/Sembunyikan Departemen">◀</button>
+    </div>
+    <!-- MAIN -->
+    <div id="main">
+      <div id="toolbar">
+        <div>
+          <div id="dept-title" style="color: rgb(221, 107, 32);">Produksi P2</div>
+          <div id="dept-subtitle">4 temuan ditampilkan</div>
+        </div>
+        <div id="toolbar-right">
+          <input id="search-input" type="text" placeholder="🔍 Cari temuan..." oninput="renderTable()">
+          <select id="status-filter" onchange="renderTable()">
+            <option value="ALL">Semua Status</option>
+            <option value="OPEN">OPEN</option>
+            <option value="CLOSE">CLOSE</option>
+            <option value="IN PROGRESS">IN PROGRESS</option>
+            <option value="PENDING">PENDING</option>
+          </select>
+          <button id="btn-add" onclick="addRow()" style="background: rgb(221, 107, 32);">+ Tambah Baris</button>
+          <button onclick="addProgresCol()" style="background:#0891B2;color:#fff;border:none;border-radius:8px;padding:7px 13px;cursor:pointer;font-weight:700;font-size:12px;white-space:nowrap;">+ Kolom Progres</button>
+          <button onclick="deleteProgresCol()" style="background:#DC2626;color:#fff;border:none;border-radius:8px;padding:7px 13px;cursor:pointer;font-weight:700;font-size:12px;white-space:nowrap;" title="Hapus salah satu kolom Progres">✕ Kolom</button>
+        </div>
+      </div>
+      <div id="table-wrap">
+        <table id="data-table">
+          <thead id="table-head"><tr><th style="background: rgb(221, 107, 32); min-width: 40px; text-align: center;">No</th><th style="background: rgb(221, 107, 32); min-width: 120px;">Tanggal Temuan</th><th style="background: rgb(221, 107, 32); min-width: 310px;">Daftar Temuan</th><th style="background: rgb(221, 107, 32); min-width: 270px;">Rekomendasi Perbaikan</th><th style="background: rgb(221, 107, 32); min-width: 150px;">PIC</th><th style="background: rgb(221, 107, 32); min-width: 140px;">Status Temuan</th><th style="background: rgb(221, 107, 32); min-width: 130px;">% Penyelesaian</th><th style="background: rgb(221, 107, 32); min-width: 115px;">Deadline</th><th style="background: rgb(221, 107, 32); min-width: 140px;">Dokumentasi / Foto</th><th style="background: rgb(221, 107, 32); min-width: 160px;">Data Pendukung</th><th style="background: rgb(221, 107, 32); min-width: 200px;">Progres 1</th><th style="background: rgb(221, 107, 32); min-width: 200px;">Progres 2</th><th style="background: rgb(221, 107, 32); min-width: 200px;">Progres 3</th><th style="background: rgb(221, 107, 32); min-width: 200px;">Progres 4</th><th style="background: rgb(221, 107, 32); text-align: center; min-width: 70px;">Aksi</th></tr></thead>
+          <tbody id="table-body"><tr data-rowid="p2-1"><td style="text-align: center; font-weight: 700; color: rgb(100, 116, 139);">1</td><td data-col="tglTemuan" data-rowid="p2-1" class="editable" style="min-width: 120px; max-width: 120px;"><div class="cell-text">23-01-2026</div></td><td data-col="temuan" data-rowid="p2-1" class="editable" style="min-width: 310px; max-width: 310px;"><div class="cell-text">Ditemukan bahwa pemanfaatan sistem MANKSI belum berjalan secara optimal. Dalam praktiknya, aktivitas administrasi gudang dan produksi masih didominasi oleh penggunaan pencatatan manual berbasis Microsoft Excel, sementara sistem MANKSI hanya dilakukan pembaruan secara periodik, yaitu sekitar satu kali dalam satu minggu. Kondisi ini mengakibatkan data operasional tidak bersifat real-time, meningkatkan risiko ketidaksesuaian data, keterlambatan informasi, serta menurunkan keandalan sistem dalam mendukung pengendalian operasional dan pengambilan keputusan manajemen.</div></td><td data-col="rekomendasi" data-rowid="p2-1" class="editable" style="min-width: 270px; max-width: 270px;"><div class="cell-text">Implementasikan sistem administrasi berbasis web-based terintegrasi.</div></td><td data-col="pic" data-rowid="p2-1" class="editable" style="min-width: 150px; max-width: 150px;"><div class="cell-text">Bp. Zainal &amp; Bp. Fadli</div></td><td data-col="status" data-rowid="p2-1" style="min-width: 140px; max-width: 140px;"><select class="status-sel" style="background: rgb(219, 234, 254); color: rgb(30, 64, 175); border-color: rgb(191, 219, 254);"><option value="OPEN">OPEN</option><option value="CLOSE">CLOSE</option><option value="IN PROGRESS">IN PROGRESS</option><option value="PENDING">PENDING</option></select></td><td data-col="persentase" data-rowid="p2-1" style="min-width: 130px; max-width: 130px; cursor: pointer;"><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;">
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span style="font-weight:800;font-size:15px;color:#E53E3E">20%</span>
+    </div>
+    <div style="height:6px;background:#E2E8F0;border-radius:3px;overflow:hidden;width:100px;">
+      <div style="height:100%;border-radius:3px;background:#E53E3E;width:20%;"></div>
+    </div>
+  </div></td><td data-col="deadline" data-rowid="p2-1" class="editable" style="min-width: 115px; max-width: 115px;"><div class="cell-text">31-08-2026</div></td><td data-col="dokumentasi" data-rowid="p2-1" style="min-width: 140px; max-width: 140px;"><div class="photo-cell"><button class="btn-upload-photo" title="Upload foto JPG/PNG">📷 Upload</button></div></td><td data-col="dataPendukung" data-rowid="p2-1" style="min-width: 160px; max-width: 160px;"><div class="support-cell"><button class="btn-upload-support" title="Upload file data pendukung (PDF, DOCX, XLSX, JPG, PNG)">📎 Upload</button></div></td><td data-col="progres1" data-rowid="p2-1" class="editable" style="min-width: 200px; max-width: 200px;"><div class="cell-text">Dalam antrian tim IT</div></td><td data-col="progres2" data-rowid="p2-1" class="editable" style="min-width: 200px; max-width: 200px;"><div class="cell-placeholder">Klik untuk edit</div></td><td data-col="progres3" data-rowid="p2-1" class="editable" style="min-width: 200px; max-width: 200px;"><div class="cell-placeholder">Klik untuk edit</div></td><td data-col="progres4" data-rowid="p2-1" class="editable" style="min-width: 200px; max-width: 200px;"><div class="cell-placeholder">Klik untuk edit</div></td><td style="text-align: center;"><button class="btn-del" title="Hapus baris">🗑️</button></td></tr><tr data-rowid="p2-2"><td style="text-align: center; font-weight: 700; color: rgb(100, 116, 139);">2</td><td data-col="tglTemuan" data-rowid="p2-2" class="editable" style="min-width: 120px; max-width: 120px;"><div class="cell-text">23-01-2026</div></td><td data-col="temuan" data-rowid="p2-2" class="editable" style="min-width: 310px; max-width: 310px;"><div class="cell-text">Ditemukan penataan bahan belum dilakukan sesuai dengan praktik penyimpanan yang memadai, dimana sebagian bahan disimpan langsung di atas lantai tanpa menggunakan palet atau alas pelindung. Kondisi tersebut meningkatkan risiko bahan mengalami kerusakan atau kontaminasi, khususnya apabila terjadi kebocoran atap, genangan air, atau kondisi lantai yang basah. Apabila risiko tersebut terjadi, bahan berpotensi menjadi tidak layak pakai sehingga dapat menimbulkan pemborosan material serta kerugian finansial bagi perusahaan, sekaligus mencerminkan lemahnya pengendalian internal atas pengelolaan persediaan bahan baku.</div></td><td data-col="rekomendasi" data-rowid="p2-2" class="editable" style="min-width: 270px; max-width: 270px;"><div class="cell-text">mewajibkan seluruh bahan utama disimpan di atas palet, baik palet kayu, palet plastik, maupun alternatif lain yang tersedia (misalnya rak besi rendah), guna mencegah kontak langsung dengan lantai.</div></td><td data-col="pic" data-rowid="p2-2" class="editable" style="min-width: 150px; max-width: 150px;"><div class="cell-text">Bp. Fadli</div></td><td data-col="status" data-rowid="p2-2" style="min-width: 140px; max-width: 140px;"><select class="status-sel" style="background: rgb(209, 250, 229); color: rgb(6, 95, 70); border-color: rgb(167, 243, 208);"><option value="OPEN">OPEN</option><option value="CLOSE">CLOSE</option><option value="IN PROGRESS">IN PROGRESS</option><option value="PENDING">PENDING</option></select></td><td data-col="persentase" data-rowid="p2-2" style="min-width: 130px; max-width: 130px; cursor: pointer;"><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;">
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span style="font-weight:800;font-size:15px;color:#22C55E">100%</span>
+    </div>
+    <div style="height:6px;background:#E2E8F0;border-radius:3px;overflow:hidden;width:100px;">
+      <div style="height:100%;border-radius:3px;background:#22C55E;width:100%;"></div>
+    </div>
+  </div></td><td data-col="deadline" data-rowid="p2-2" class="editable" style="min-width: 115px; max-width: 115px;"><div class="cell-text">31-03-2026</div></td><td data-col="dokumentasi" data-rowid="p2-2" style="min-width: 140px; max-width: 140px;"><div class="photo-cell"><button class="btn-upload-photo" title="Upload foto JPG/PNG">📷 Upload</button></div></td><td data-col="dataPendukung" data-rowid="p2-2" style="min-width: 160px; max-width: 160px;"><div class="support-cell"><button class="btn-upload-support" title="Upload file data pendukung (PDF, DOCX, XLSX, JPG, PNG)">📎 Upload</button></div></td><td data-col="progres1" data-rowid="p2-2" class="editable" style="min-width: 200px; max-width: 200px;"><div class="cell-text">Sudah tertata di atas palet. CLOSE</div></td><td data-col="progres2" data-rowid="p2-2" class="editable" style="min-width: 200px; max-width: 200px;"><div class="cell-placeholder">Klik untuk edit</div></td><td data-col="progres3" data-rowid="p2-2" class="editable" style="min-width: 200px; max-width: 200px;"><div class="cell-placeholder">Klik untuk edit</div></td><td data-col="progres4" data-rowid="p2-2" class="editable" style="min-width: 200px; max-width: 200px;"><div class="cell-placeholder">Klik untuk edit</div></td><td style="text-align: center;"><button class="btn-del" title="Hapus baris">🗑️</button></td></tr><tr data-rowid="row-1778576321605-ad0y"><td style="text-align: center; font-weight: 700; color: rgb(100, 116, 139);">3</td><td data-col="tglTemuan" data-rowid="row-1778576321605-ad0y" class="editable" style="min-width: 120px; max-width: 120px;"><div class="cell-text">23-01-2026</div></td><td data-col="temuan" data-rowid="row-1778576321605-ad0y" class="editable" style="min-width: 310px; max-width: 310px;"><div class="cell-text">Berdasarkan hasil observasi di area Produksi P2, ditemukan bahwa perusahaan belum memiliki area khusus yang ditetapkan sebagai gudang barang jadi maupun gudang transit untuk barang yang diterima dari mitra sebelum dilakukan proses finishing dan pengiriman kepada pelanggan. Saat ini, barang jadi dan barang transit ditempatkan di lorong pintu masuk serta sepanjang jalur lalu lintas keluar-masuk karyawan dan aktivitas produksi.</div></td><td data-col="rekomendasi" data-rowid="row-1778576321605-ad0y" class="editable" style="min-width: 270px; max-width: 270px;"><div class="cell-text">Penetapan Area Khusus Gudang &amp; Transit
+
+Mengatur ulang layout sehingga jalur keluar-masuk karyawan dan material tidak bercampur dengan area penyimpanan barang, guna mengurangi risiko benturan, kerusakan, dan kehilangan barang.</div></td><td data-col="pic" data-rowid="row-1778576321605-ad0y" class="editable" style="min-width: 150px; max-width: 150px;"><div class="cell-text">Bp. Fadli &amp; Bp. Andi</div></td><td data-col="status" data-rowid="row-1778576321605-ad0y" style="min-width: 140px; max-width: 140px;"><select class="status-sel" style="background: rgb(219, 234, 254); color: rgb(30, 64, 175); border-color: rgb(191, 219, 254);"><option value="OPEN">OPEN</option><option value="CLOSE">CLOSE</option><option value="IN PROGRESS">IN PROGRESS</option><option value="PENDING">PENDING</option></select></td><td data-col="persentase" data-rowid="row-1778576321605-ad0y" style="min-width: 130px; max-width: 130px; cursor: pointer;"><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;">
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span style="font-weight:800;font-size:15px;color:#E53E3E">30%</span>
+    </div>
+    <div style="height:6px;background:#E2E8F0;border-radius:3px;overflow:hidden;width:100px;">
+      <div style="height:100%;border-radius:3px;background:#E53E3E;width:30%;"></div>
+    </div>
+  </div></td><td data-col="deadline" data-rowid="row-1778576321605-ad0y" class="editable" style="min-width: 115px; max-width: 115px;"><div class="cell-text">Desember 2026</div></td><td data-col="dokumentasi" data-rowid="row-1778576321605-ad0y" style="min-width: 140px; max-width: 140px;"><div class="photo-cell"><button class="btn-upload-photo" title="Upload foto JPG/PNG">📷 Upload</button></div></td><td data-col="dataPendukung" data-rowid="row-1778576321605-ad0y" style="min-width: 160px; max-width: 160px;"><div class="support-cell"><button class="btn-upload-support" title="Upload file data pendukung (PDF, DOCX, XLSX, JPG, PNG)">📎 Upload</button></div></td><td data-col="progres1" data-rowid="row-1778576321605-ad0y" class="editable" style="min-width: 200px; max-width: 200px;"><div class="cell-text">Pembuatan Layout area dan bangunan</div></td><td data-col="progres2" data-rowid="row-1778576321605-ad0y" class="editable" style="min-width: 200px; max-width: 200px;"><div class="cell-text">Pembangunan gedung baru untuk Gudang &amp; Musola</div></td><td data-col="progres3" data-rowid="row-1778576321605-ad0y" class="editable" style="min-width: 200px; max-width: 200px;"><div class="cell-placeholder">Klik untuk edit</div></td><td data-col="progres4" data-rowid="row-1778576321605-ad0y" class="editable" style="min-width: 200px; max-width: 200px;"><div class="cell-placeholder">Klik untuk edit</div></td><td style="text-align: center;"><button class="btn-del" title="Hapus baris">🗑️</button></td></tr><tr data-rowid="row-1778638471062-9jp0"><td style="text-align: center; font-weight: 700; color: rgb(100, 116, 139);">4</td><td data-col="tglTemuan" data-rowid="row-1778638471062-9jp0" class="editable" style="min-width: 120px; max-width: 120px;"><div class="cell-text">23-01-2026</div></td><td data-col="temuan" data-rowid="row-1778638471062-9jp0" class="editable" style="min-width: 310px; max-width: 310px;"><div class="cell-text">Ditemukan persediaan bahan baku kategori slow moving di gudang P2, bahan KENCANA SPESIAL A dengan total panjang ±9.300 yard atau setara dengan ±93 roll. Berdasarkan data penerimaan barang, bahan tersebut telah diterima oleh gudang P2 pada tanggal 25 Agustus 2023 dan hingga saat ini belum menunjukkan pergerakan yang signifikan dalam proses produksi.
+
+Kondisi ini mengindikasikan bahwa pengelolaan dan perencanaan penggunaan bahan baku belum berjalan secara optimal, sehingga menyebabkan akumulasi persediaan yang berpotensi tidak produktif dalam jangka waktu yang cukup lama.</div></td><td data-col="rekomendasi" data-rowid="row-1778638471062-9jp0" class="editable" style="min-width: 270px; max-width: 270px;"><div class="cell-text">Apabila bahan tidak dapat digunakan untuk produk utama, manajemen dapat mempertimbangkan alternatif pemanfaatan seperti produk substitusi, produk promo, atau kategori clearance.</div></td><td data-col="pic" data-rowid="row-1778638471062-9jp0" class="editable" style="min-width: 150px; max-width: 150px;"><div class="cell-text">Bp. Fadli</div></td><td data-col="status" data-rowid="row-1778638471062-9jp0" style="min-width: 140px; max-width: 140px;"><select class="status-sel" style="background: rgb(219, 234, 254); color: rgb(30, 64, 175); border-color: rgb(191, 219, 254);"><option value="OPEN">OPEN</option><option value="CLOSE">CLOSE</option><option value="IN PROGRESS">IN PROGRESS</option><option value="PENDING">PENDING</option></select></td><td data-col="persentase" data-rowid="row-1778638471062-9jp0" style="min-width: 130px; max-width: 130px; cursor: pointer;"><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;">
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span style="font-weight:800;font-size:15px;color:#E53E3E">20%</span>
+    </div>
+    <div style="height:6px;background:#E2E8F0;border-radius:3px;overflow:hidden;width:100px;">
+      <div style="height:100%;border-radius:3px;background:#E53E3E;width:20%;"></div>
+    </div>
+  </div></td><td data-col="deadline" data-rowid="row-1778638471062-9jp0" class="editable" style="min-width: 115px; max-width: 115px;"><div class="cell-text">30-06-2026</div></td><td data-col="dokumentasi" data-rowid="row-1778638471062-9jp0" style="min-width: 140px; max-width: 140px;"><div class="photo-cell"><button class="btn-upload-photo" title="Upload foto JPG/PNG">📷 Upload</button></div></td><td data-col="dataPendukung" data-rowid="row-1778638471062-9jp0" style="min-width: 160px; max-width: 160px;"><div class="support-cell"><button class="btn-upload-support" title="Upload file data pendukung (PDF, DOCX, XLSX, JPG, PNG)">📎 Upload</button></div></td><td data-col="progres1" data-rowid="row-1778638471062-9jp0" class="editable" style="min-width: 200px; max-width: 200px;"><div class="cell-placeholder">Klik untuk edit</div></td><td data-col="progres2" data-rowid="row-1778638471062-9jp0" class="editable" style="min-width: 200px; max-width: 200px;"><div class="cell-placeholder">Klik untuk edit</div></td><td data-col="progres3" data-rowid="row-1778638471062-9jp0" class="editable" style="min-width: 200px; max-width: 200px;"><div class="cell-placeholder">Klik untuk edit</div></td><td data-col="progres4" data-rowid="row-1778638471062-9jp0" class="editable" style="min-width: 200px; max-width: 200px;"><div class="cell-placeholder">Klik untuk edit</div></td><td style="text-align: center;"><button class="btn-del" title="Hapus baris">🗑️</button></td></tr></tbody>
+        </table>
+      </div>
+      <div id="footer-note">💡 <strong>Cara edit:</strong> Klik sel untuk mengedit. <strong>Dokumentasi:</strong> upload foto JPG/PNG → klik thumbnail atau tombol "🔍 Lihat Semua Foto" untuk preview langsung di dashboard (lightbox). <strong>Data Pendukung:</strong> upload PDF/DOCX/XLSX/gambar → klik ikon file untuk preview. Klik <strong>💾 Simpan</strong> untuk menyimpan. Gunakan <strong>↩ Undo</strong> untuk membatalkan perubahan terakhir.</div>
+    </div>
+  </div>
+
+  <!-- PAGE: SOP -->
+  <div id="page-sop" class="page">
+    <div class="sop-header">
+      <h2>📄 Manajemen Dokumen Regulasi &amp; Prosedur</h2>
+    </div>
+    <div class="sop-stats-row" id="sop-stats-row"></div>
+    <div class="sop-filter-row">
+      <input id="sop-search" type="text" placeholder="🔍 Cari dokumen..." oninput="renderSopGrid()" style="width:200px">
+      <select id="sop-dept-filter" onchange="renderSopGrid()"><option value="ALL">Semua Departemen</option><option value="Marketing">Marketing</option><option value="Purchasing">Purchasing</option><option value="Finance &amp; Accounting">Finance &amp; Accounting</option><option value="HRGA">HRGA</option><option value="Warehouse">Warehouse</option><option value="Produksi P1">Produksi P1</option><option value="Produksi P2">Produksi P2</option><option value="Produksi P4">Produksi P4</option><option value="Produksi P5">Produksi P5</option><option value="IT">IT</option></select>
+      <select id="sop-type-filter" onchange="renderSopGrid()">
+        <option value="ALL">Semua Tipe</option>
+        <option value="SOP">SOP</option>
+        <option value="IK">Instruksi Kerja (IK)</option>
+        <option value="Memo Internal">Memo Internal</option>
+        <option value="Berita Acara">Berita Acara</option>
+        <option value="Lainnya">Lainnya</option>
+      </select>
+    </div>
+    <!-- Upload zone -->
+    <div class="sop-upload-zone" onclick="document.getElementById(&#39;sop-file-input&#39;).click()">
+      <div class="uz-icon">📂</div>
+      <p><strong>Klik di sini</strong> atau seret file untuk upload SOP / IK / Memo / Berita Acara</p>
+      <p style="font-size:12px;color:#94A3B8;margin-top:4px;">Format: PDF, DOCX, XLSX, JPG, PNG (max 20MB)</p>
+    </div>
+    <input id="sop-file-input" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" multiple="" style="display:none" onchange="handleSopUpload(event)">
+    <!-- Upload meta modal inline -->
+    <div id="sop-upload-meta" style="display:none;background:#fff;border:2px solid #E2E8F0;border-radius:12px;padding:20px;margin-bottom:20px;">
+      <h4 style="font-size:14px;font-weight:800;margin-bottom:12px;color:#1E293B;">📝 Detail Dokumen yang Di-upload</h4>
+      <div id="sop-meta-fields"></div>
+      <div style="display:flex;gap:10px;margin-top:12px;">
+        <button class="btn-primary" onclick="confirmSopUpload()">✅ Simpan Dokumen</button>
+        <button class="btn-secondary" onclick="cancelSopUpload()">Batal</button>
+      </div>
+    </div>
+    <div class="sop-grid" id="sop-grid"></div>
+  </div>
+
+  <!-- PAGE: EXPORT -->
+  <div id="page-export" class="page">
+    <div class="import-card">
+      <h2>📤 Export Data Temuan ke Excel</h2>
+      <p>Export daftar temuan audit per departemen ke file Excel (.xlsx) lengkap dengan KOP perusahaan, logo Kencana Print, dan judul <strong>DAFTAR TEMUAN INTERNAL AUDIT</strong>.</p>
+
+      <div style="background:#EFF6FF;border:2px solid #BFDBFE;border-radius:10px;padding:16px;margin-bottom:20px;">
+        <h4 style="color:#1E40AF;font-size:13px;font-weight:700;margin-bottom:10px;">⚙️ Pilih Data yang Akan Di-export</h4>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <label style="font-size:13px;font-weight:600;color:#374151;min-width:120px;">Departemen:</label>
+            <select id="export-dept-filter" style="border:2px solid #E2E8F0;border-radius:8px;padding:7px 12px;font-size:13px;outline:none;font-family:inherit;min-width:200px;">
+              <option value="ALL">Semua Departemen</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <label style="font-size:13px;font-weight:600;color:#374151;min-width:120px;">Status:</label>
+            <select id="export-status-filter" style="border:2px solid #E2E8F0;border-radius:8px;padding:7px 12px;font-size:13px;outline:none;font-family:inherit;min-width:200px;">
+              <option value="ALL">Semua Status</option>
+              <option value="OPEN">OPEN</option>
+              <option value="CLOSE">CLOSE</option>
+              <option value="IN PROGRESS">IN PROGRESS</option>
+              <option value="PENDING">PENDING</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <label style="font-size:13px;font-weight:600;color:#374151;min-width:120px;">Tanggal Export:</label>
+            <input id="export-date" type="text" placeholder="Contoh: 12 Mei 2026" style="border:2px solid #E2E8F0;border-radius:8px;padding:7px 12px;font-size:13px;outline:none;font-family:inherit;min-width:200px;">
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#F0FDF4;border:2px solid #A7F3D0;border-radius:10px;padding:14px;margin-bottom:20px;">
+        <h4 style="color:#065F46;font-size:13px;font-weight:700;margin-bottom:6px;">📋 Format Excel yang Akan Dihasilkan</h4>
+        <ul style="font-size:12px;color:#065F46;line-height:1.8;padding-left:18px;">
+          <li>KOP berisi logo <strong>Kencana Print</strong> dan judul <strong>DAFTAR TEMUAN INTERNAL AUDIT</strong></li>
+          <li>Kolom: No, Tanggal Temuan, Daftar Temuan, Rekomendasi, PIC, Status, % Penyelesaian, Deadline, Progres 1-4</li>
+          <li>Dikelompokkan per departemen (jika pilih Semua Departemen)</li>
+          <li>Baris total di akhir setiap departemen</li>
+        </ul>
+      </div>
+
+      <div id="export-preview-info" style="background:#FFF3CD;border:2px solid #FFECB5;border-radius:10px;padding:12px;margin-bottom:20px;display:none;">
+        <div id="export-preview-text" style="font-size:13px;color:#856404;font-weight:600;"></div>
+      </div>
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button onclick="previewExport()" style="background:#1A237E;color:#fff;border:none;border-radius:8px;padding:10px 22px;cursor:pointer;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;">
+          👁️ Preview &amp; Export Excel
+        </button>
+      </div>
+
+      <div id="export-table-preview" style="display:none;margin-top:20px;">
+        <h4 style="font-size:14px;font-weight:700;color:#1E293B;margin-bottom:10px;">Preview Data (10 baris pertama):</h4>
+        <div style="overflow-x:auto;border-radius:8px;border:2px solid #E2E8F0;">
+          <table id="export-preview-table" class="import-preview-table"></table>
+        </div>
+        <button onclick="doExportExcel()" style="background:#22C55E;color:#fff;border:none;border-radius:8px;padding:10px 22px;cursor:pointer;font-weight:700;font-size:14px;margin-top:14px;display:flex;align-items:center;gap:8px;width:100%;justify-content:center;">
+          ⬇️ Download Excel Sekarang
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const STORAGE_KEY = "audit_dashboard_v4";
+const SOP_STORAGE_KEY = "audit_sop_v1";
+
+let DEPARTMENTS = ["Marketing","Purchasing","Finance & Accounting","HRGA","Warehouse","Produksi P1","Produksi P2","Produksi P4","Produksi P5","IT"];
+let DEPT_COLORS = {
+  "Marketing":{"header":"#FF6B35","light":"#FFF3EE"},
+  "Purchasing":{"header":"#C8860A","light":"#FFFBF0"},
+  "Finance & Accounting":{"header":"#00B4D8","light":"#E8F8FC"},
+  "HRGA":{"header":"#7B2FBE","light":"#F3E8FF"},
+  "Warehouse":{"header":"#2D9A67","light":"#E8F8F2"},
+  "Produksi P1":{"header":"#E53E3E","light":"#FFF5F5"},
+  "Produksi P2":{"header":"#DD6B20","light":"#FFFAF0"},
+  "Produksi P4":{"header":"#3182CE","light":"#EBF8FF"},
+  "Produksi P5":{"header":"#38A169","light":"#F0FFF4"},
+  "IT":{"header":"#805AD5","light":"#FAF5FF"}
+};
+const COLOR_PALETTE=["#E53E3E","#DD6B20","#D69E2E","#38A169","#3182CE","#7B2FBE","#00B4D8","#805AD5"];
+
+const STATUS_STYLES = {
+  "OPEN":       {bg:"#FFF3CD",color:"#856404",border:"#FFECB5"},
+  "CLOSE":      {bg:"#D1FAE5",color:"#065F46",border:"#A7F3D0"},
+  "IN PROGRESS":{bg:"#DBEAFE",color:"#1E40AF",border:"#BFDBFE"},
+  "PENDING":    {bg:"#FEE2E2",color:"#991B1B",border:"#FECACA"}
+};
+
+const COLS = [
+  {key:"tglTemuan",   label:"Tanggal Temuan",        width:120, type:"text"},
+  {key:"temuan",      label:"Daftar Temuan",          width:310, type:"text"},
+  {key:"rekomendasi", label:"Rekomendasi Perbaikan",  width:270, type:"text"},
+  {key:"pic",         label:"PIC",                    width:150, type:"text"},
+  {key:"status",      label:"Status Temuan",          width:140, type:"status"},
+  {key:"persentase",  label:"% Penyelesaian",         width:130, type:"pct"},
+  {key:"deadline",    label:"Deadline",               width:115, type:"text"},
+  {key:"dokumentasi", label:"Dokumentasi / Foto",     width:140, type:"photo"},
+  {key:"dataPendukung",label:"Data Pendukung",        width:160, type:"support"},
+  {key:"progres1",    label:"Progres 1",       width:200, type:"text"},
+  {key:"progres2",    label:"Progres 2",       width:200, type:"text"},
+  {key:"progres3",    label:"Progres 3",       width:200, type:"text"},
+  {key:"progres4",    label:"Progres 4",       width:200, type:"text"}
+];
+
+const DEFAULT_DATA = {
+  "Marketing":[
+    {id:"mkt-1",tglTemuan:"10-12-2025",temuan:"MAP (Memo Approval Produk) masih outstanding lebih dari 3 bulan",rekomendasi:"Segera close MAP outstanding >3 bulan. Buat ketentuan batas waktu maksimal MAP outstanding.",pic:"Bp. Widi & Bp. Darul",status:"CLOSE",persentase:100,deadline:"05-02-2026",dokumentasi:[],progres1:"Telah di closing",progres2:"Kebijakan 3 bulan sudah ditetapkan",progres3:"CLOSE",progres4:""},
+    {id:"mkt-2",tglTemuan:"10-12-2025",temuan:"SPK masih outstanding lebih dari 3 bulan",rekomendasi:"Segera close SPK outstanding >3 bulan. Buat kebijakan batas maksimal SPK outstanding.",pic:"Bp. Widi & Bp. Darul",status:"OPEN",persentase:60,deadline:"30-04-2026",dokumentasi:[],progres1:"Closing SPK 2018-2021 & 2024 selesai",progres2:"Proses closing SPK 2023 & 2025",progres3:"SPK 2022 belum di-review",progres4:""},
+    {id:"mkt-3",tglTemuan:"10-12-2025",temuan:"Penawaran masih outstanding lebih dari 3 bulan",rekomendasi:"Segera close Penawaran outstanding >3 bulan. Buat ketentuan batas waktu.",pic:"Bp. Widi & Bp. Darul",status:"CLOSE",persentase:100,deadline:"05-02-2026",dokumentasi:[],progres1:"Telah di closing",progres2:"Kebijakan 3 bulan sudah ditetapkan",progres3:"CLOSE",progres4:""},
+    {id:"mkt-4",tglTemuan:"10-01-2026",temuan:"SPK dibatalkan sepihak oleh Marketing karena pelanggan belum menyetujui jenis bahan.",rekomendasi:"SPK hanya boleh diterbitkan setelah MAP selesai dan ada persetujuan tertulis customer.",pic:"Bp. Widi & Bp. Darul",status:"CLOSE",persentase:100,deadline:"05-02-2026",dokumentasi:[],progres1:"Kebijakan pembatalan SPK sudah ditetapkan",progres2:"Persetujuan direksi diwajibkan",progres3:"CLOSE",progres4:""},
+    {id:"mkt-5",tglTemuan:"04-03-2026",temuan:"Perubahan data Qty order setelah SPK running menyebabkan SPK tidak bisa auto-closing.",rekomendasi:"Penetapan system control: perubahan Qty setelah SPK running harus melalui mekanisme khusus & approval berjenjang.",pic:"Tim IT",status:"OPEN",persentase:20,deadline:"30-04-2026",dokumentasi:[],progres1:"",progres2:"",progres3:"",progres4:""},
+    {id:"mkt-6",tglTemuan:"05-03-2026",temuan:"Ketidaksesuaian perubahan jenis bahan pada MAP-SM-KO-000736.",rekomendasi:"Kunci data MAP di sistem saat sudah ada transaksi.",pic:"Bp. Widi & Tim IT",status:"OPEN",persentase:10,deadline:"30-04-2026",dokumentasi:[],progres1:"",progres2:"",progres3:"",progres4:""},
+    {id:"mkt-7",tglTemuan:"20-02-2026",temuan:"Komplain dari customer atas SPK kaosan karena improvisasi/perubahan desain tanpa konfirmasi.",rekomendasi:"Penyempurnaan alur DTF Kaosan: semua desain dari Kaosan bersifat Final.",pic:"Bp. Widi & Bp. Oki",status:"OPEN",persentase:15,deadline:"30-04-2026",dokumentasi:[],progres1:"",progres2:"",progres3:"",progres4:""}
+  ],
+  "Purchasing":[
+    {id:"pur-1",tglTemuan:"25-02-2026",temuan:"Bahan untuk SPK dibeli tanpa konfirmasi ke marketing meskipun gramasi warna bahan sedikit berbeda.",rekomendasi:"Pembelian bahan hanya boleh dilakukan setelah spesifikasi final sesuai sample yang di-ACC customer.",pic:"Bp. Darul & Purchasing",status:"OPEN",persentase:0,deadline:"31-03-2026",dokumentasi:[],progres1:"",progres2:"",progres3:"",progres4:""},
+    {id:"pur-2",tglTemuan:"03-03-2026",temuan:"Ketidaksesuaian spesifikasi pengadaan material fiber (atap/seng). GA minta Galvalum tidak bergelombang.",rekomendasi:"Evaluasi internal proses komunikasi antara user dan Purchasing.",pic:"Bp. Darul",status:"OPEN",persentase:0,deadline:"31-03-2026",dokumentasi:[],progres1:"",progres2:"",progres3:"",progres4:""}
+  ],
+  "Finance & Accounting":[
+    {id:"fin-1",tglTemuan:"10-12-2025",temuan:"Data persediaan dalam sistem MANKSI tidak akurat dan belum terkontrol.",rekomendasi:"Tunjuk atau rekrut staff accounting fokus cost & inventory. Laksanakan stock opname rutin.",pic:"Bp. Darul",status:"OPEN",persentase:30,deadline:"31-03-2026",dokumentasi:[],progres1:"Accounting mulai stock opname gudang bahan",progres2:"",progres3:"",progres4:""},
+    {id:"fin-2",tglTemuan:"05-02-2026",temuan:"Admin Produksi meminta dana ke Purchasing untuk fotokopi Form Afdruk.",rekomendasi:"Form Afdruk wajib dianggarkan dan disediakan terpusat.",pic:"Bp. Darul & Ibu. Indah",status:"OPEN",persentase:40,deadline:"21-02-2026",dokumentasi:[],progres1:"Sudah ada instruksi direksi untuk inventarisasi",progres2:"",progres3:"",progres4:""},
+    {id:"fin-3",tglTemuan:"25-02-2026",temuan:"Ketidaksesuaian SOP pada proses SPK–MKB–PO–Produksi.",rekomendasi:"Tetapkan kewajiban updating MKB setiap ada perubahan keputusan penggunaan bahan.",pic:"Bp. Darul & Bp. Oki",status:"OPEN",persentase:20,deadline:"",dokumentasi:[],progres1:"Jadikan poin perbaikan saat meeting (Instruksi Direksi)",progres2:"",progres3:"",progres4:""},
+    {id:"fin-4",tglTemuan:"03-03-2026",temuan:"Belum ada sistem/pencatatan terstruktur untuk maintenance mesin.",rekomendasi:"Bangun sistem maintenance sparepart yang terintegrasi.",pic:"Bp. Andi & Bp. Zainal",status:"OPEN",persentase:0,deadline:"31-03-2026",dokumentasi:[],progres1:"",progres2:"",progres3:"",progres4:""},
+    {id:"fin-5",tglTemuan:"03-03-2026",temuan:"Barang tidak layak pakai menumpuk di gudang sparepart.",rekomendasi:"Optimalkan peran accounting & pengelola gudang dalam monitoring persediaan.",pic:"Bp. Andi",status:"OPEN",persentase:0,deadline:"31-03-2026",dokumentasi:[],progres1:"",progres2:"",progres3:"",progres4:""}
+  ],
+  "HRGA":[
+    {id:"hrga-1",tglTemuan:"05-02-2026",temuan:"Pengelolaan sampah produksi belum memadai.",rekomendasi:"Hentikan pembakaran terbuka. Sediakan TPS yang layak.",pic:"Bp. Fadli & Bp. Andi",status:"OPEN",persentase:50,deadline:"31-03-2026",dokumentasi:[],progres1:"Meeting koordinasi sudah dilakukan",progres2:"Sampah akan dibuang ke TPA Putri Cempo Solo",progres3:"",progres4:""},
+    {id:"hrga-2",tglTemuan:"05-02-2026",temuan:"Proses induction karyawan belum berjalan menyeluruh.",rekomendasi:"Susun Blue Print Jobdesk. Buat Talk List/Checklist Induction per posisi.",pic:"Bp. Andi & All Manager",status:"OPEN",persentase:30,deadline:"30-04-2026",dokumentasi:[],progres1:"Disampaikan ke meeting manajemen",progres2:"",progres3:"",progres4:""},
+    {id:"hrga-3",tglTemuan:"05-02-2026",temuan:"Proses penonaktifan akses karyawan belum berjalan.",rekomendasi:"Wajibkan notifikasi HR ke IT. Penonaktifan akses di hari terakhir kerja.",pic:"Bp. Andi & Bp. Zainal",status:"CLOSE",persentase:100,deadline:"31-03-2026",dokumentasi:[],progres1:"SOP penonaktifan user sudah dibuat",progres2:"CLOSE",progres3:"",progres4:""},
+    {id:"hrga-4",tglTemuan:"05-02-2026",temuan:"Pengiriman barang oleh sopir internal masih menggunakan serah terima manual.",rekomendasi:"Wajibkan STBJ/Surat Jalan cetakan dari sistem sebelum barang keluar.",pic:"Bp. Andi & All Manager",status:"OPEN",persentase:40,deadline:"21-02-2026",dokumentasi:[],progres1:"Tim Satpam siap mengawal",progres2:"",progres3:"",progres4:""}
+  ],
+  "Warehouse":[
+    {id:"wh-1",tglTemuan:"25-02-2026",temuan:"Sisa rib dari cutting tidak tercatat sebagai persediaan di sistem.",rekomendasi:"Lakukan pendataan RIB sisa cutting untuk dimasukkan ke stock sistem.",pic:"Bp. Fadli",status:"OPEN",persentase:10,deadline:"",dokumentasi:[],progres1:"Menunggu keputusan",progres2:"",progres3:"",progres4:""},
+    {id:"wh-2",tglTemuan:"25-02-2026",temuan:"Sisa bahan hasil cutting di gudang bahan tidak tercatat.",rekomendasi:"Lakukan pendataan bahan sisa kaosan Retail untuk dimasukkan ke stock sistem.",pic:"Bp. Fadli",status:"OPEN",persentase:10,deadline:"",dokumentasi:[],progres1:"Menunggu keputusan",progres2:"",progres3:"",progres4:""},
+    {id:"wh-6",tglTemuan:"03-01-2026",temuan:"Sisa hasil cutting ditumpuk di area depan Gudang Induk tanpa penataan.",rekomendasi:"Tetapkan kebijakan pengelolaan sisa cutting.",pic:"Bp. Fadli & Bp. Darul",status:"CLOSE",persentase:100,deadline:"21-02-2026",dokumentasi:[],progres1:"CLOSE",progres2:"",progres3:"",progres4:""}
+  ],
+  "Produksi P1":[
+    {id:"p1-1",tglTemuan:"16-03-2026",temuan:"Mayoritas kegiatan produksi di Unit P1 dilakukan melalui kerja sama mitra tanpa dokumen kerja sama memadai.",rekomendasi:"Penyempurnaan alur proses kerja sama mitra: gunakan dokumen surat perjanjian kerja sama.",pic:"Bp. Sumardi & Bp. Oki",status:"OPEN",persentase:0,deadline:"31-03-2026",dokumentasi:[],progres1:"",progres2:"",progres3:"",progres4:""}
+  ],
+  "Produksi P2":[
+    {id:"p2-1",tglTemuan:"05-02-2026",temuan:"Pemanfaatan sistem MANKSI di P2 belum optimal. Administrasi masih dominan menggunakan Excel.",rekomendasi:"Implementasikan sistem administrasi berbasis web-based terintegrasi.",pic:"Bp. Zainal & Bp. Fadli",status:"OPEN",persentase:20,deadline:"30-04-2026",dokumentasi:[],progres1:"Dalam antrian tim IT",progres2:"",progres3:"",progres4:""},
+    {id:"p2-2",tglTemuan:"05-02-2026",temuan:"Penataan bahan di P2 belum memadai. Sebagian bahan disimpan di atas lantai.",rekomendasi:"Wajibkan seluruh bahan utama disimpan di atas palet.",pic:"Bp. Fadli",status:"CLOSE",persentase:100,deadline:"31-03-2026",dokumentasi:[],progres1:"Sudah tertata di atas palet. CLOSE",progres2:"",progres3:"",progres4:""}
+  ],
+  "Produksi P4":[
+    {id:"p4-1",tglTemuan:"12-12-2025",temuan:"Proses numbering di area cutting belum berjalan optimal.",rekomendasi:"Terapkan sistem numbering terstandarisasi dan terkontrol.",pic:"Bu. Indah & Bp. Oki",status:"CLOSE",persentase:100,deadline:"21-02-2026",dokumentasi:[],progres1:"NUMBERING SUDAH BERJALAN. CLOSE",progres2:"",progres3:"",progres4:""},
+    {id:"p4-2",tglTemuan:"13-01-2026",temuan:"Penerapan 5R tidak berjalan efektif.",rekomendasi:"Re-implementasi 5R: buat checklist 5R harian, tunjuk PIC 5R pershift.",pic:"Bu. Indah & Bp. Andi",status:"OPEN",persentase:40,deadline:"30-04-2026",dokumentasi:[],progres1:"Pembentukan tim khusus implementasi R5",progres2:"",progres3:"",progres4:""},
+    {id:"p4-3",tglTemuan:"13-01-2026",temuan:"Aspek K3 kurang maksimal: operator potong tidak menggunakan sarung tangan.",rekomendasi:"Wajibkan penggunaan sarung tangan anti-cut.",pic:"Bu. Indah & Bp. Andi",status:"OPEN",persentase:30,deadline:"30-04-2026",dokumentasi:[],progres1:"Pembentukan tim khusus implementasi K3",progres2:"",progres3:"",progres4:""}
+  ],
+  "Produksi P5":[
+    {id:"p5-1",tglTemuan:"05-02-2026",temuan:"Penumpukan Barang Jadi MMT di area produksi P5 tanpa kejelasan treatment.",rekomendasi:"Penguatan kontrol monitoring produksi real-time.",pic:"Bp. Fadli & Bp. Darul",status:"OPEN",persentase:50,deadline:"21-02-2026",dokumentasi:[],progres1:"Direksi memutuskan untuk dijual",progres2:"",progres3:"",progres4:""},
+    {id:"p5-2",tglTemuan:"05-02-2026",temuan:"Penumpukan afval di dekat pintu masuk gudang bahan P5.",rekomendasi:"Tetapkan area khusus afval yang terlindung dari hujan.",pic:"Bp. Fadli & Bp. Darul",status:"OPEN",persentase:30,deadline:"21-02-2026",dokumentasi:[],progres1:"Pengamatan untuk pembuatan area afval P5 sudah dilakukan",progres2:"",progres3:"",progres4:""}
+  ],
+  "IT":[
+    {id:"it-1",tglTemuan:"11-04-2026",temuan:"Beberapa modul sistem belum tersedia. Prioritas: Modul PR/PO/BPB/Invoice.",rekomendasi:"Update sistem dengan prioritas modul utama.",pic:"Bp. Zainal & tim IT",status:"OPEN",persentase:15,deadline:"Koordinasi dengan tim IT",dokumentasi:[],progres1:"",progres2:"",progres3:"",progres4:""},
+    {id:"it-2",tglTemuan:"11-04-2026",temuan:"Koordinasi & Follow up temuan Struktur organisasi, Jobdesk, SOP & IK belum terselesaikan.",rekomendasi:"Koordinasi dilakukan secara bertahap sampai minggu ke-3 Mei.",pic:"All Manager",status:"OPEN",persentase:20,deadline:"Minggu ke-3 Mei 2026",dokumentasi:[],progres1:"",progres2:"",progres3:"",progres4:""},
+    {id:"it-3",tglTemuan:"11-04-2026",temuan:"SPK tahun 2022 masih outstanding, belum ada berita acara.",rekomendasi:"Dibuatkan berita acara & close SPK 2022.",pic:"Audit & IT",status:"OPEN",persentase:0,deadline:"30-04-2026",dokumentasi:[],progres1:"",progres2:"",progres3:"",progres4:""}
+  ]
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let appData = {};
+let sopData = []; // [{id, name, type, dept, desc, noDoc, tglTerbit, fileDataUrl, fileType, fileName, uploadedAt}]
+let activeDept = "Marketing";
+let editingCell = null;
+let hasUnsaved = false;
+let currentPage = 'temuan';
+let pendingSopFiles = [];
+let importRows = [];
+let lightboxPhotos = [];
+let lightboxIdx = 0;
+let lightboxRowId = null;
+let undoStack = []; // array of JSON snapshots
+let exportPreviewData = [];
+
+// ============================================================
+// STORAGE
+// ============================================================
+function loadData(){
+  // Try localStorage as instant fallback while Firebase loads
+  try{
+    const r=localStorage.getItem(STORAGE_KEY);
+    if(r){ appData=JSON.parse(r); migrateDocs(); }
+    else  { appData=JSON.parse(JSON.stringify(DEFAULT_DATA)); migrateDocs(); }
+  }catch(e){
+    appData=JSON.parse(JSON.stringify(DEFAULT_DATA)); migrateDocs();
+  }
+  // Firebase load happens in onAuthStateChanged (firebase module above)
+}
+function migrateDocs(){
+  // Ensure all rows have dokumentasi as array and persentase as number
+  Object.values(appData).flat().forEach(row=>{
+    if(!Array.isArray(row.dokumentasi)) row.dokumentasi=[];
+    if(!Array.isArray(row.dataPendukung)) row.dataPendukung=[];
+    if(typeof row.persentase==='undefined') row.persentase=0;
+  });
+  migrateDynamicCols();
+}
+async function saveData(){
+  if(!window._isAdmin){ showNotif("⛔ Hanya admin yang bisa menyimpan data.","error"); return; }
+  const btn=document.getElementById('btn-save');
+  btn.textContent="⏳ Menyimpan..."; btn.disabled=true;
+  try{
+    // Simpan ke Firestore (master)
+    await window._fbSetDoc(window._fbDocRef(), {
+      appData: appData,
+      COLS: COLS,
+      DEPARTMENTS: DEPARTMENTS,
+      savedAt: new Date().toISOString(),
+      savedBy: window._currentUser ? window._currentUser.email : 'unknown'
+    });
+    // Juga simpan SOP
+    await window._fbSetDoc(window._fbSopRef(), {
+      sopData: sopData,
+      savedAt: new Date().toISOString()
+    });
+    // Backup lokal
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); }catch(e){}
+    btn.textContent="✓ Tersimpan"; btn.classList.add('saved'); btn.classList.remove('unsaved');
+    btn.disabled=false;
+    showNotif("✅ Data tersimpan ke server Firebase!","success");
+    setUnsaved(false);
+    setTimeout(()=>{ btn.textContent="💾 Simpan"; btn.classList.remove('saved'); },2500);
+  }catch(e){
+    btn.disabled=false; btn.textContent="💾 Simpan";
+    showNotif("❌ Gagal menyimpan: "+e.message,"error");
+    console.error("Firebase save error:", e);
+  }
+}
+function loadSop(){
+  // Try localStorage instant fallback; Firebase will update via onSnapshot
+  try{ const r=localStorage.getItem(SOP_STORAGE_KEY); if(r){sopData=JSON.parse(r); return;} }catch(e){}
+  sopData=[];
+}
+function resetData(){
+  if(!window._isAdmin){ showNotif("&#128274; Hanya admin yang bisa reset data.","error"); return; }
+  if(!confirm("Reset ke data awal? Semua perubahan akan hilang.")) return;
+  appData=JSON.parse(JSON.stringify(DEFAULT_DATA));
+  migrateDocs();
+  localStorage.removeItem(STORAGE_KEY);
+  setUnsaved(false);
+  renderAll(); showNotif("Data direset ke awal.","info");
+}
+
+// ============================================================
+// UNSAVED WARNING
+// ============================================================
+function setUnsaved(state){
+  hasUnsaved=state;
+  const banner=document.getElementById('unsaved-banner');
+  const btn=document.getElementById('btn-save');
+  if(state){
+    banner.style.display='block';
+    btn.classList.add('unsaved');
+  } else {
+    banner.style.display='none';
+    btn.classList.remove('unsaved');
+  }
+}
+// ============================================================
+// UNDO SYSTEM (Full State — data + columns)
+// ============================================================
+function getFullState(){
+  return JSON.stringify({
+    appData: appData,
+    cols: COLS.map(c=>({key:c.key,label:c.label,width:c.width,type:c.type}))
+  });
+}
+function applyFullState(snapshot){
+  try{
+    const s=JSON.parse(snapshot);
+    appData=s.appData;
+    // Restore COLS — keep non-progres columns intact, replace progres cols from snapshot
+    const staticCols=COLS.filter(c=>!c.key.startsWith('progres'));
+    const snapshotProgres=(s.cols||[]).filter(c=>c.key.startsWith('progres'));
+    COLS.length=0;
+    staticCols.forEach(c=>COLS.push(c));
+    snapshotProgres.forEach(c=>COLS.push(c));
+  }catch(e){ console.error('applyFullState error',e); }
+}
+function pushUndo(){
+  undoStack.push(getFullState());
+  if(undoStack.length>50) undoStack.shift();
+  const btn=document.getElementById('btn-undo');
+  if(btn) btn.disabled=false;
+  updateUndoLabel();
+}
+function updateUndoLabel(){
+  const btn=document.getElementById('btn-undo');
+  if(!btn) return;
+  if(undoStack.length===0){ btn.textContent='↩ Undo'; btn.disabled=true; }
+  else { btn.textContent=`↩ Undo (${undoStack.length})`; btn.disabled=false; }
+}
+function undoAction(){
+  if(undoStack.length===0){ showNotif("Tidak ada yang bisa di-undo","info"); return; }
+  if(editingCell) cancelEdit(editingCell.td,editingCell.rowId,editingCell.colKey);
+  applyFullState(undoStack.pop());
+  migrateDynamicCols();
+  updateUndoLabel();
+  renderAll(); setUnsaved(true);
+  showNotif("Undo berhasil! (sisa: "+undoStack.length+")","info");
+}
+function migrateDynamicCols(){
+  // Ensure all rows have fields for all current COLS
+  DEPARTMENTS.forEach(dept=>{
+    (appData[dept]||[]).forEach(row=>{
+      COLS.filter(c=>c.key.startsWith('progres')).forEach(c=>{
+        if(row[c.key]===undefined) row[c.key]='';
+      });
+    });
+  });
+}
+window.addEventListener('beforeunload',e=>{
+  if(hasUnsaved){ e.preventDefault(); e.returnValue=''; }
+});
+
+// ============================================================
+// UTILS
+// ============================================================
+function generateId(){ return "row-"+Date.now()+"-"+Math.random().toString(36).slice(2,6); }
+let notifTimer=null;
+function showNotif(msg,type="success"){
+  const el=document.getElementById('notif');
+  el.textContent=msg; el.className='notif-'+type; el.style.display='block';
+  if(notifTimer) clearTimeout(notifTimer);
+  notifTimer=setTimeout(()=>{ el.style.display='none'; },3000);
+}
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+// ============================================================
+// PAGES
+// ============================================================
+function switchPage(page, tabEl){
+  currentPage=page;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active-page'));
+  document.getElementById('page-'+page).classList.add('active-page');
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  tabEl.classList.add('active');
+  if(page==='sop'){ renderSopPage(); }
+  if(page==='export'){ renderExportPage(); }
+}
+
+// ============================================================
+// STATS
+// ============================================================
+function updateStats(){
+  const all=Object.values(appData).flat();
+  document.getElementById('stat-total').textContent=all.length;
+  document.getElementById('stat-open').textContent=all.filter(r=>r.status==='OPEN').length;
+  document.getElementById('stat-close').textContent=all.filter(r=>r.status==='CLOSE').length;
+  document.getElementById('stat-inprog').textContent=all.filter(r=>r.status==='IN PROGRESS').length;
+}
+
+// ============================================================
+// SIDEBAR
+// ============================================================
+function renderSidebar(){
+  const container=document.getElementById('dept-list');
+  container.innerHTML='';
+  DEPARTMENTS.forEach(dept=>{
+    const rows=appData[dept]||[];
+    const open=rows.filter(r=>r.status==='OPEN').length;
+    const close=rows.filter(r=>r.status==='CLOSE').length;
+    const total=rows.length;
+    const pct=total===0?0:Math.round(rows.reduce((s,r)=>s+(r.persentase||0),0)/total);
+    const dc=DEPT_COLORS[dept]||{header:'#2D3748',light:'#F7FAFC'};
+    const div=document.createElement('div');
+    div.className='dept-item'+(activeDept===dept?' active':'');
+    if(activeDept===dept){ div.style.background=dc.light; div.style.borderLeftColor=dc.header; }
+    div.innerHTML=`
+      <div class="dept-name" style="color:${activeDept===dept?dc.header:'#374151'}">${dept}</div>
+      <div class="dept-badges">
+        <span class="badge badge-total">${total} temuan</span>
+        ${open>0?`<span class="badge badge-open">${open} open`:''}${open>0?'</span>':''}
+        ${close>0?`<span class="badge badge-close">${close} close</span>`:''}
+      </div>
+      <div class="dept-pct">${pct}% selesai</div>
+      <div class="dept-pct-bar"><div class="dept-pct-fill" style="width:${pct}%;background:${dc.header}"></div></div>`;
+    div.onclick=()=>{ activeDept=dept; renderAll(); };
+    container.appendChild(div);
+  });
+}
+
+// ============================================================
+// ADD DEPT
+// ============================================================
+function confirmAddDept(){
+  const name=document.getElementById('new-dept-name').value.trim();
+  if(!name){ showNotif("Nama departemen tidak boleh kosong","error"); return; }
+  if(DEPARTMENTS.includes(name)){ showNotif("Departemen sudah ada","error"); return; }
+  const color=document.getElementById('new-dept-color').value;
+  DEPARTMENTS.push(name);
+  DEPT_COLORS[name]={header:color, light:color+'22'};
+  appData[name]=[];
+  document.getElementById('new-dept-name').value='';
+  closeModal('modal-dept');
+  // Update SOP dept filter
+  updateSopDeptFilter();
+  renderAll(); setUnsaved(true);
+  showNotif("Departemen '"+name+"' berhasil ditambahkan!","success");
+}
+
+// ============================================================
+// TABLE
+// ============================================================
+function getFilteredRows(){
+  const search=(document.getElementById('search-input').value||'').toLowerCase();
+  const statusF=document.getElementById('status-filter').value;
+  return (appData[activeDept]||[]).filter(row=>{
+    const matchSearch=!search||COLS.some(c=>String(row[c.key]||'').toLowerCase().includes(search));
+    const matchStatus=statusF==='ALL'||row.status===statusF;
+    return matchSearch&&matchStatus;
+  });
+}
+
+function renderTable(){
+  const dc=DEPT_COLORS[activeDept]||{header:'#2D3748',light:'#F7FAFC'};
+  document.getElementById('dept-title').textContent=activeDept;
+  document.getElementById('dept-title').style.color=dc.header;
+  document.getElementById('btn-add').style.background=dc.header;
+  const rows=getFilteredRows();
+  document.getElementById('dept-subtitle').textContent=rows.length+' temuan ditampilkan';
+
+  // THEAD
+  const thead=document.getElementById('table-head');
+  thead.innerHTML='';
+  const tr=document.createElement('tr');
+  const thNo=document.createElement('th');
+  thNo.textContent='No'; thNo.style.background=dc.header; thNo.style.minWidth='40px'; thNo.style.textAlign='center';
+  tr.appendChild(thNo);
+  COLS.forEach(col=>{
+    const th=document.createElement('th');
+    th.textContent=col.label; th.style.background=dc.header; th.style.minWidth=col.width+'px';
+    tr.appendChild(th);
+  });
+  const thAksi=document.createElement('th');
+  thAksi.textContent='Aksi'; thAksi.style.background=dc.header; thAksi.style.textAlign='center'; thAksi.style.minWidth='70px';
+  tr.appendChild(thAksi);
+  thead.appendChild(tr);
+
+  // TBODY
+  const tbody=document.getElementById('table-body');
+  tbody.innerHTML='';
+  if(rows.length===0){
+    const emptyTr=document.createElement('tr');
+    emptyTr.className='empty-row';
+    const td=document.createElement('td'); td.colSpan=COLS.length+2;
+    td.textContent='Tidak ada temuan. Klik "+ Tambah Baris" untuk menambahkan.';
+    emptyTr.appendChild(td); tbody.appendChild(emptyTr); return;
+  }
+
+  rows.forEach((row,idx)=>{
+    const tr=document.createElement('tr'); tr.dataset.rowid=row.id;
+    const tdNo=document.createElement('td'); tdNo.textContent=idx+1; tdNo.style.textAlign='center'; tdNo.style.fontWeight='700'; tdNo.style.color='#64748B';
+    tr.appendChild(tdNo);
+
+    COLS.forEach(col=>{
+      const td=document.createElement('td');
+      td.dataset.col=col.key; td.dataset.rowid=row.id;
+      td.style.minWidth=col.width+'px'; td.style.maxWidth=col.width+'px';
+
+      if(col.type==='status'){
+        const sel=document.createElement('select'); sel.className='status-sel';
+        const ss=STATUS_STYLES[row.status]||STATUS_STYLES['OPEN'];
+        sel.style.background=ss.bg; sel.style.color=ss.color; sel.style.borderColor=ss.border;
+        ['OPEN','CLOSE','IN PROGRESS','PENDING'].forEach(s=>{
+          const opt=document.createElement('option'); opt.value=s; opt.textContent=s;
+          if(s===row.status) opt.selected=true; sel.appendChild(opt);
+        });
+        sel.onchange=function(){
+          pushUndo();
+          updateRowField(row.id,'status',this.value);
+          const ns=STATUS_STYLES[this.value]||STATUS_STYLES['OPEN'];
+          this.style.background=ns.bg; this.style.color=ns.color; this.style.borderColor=ns.border;
+          if(this.value==='CLOSE') updateRowField(row.id,'persentase',100);
+          updateStats(); renderSidebar(); setUnsaved(true);
+          // re-render pct cell
+          const pctTd=tr.querySelector('[data-col="persentase"]');
+          if(pctTd) renderPctCell(pctTd,row);
+        };
+        td.appendChild(sel);
+
+      } else if(col.type==='pct'){
+        renderPctCell(td, row);
+
+      } else if(col.type==='photo'){
+        renderPhotoCell(td, row);
+
+      } else if(col.type==='support'){
+        renderSupportCell(td, row);
+
+      } else {
+        td.className='editable';
+        const val=row[col.key]||'';
+        if(val){ const div=document.createElement('div'); div.className='cell-text'; div.innerHTML=renderFormattedText(val); td.appendChild(div); }
+        else { const ph=document.createElement('div'); ph.className='cell-placeholder'; ph.textContent='Klik untuk edit'; td.appendChild(ph); }
+        td.onclick=function(e){ startEditAtClick(this,row.id,col.key,dc.header,e); };
+      }
+      tr.appendChild(td);
+    });
+
+    // Delete
+    const tdAksi=document.createElement('td'); tdAksi.style.textAlign='center';
+    const btnDel=document.createElement('button'); btnDel.className='btn-del'; btnDel.textContent='🗑️'; btnDel.title='Hapus baris';
+    btnDel.onclick=function(e){ e.stopPropagation(); deleteRow(row.id); };
+    tdAksi.appendChild(btnDel); tr.appendChild(tdAksi);
+    tbody.appendChild(tr);
+  });
+}
+
+// ============================================================
+// PCT CELL
+// ============================================================
+function renderPctCell(td, row){
+  td.innerHTML='';
+  const pct=Math.min(100,Math.max(0,row.persentase||0));
+  const color=pct>=100?'#22C55E':pct>=50?'#F59E0B':'#E53E3E';
+  td.style.cursor='pointer';
+  td.innerHTML=`<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;">
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span style="font-weight:800;font-size:15px;color:${color}">${pct}%</span>
+    </div>
+    <div style="height:6px;background:#E2E8F0;border-radius:3px;overflow:hidden;width:100px;">
+      <div style="height:100%;border-radius:3px;background:${color};width:${pct}%;"></div>
+    </div>
+  </div>`;
+  td.onclick=function(){
+    const newVal=prompt('Masukkan persentase penyelesaian (0-100):',pct);
+    if(newVal===null) return;
+    const n=parseInt(newVal,10);
+    if(isNaN(n)||n<0||n>100){ showNotif("Nilai harus 0-100","error"); return; }
+    pushUndo();
+    updateRowField(row.id,'persentase',n);
+    row.persentase=n;
+    renderPctCell(td,row);
+    renderSidebar(); setUnsaved(true);
+  };
+}
+
+// ============================================================
+// BLOB URL HELPER — only used for PDF preview in modal
+// Images use dataUrl directly (always works in modern browsers)
+// ============================================================
+const blobCache = new Map();
+function toBlobUrl(dataUrl){
+  if(!dataUrl) return '';
+  if(blobCache.has(dataUrl)) return blobCache.get(dataUrl);
+  try{
+    const [header, b64]=dataUrl.split(',');
+    if(!header||!b64) return dataUrl;
+    const mime=header.match(/:(.*?);/)[1];
+    const bytes=atob(b64);
+    const arr=new Uint8Array(bytes.length);
+    for(let i=0;i<bytes.length;i++) arr[i]=bytes.charCodeAt(i);
+    const blob=new Blob([arr],{type:mime});
+    const url=URL.createObjectURL(blob);
+    blobCache.set(dataUrl,url);
+    return url;
+  }catch(e){ console.warn('toBlobUrl failed:',e); return dataUrl; }
+}
+
+// ============================================================
+// PHOTO CELL
+// ============================================================
+function renderPhotoCell(td, row){
+  td.innerHTML='';
+  const photos=Array.isArray(row.dokumentasi)?row.dokumentasi:[];
+  const wrap=document.createElement('div'); wrap.className='photo-cell';
+
+  if(photos.length>0){
+    // Show count badge
+    const countBadge=document.createElement('div');
+    countBadge.style.cssText='font-size:10px;color:#3B82F6;font-weight:700;margin-bottom:4px;cursor:pointer;';
+    countBadge.textContent=`📸 ${photos.length} foto`;
+    countBadge.onclick=e=>{ e.stopPropagation(); openLightbox(photos,0,row.id); };
+    wrap.appendChild(countBadge);
+
+    // Show up to 2 thumbnails
+    const showCount=Math.min(photos.length,2);
+    const thumbRow=document.createElement('div');
+    thumbRow.style.cssText='display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px;';
+
+    for(let i=0;i<showCount;i++){
+      const p=photos[i];
+      const imgSrc=p.dataUrl||'';
+      const wrapper=document.createElement('div');
+      wrapper.style.cssText='position:relative;width:56px;height:56px;border-radius:6px;overflow:hidden;border:2px solid #BFDBFE;cursor:pointer;background:#EFF6FF;flex-shrink:0;transition:border-color 0.15s;';
+      wrapper.title='Klik untuk lihat: '+(p.name||'Foto');
+
+      if(imgSrc){
+        const img=document.createElement('img');
+        img.style.cssText='width:100%;height:100%;object-fit:cover;display:block;';
+        img.alt=p.name||'Foto';
+        img.onerror=function(){
+          this.style.display='none';
+          wrapper.innerHTML='<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;background:#EFF6FF;">🖼️</div>';
+        };
+        // Use Blob URL for thumbnail — avoids restrictions on long data URLs
+        const thumbBlob=dataUrlToImgBlob(imgSrc);
+        img.src=thumbBlob||imgSrc;
+        wrapper.appendChild(img);
+      } else {
+        wrapper.innerHTML='<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;background:#EFF6FF;">📷</div>';
+      }
+
+      wrapper.onmouseenter=function(){ this.style.borderColor='#3B82F6'; };
+      wrapper.onmouseleave=function(){ this.style.borderColor='#BFDBFE'; };
+      const capturedIdx=i;
+      wrapper.onclick=function(e){ e.stopPropagation(); openLightbox(photos,capturedIdx,row.id); };
+      thumbRow.appendChild(wrapper);
+    }
+
+    // "+N more" overlay on last thumb if > 2
+    if(photos.length>2){
+      const more=document.createElement('div');
+      more.style.cssText='width:56px;height:56px;border-radius:6px;background:rgba(30,58,138,0.8);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;border:2px solid #BFDBFE;';
+      more.textContent=`+${photos.length-2}`;
+      more.title=`Lihat semua ${photos.length} foto`;
+      more.onclick=e=>{ e.stopPropagation(); openLightbox(photos,2,row.id); };
+      thumbRow.appendChild(more);
+    }
+    wrap.appendChild(thumbRow);
+
+    // Preview all button
+    const btnPreviewAll=document.createElement('button');
+    btnPreviewAll.style.cssText='background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;border-radius:5px;padding:3px 8px;cursor:pointer;font-size:10px;font-weight:700;margin-bottom:3px;display:block;width:100%;';
+    btnPreviewAll.textContent='🔍 Lihat Semua Foto';
+    btnPreviewAll.onclick=function(e){ e.stopPropagation(); openLightbox(photos,0,row.id); };
+    wrap.appendChild(btnPreviewAll);
+  }
+
+  const btn=document.createElement('button'); btn.className='btn-upload-photo';
+  btn.innerHTML='📷 Upload Foto'; btn.title='Upload foto JPG/PNG/GIF/WebP';
+  btn.onclick=function(e){
+    e.stopPropagation();
+    const inp=document.createElement('input'); inp.type='file';
+    inp.accept='image/*';
+    inp.multiple=true;
+    inp.onchange=function(ev){
+      const files=Array.from(ev.target.files);
+      let pending=files.length;
+      if(pending===0) return;
+      let loaded=0;
+      files.forEach(file=>{
+        if(!file.type.startsWith('image/')){ showNotif("Hanya file gambar yang diperbolehkan","error"); pending--; return; }
+        if(file.size>10*1024*1024){ showNotif("File terlalu besar (max 10MB): "+file.name,"error"); pending--; return; }
+        const reader=new FileReader();
+        reader.onload=function(re){
+          if(!Array.isArray(row.dokumentasi)) row.dokumentasi=[];
+          pushUndo();
+          row.dokumentasi.push({dataUrl:re.result, name:file.name, uploadedAt:new Date().toLocaleDateString('id-ID')});
+          loaded++;
+          if(loaded===files.length){
+            renderPhotoCell(td,row);
+            setUnsaved(true);
+            showNotif(loaded+" foto berhasil diupload! Klik thumbnail untuk preview.","success");
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    };
+    inp.click();
+  };
+  wrap.appendChild(btn);
+  td.appendChild(wrap);
+}
+
+// ============================================================
+// SUPPORT DATA CELL
+// ============================================================
+function renderSupportCell(td, row){
+  td.innerHTML='';
+  const files=Array.isArray(row.dataPendukung)?row.dataPendukung:[];
+  const wrap=document.createElement('div'); wrap.className='support-cell';
+
+  files.forEach((f,i)=>{
+    const isImg=f.fileType&&f.fileType.startsWith('image/');
+    const isPdf=f.fileType&&f.fileType.includes('pdf');
+    const row2=document.createElement('div');
+    row2.style.cssText='display:flex;align-items:center;gap:5px;margin-bottom:3px;';
+
+    if(isImg){
+      // Use dataUrl directly for thumbnail — no Blob needed for <img>
+      const thumb=document.createElement('img');
+      thumb.src=f.dataUrl||''; thumb.alt=f.name;
+      thumb.style.cssText='width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #E2E8F0;cursor:pointer;flex-shrink:0;';
+      thumb.title='Klik untuk preview: '+f.name;
+      thumb.onerror=function(){ this.replaceWith((() => { const s=document.createElement('span'); s.textContent='🖼️'; s.style.cssText='font-size:20px;flex-shrink:0;cursor:pointer;'; s.onclick=e=>{ e.stopPropagation(); previewSupportFile(f); }; return s; })()); };
+      thumb.onclick=e=>{ e.stopPropagation(); previewSupportFile(f); };
+      row2.appendChild(thumb);
+    } else {
+      const icon=document.createElement('span');
+      icon.style.cssText='font-size:20px;flex-shrink:0;cursor:pointer;';
+      icon.textContent=isPdf?'📄':'📎';
+      icon.title='Klik untuk preview: '+f.name;
+      icon.onclick=e=>{ e.stopPropagation(); previewSupportFile(f); };
+      row2.appendChild(icon);
+    }
+
+    const label=document.createElement('span');
+    label.style.cssText='font-size:10px;color:#0369A1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:85px;cursor:pointer;flex:1;';
+    label.textContent=f.name; label.title=f.name;
+    label.onclick=e=>{ e.stopPropagation(); previewSupportFile(f); };
+    row2.appendChild(label);
+
+    const btnDel=document.createElement('button');
+    btnDel.textContent='✕'; btnDel.title='Hapus file ini';
+    btnDel.style.cssText='background:none;border:none;color:#94A3B8;cursor:pointer;font-size:12px;padding:0 2px;flex-shrink:0;';
+    btnDel.onmouseenter=function(){ this.style.color='#991B1B'; };
+    btnDel.onmouseleave=function(){ this.style.color='#94A3B8'; };
+    btnDel.onclick=function(e){
+      e.stopPropagation();
+      if(!confirm('Hapus file "'+f.name+'"?')) return;
+      pushUndo();
+      if(blobCache.has(f.dataUrl)){ URL.revokeObjectURL(blobCache.get(f.dataUrl)); blobCache.delete(f.dataUrl); }
+      row.dataPendukung.splice(i,1);
+      renderSupportCell(td,row); setUnsaved(true);
+    };
+    row2.appendChild(btnDel);
+    wrap.appendChild(row2);
+  });
+
+  if(files.length>0){
+    const divider=document.createElement('div'); divider.style.cssText='border-top:1px solid #F1F5F9;margin:4px 0;';
+    wrap.appendChild(divider);
+  }
+
+  const btn=document.createElement('button'); btn.className='btn-upload-support';
+  btn.innerHTML='📎 Upload File'; btn.title='Upload PDF, DOCX, XLSX, JPG, PNG (max 20MB)';
+  btn.onclick=function(e){
+    e.stopPropagation();
+    const inp=document.createElement('input'); inp.type='file';
+    inp.accept='.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.webp,.txt,.csv';
+    inp.multiple=true;
+    inp.onchange=function(ev){
+      const uploadFiles=Array.from(ev.target.files);
+      let loaded=0;
+      uploadFiles.forEach(file=>{
+        if(file.size>20*1024*1024){ showNotif("File terlalu besar (max 20MB): "+file.name,"error"); return; }
+        const reader=new FileReader();
+        reader.onload=function(re){
+          if(!Array.isArray(row.dataPendukung)) row.dataPendukung=[];
+          pushUndo();
+          row.dataPendukung.push({dataUrl:re.result, name:file.name, fileType:file.type, uploadedAt:new Date().toLocaleDateString('id-ID')});
+          loaded++;
+          if(loaded===uploadFiles.length){ renderSupportCell(td,row); setUnsaved(true); showNotif(loaded+" file berhasil diupload!","success"); }
+        };
+        reader.readAsDataURL(file);
+      });
+    };
+    inp.click();
+  };
+  wrap.appendChild(btn);
+  td.appendChild(wrap);
+}
+
+// ============================================================
+// PREVIEW SUPPORT FILE  — uses Blob URL for reliable rendering
+// ============================================================
+function previewSupportFile(f){
+  document.getElementById('support-preview-title').textContent='📎 '+f.name;
+  const body=document.getElementById('support-preview-body');
+  body.innerHTML='<div style="color:#94A3B8;padding:20px;text-align:center;font-size:14px;">⏳ Memuat preview...</div>';
+  openModal('modal-support-preview');
+
+  setTimeout(()=>{
+    try{
+      const isImg=f.fileType&&f.fileType.startsWith('image/');
+      const isPdf=f.fileType&&f.fileType.includes('pdf');
+      const dataUrl=f.dataUrl||'';
+
+      if(isImg){
+        // Image preview: directly embed with zoom support
+        body.innerHTML='';
+        const meta=document.createElement('div');
+        meta.style.cssText='font-size:11px;color:#64748B;margin-bottom:10px;display:flex;gap:12px;flex-wrap:wrap;';
+        meta.innerHTML=`<span>📅 Upload: ${f.uploadedAt||'-'}</span><span>📁 Tipe: ${f.fileType||'-'}</span>`;
+        body.appendChild(meta);
+
+        const imgWrap=document.createElement('div');
+        imgWrap.style.cssText='text-align:center;background:#F8FAFC;border-radius:8px;padding:12px;border:1px solid #E2E8F0;';
+        const img=document.createElement('img');
+        // Use Blob URL for preview — reliable across all browsers
+        const imgBlobUrl=dataUrlToImgBlob(dataUrl);
+        img.src=imgBlobUrl||dataUrl;
+        img.style.cssText='max-width:100%;max-height:60vh;border-radius:6px;cursor:zoom-in;box-shadow:0 2px 12px rgba(0,0,0,0.1);';
+        img.alt='Preview '+f.name;
+        img.title='Klik untuk buka di tab baru';
+        img.onclick=function(){
+          if(imgBlobUrl){ window.open(imgBlobUrl,'_blank'); return; }
+          const win=window.open('','_blank');
+          if(win){ win.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${dataUrl}" style="max-width:100%;max-height:100vh;object-fit:contain;" alt="${f.name}"></body></html>`); win.document.close(); }
+        };
+        img.onerror=function(){ imgWrap.innerHTML='<div style="padding:20px;color:#94A3B8;font-size:13px;">❌ Gagal memuat gambar. Format mungkin tidak didukung.</div>'; };
+        imgWrap.appendChild(img);
+        body.appendChild(imgWrap);
+
+        const btnWrap=document.createElement('div');
+        btnWrap.style.cssText='display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;';
+        btnWrap.innerHTML=`<a href="${dataUrl}" download="${f.name}" style="background:#22C55E;color:#fff;border-radius:7px;padding:7px 16px;text-decoration:none;font-weight:700;font-size:12px;">⬇️ Download</a>
+          <a href="${dataUrl}" target="_blank" style="background:#3B82F6;color:#fff;border-radius:7px;padding:7px 16px;text-decoration:none;font-weight:700;font-size:12px;">🔗 Buka Tab Baru</a>`;
+        body.appendChild(btnWrap);
+
+      } else if(isPdf){
+        // PDF preview: iframe is more reliable than <object> for file:// URLs
+        body.innerHTML='';
+        const meta=document.createElement('div');
+        meta.style.cssText='font-size:11px;color:#64748B;margin-bottom:10px;display:flex;gap:12px;flex-wrap:wrap;';
+        meta.innerHTML=`<span>📅 Upload: ${f.uploadedAt||'-'}</span><span>📁 Tipe: PDF</span>`;
+        body.appendChild(meta);
+
+        // Action buttons always visible at top
+        let pdfUrl=dataUrl;
+        try{ pdfUrl=toBlobUrl(dataUrl); }catch(e){}
+        const topBar=document.createElement('div');
+        topBar.style.cssText='display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap;';
+        topBar.innerHTML=`
+          <a href="${pdfUrl}" target="_blank" style="background:#1A237E;color:#fff;border-radius:7px;padding:7px 16px;text-decoration:none;font-weight:700;font-size:12px;">🔗 Buka di Tab Baru</a>
+          <a href="${pdfUrl}" download="${f.name}" style="background:#22C55E;color:#fff;border-radius:7px;padding:7px 16px;text-decoration:none;font-weight:700;font-size:12px;">⬇️ Download PDF</a>
+          <span style="font-size:11px;color:#94A3B8;">Jika tidak tampil, klik "Buka di Tab Baru"</span>`;
+        body.appendChild(topBar);
+
+        // Try iframe first (works better in modern browsers)
+        const iframe=document.createElement('iframe');
+        iframe.src=pdfUrl;
+        iframe.style.cssText='width:100%;height:58vh;border:1px solid #E2E8F0;border-radius:8px;background:#F8FAFC;';
+        iframe.title='PDF Preview: '+f.name;
+        // Fallback message inside iframe if unsupported
+        iframe.onerror=function(){
+          iframe.style.display='none';
+          const fb=document.createElement('div');
+          fb.style.cssText='background:#FFF3CD;border:1px solid #FFECB5;border-radius:8px;padding:20px;text-align:center;color:#856404;font-size:13px;';
+          fb.innerHTML=`<div style="font-size:32px;margin-bottom:8px;">📄</div><div style="font-weight:700;">${f.name}</div><div style="margin-top:8px;font-size:12px;">Browser tidak mendukung preview PDF inline. Gunakan tombol "Buka di Tab Baru".</div>`;
+          body.appendChild(fb);
+        };
+        body.appendChild(iframe);
+
+      } else {
+        // Other files: download only
+        body.innerHTML='';
+        const meta=document.createElement('div');
+        meta.style.cssText='font-size:11px;color:#64748B;margin-bottom:12px;';
+        meta.textContent=`Upload: ${f.uploadedAt||'-'} | Tipe: ${f.fileType||'tidak diketahui'}`;
+        body.appendChild(meta);
+        body.innerHTML+=fallbackHtml(f);
+      }
+    }catch(err){
+      console.error('previewSupportFile error:',err);
+      body.innerHTML=fallbackHtml(f);
+    }
+  },30);
+}
+
+function fallbackHtml(f){
+  // For non-image/non-pdf: offer download using dataUrl directly
+  const dlUrl=f.dataUrl||'';
+  return `<div style="background:#F8FAFC;border:2px solid #E2E8F0;border-radius:8px;padding:32px;text-align:center;color:#64748B;width:100%;box-sizing:border-box;">
+    <div style="font-size:48px;margin-bottom:12px;">📎</div>
+    <div style="font-weight:700;font-size:14px;margin-bottom:6px;">${f.name}</div>
+    <div style="font-size:12px;margin-bottom:16px;color:#94A3B8;">Tipe: ${f.fileType||'tidak diketahui'} &nbsp;|&nbsp; Upload: ${f.uploadedAt||'-'}</div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      ${dlUrl?`<a href="${dlUrl}" download="${f.name}" style="background:#22C55E;color:#fff;border-radius:8px;padding:8px 18px;text-decoration:none;font-weight:700;font-size:13px;">⬇️ Download File</a>`:'<span style="color:#94A3B8;font-size:13px;">File tidak tersedia</span>'}
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// LIGHTBOX  — fully rebuilt with Blob URLs + delete + nav
+// ============================================================
+function openLightbox(photos, idx, rowId){
+  lightboxPhotos=photos; lightboxIdx=idx; lightboxRowId=rowId;
+  document.getElementById('lightbox').classList.add('open');
+  updateLightboxImg();
+}
+// ============================================================
+// BLOB URL HELPER FOR IMAGES
+// Converts base64 dataUrl → Blob URL for reliable rendering
+// ============================================================
+const imgBlobCache = new Map();
+function dataUrlToImgBlob(dataUrl){
+  if(!dataUrl) return null;
+  if(imgBlobCache.has(dataUrl)) return imgBlobCache.get(dataUrl);
+  try{
+    const arr=dataUrl.split(',');
+    if(arr.length<2) return null;
+    const mimeMatch=arr[0].match(/:(.*?);/);
+    if(!mimeMatch) return null;
+    const mime=mimeMatch[1];
+    const bstr=atob(arr[1]);
+    const u8=new Uint8Array(bstr.length);
+    for(let i=0;i<bstr.length;i++) u8[i]=bstr.charCodeAt(i);
+    const blob=new Blob([u8],{type:mime});
+    const url=URL.createObjectURL(blob);
+    imgBlobCache.set(dataUrl,url);
+    return url;
+  }catch(e){ console.warn('dataUrlToImgBlob failed:',e); return null; }
+}
+
+function updateLightboxImg(){
+  const imgEl=document.getElementById('lightbox-img');
+  const errEl=document.getElementById('lightbox-error');
+  const cap=document.getElementById('lightbox-caption');
+  const nav=document.getElementById('lightbox-nav');
+  const delBtn=document.getElementById('lightbox-del-btn');
+  if(!lightboxPhotos||lightboxPhotos.length===0){ closeLightbox(); return; }
+  lightboxIdx=Math.max(0,Math.min(lightboxPhotos.length-1,lightboxIdx));
+  const p=lightboxPhotos[lightboxIdx];
+
+  imgEl.style.display='none';
+  errEl.style.display='block';
+  errEl.innerHTML='<span style="font-size:13px;color:rgba(255,255,255,0.6);">⏳ Memuat gambar...</span>';
+  imgEl.alt=p.name||'Foto';
+
+  cap.innerHTML=`<span>${lightboxIdx+1} / ${lightboxPhotos.length} — <strong>${p.name||''}</strong></span>`;
+  nav.style.display='flex';
+
+  if(!p.dataUrl){ errEl.innerHTML='❌ Data gambar tidak ditemukan.'; return; }
+
+  // Always use Blob URL — avoids browser restrictions on long data URLs
+  const blobUrl=dataUrlToImgBlob(p.dataUrl);
+  if(!blobUrl){ errEl.innerHTML='❌ Gagal memuat gambar. Format tidak didukung.'; return; }
+
+  imgEl.onload=function(){
+    imgEl.style.display='block';
+    errEl.style.display='none';
+  };
+  imgEl.onerror=function(){
+    imgEl.style.display='none';
+    errEl.innerHTML='❌ Gagal menampilkan gambar.<br><span style="font-size:11px;color:rgba(255,255,255,0.5);">Coba tombol "🔗 Buka Tab Baru"</span>';
+    errEl.style.display='block';
+  };
+  imgEl.src='';
+  imgEl.src=blobUrl;
+}
+
+function lightboxOpenTab(){
+  if(!lightboxPhotos||lightboxPhotos.length===0) return;
+  const p=lightboxPhotos[lightboxIdx];
+  if(!p||!p.dataUrl){ showNotif('Tidak ada data foto','error'); return; }
+  // Use Blob URL for new tab — avoids data: URL restrictions
+  const blobUrl=dataUrlToImgBlob(p.dataUrl);
+  if(blobUrl){
+    window.open(blobUrl,'_blank');
+  } else {
+    // Last resort: create anchor download
+    const a=document.createElement('a');
+    a.href=p.dataUrl; a.download=p.name||'foto.jpg'; a.click();
+  }
+}
+function lightboxDeleteCurrent(){
+  if(!lightboxPhotos||lightboxPhotos.length===0) return;
+  if(!confirm('Hapus foto ini dari dokumentasi?')) return;
+  // Find the row and remove the photo
+  for(const dept of DEPARTMENTS){
+    const row=(appData[dept]||[]).find(r=>r.id===lightboxRowId);
+    if(row){
+      pushUndo();
+      row.dokumentasi.splice(lightboxIdx,1);
+      setUnsaved(true);
+      // Re-render the photo cell in the table
+      const td=document.querySelector(`[data-col="dokumentasi"][data-rowid="${lightboxRowId}"]`);
+      if(td) renderPhotoCell(td,row);
+      break;
+    }
+  }
+  // Update lightbox
+  if(lightboxPhotos.length===0){ closeLightbox(); return; }
+  lightboxIdx=Math.max(0,lightboxIdx-1);
+  updateLightboxImg();
+}
+function lightboxNav(dir){
+  lightboxIdx=Math.max(0,Math.min(lightboxPhotos.length-1,lightboxIdx+dir));
+  updateLightboxImg();
+}
+function closeLightbox(){
+  document.getElementById('lightbox').classList.remove('open');
+  const imgEl=document.getElementById('lightbox-img');
+  imgEl.src='';
+  imgEl.style.display='none';
+  document.getElementById('lightbox-error').style.display='none';
+}
+document.getElementById('lightbox').addEventListener('click',function(e){ if(e.target===this) closeLightbox(); });
+
+// ============================================================
+// EDIT CELL
+// ============================================================
+// ============================================================
+// FORMAT TOOLBAR — Word/Excel style
+// ============================================================
+function fmtGetTA(){
+  return editingCell ? editingCell.ta : null;
+}
+
+function fmtApply(type){
+  const ta = fmtGetTA();
+  if(!ta){ showNotif('Klik sel teks dulu untuk mulai edit','info'); return; }
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const selected = ta.value.substring(start, end);
+  const before = ta.value.substring(0, start);
+  const after = ta.value.substring(end);
+
+  if(type==='bold'){
+    const m='**';
+    const wrapped = before.endsWith(m) && after.startsWith(m);
+    if(wrapped){
+      ta.value = before.slice(0,-2) + selected + after.slice(2);
+      ta.selectionStart=start-2; ta.selectionEnd=end-2;
+    } else if(selected){
+      ta.value = before+m+selected+m+after;
+      ta.selectionStart=start+2; ta.selectionEnd=end+2;
+    }
+  } else if(type==='italic'){
+    const m='_';
+    const wrapped = before.endsWith(m) && after.startsWith(m);
+    if(wrapped){
+      ta.value = before.slice(0,-1)+selected+after.slice(1);
+      ta.selectionStart=start-1; ta.selectionEnd=end-1;
+    } else if(selected){
+      ta.value = before+m+selected+m+after;
+      ta.selectionStart=start+1; ta.selectionEnd=end+1;
+    }
+  } else if(type==='underline'){
+    const m='__';
+    const wrapped = before.endsWith(m) && after.startsWith(m);
+    if(wrapped){
+      ta.value = before.slice(0,-2)+selected+after.slice(2);
+      ta.selectionStart=start-2; ta.selectionEnd=end-2;
+    } else if(selected){
+      ta.value = before+m+selected+m+after;
+      ta.selectionStart=start+2; ta.selectionEnd=end+2;
+    }
+  } else if(type==='strike'){
+    const m='~~';
+    const wrapped = before.endsWith(m) && after.startsWith(m);
+    if(wrapped){
+      ta.value = before.slice(0,-2)+selected+after.slice(2);
+      ta.selectionStart=start-2; ta.selectionEnd=end-2;
+    } else if(selected){
+      ta.value = before+m+selected+m+after;
+      ta.selectionStart=start+2; ta.selectionEnd=end+2;
+    }
+  } else if(type==='ul'){
+    // Add bullet to each line of selection (or current line)
+    const lines = (selected||ta.value).split('\n');
+    const allBullet = lines.every(l=>l.trimStart().startsWith('• '));
+    const newLines = lines.map(l=> allBullet ? l.replace(/^\s*•\s/,'') : '• '+l);
+    if(selected){
+      ta.value = before+newLines.join('\n')+after;
+      ta.selectionStart=start; ta.selectionEnd=start+newLines.join('\n').length;
+    } else {
+      ta.value = newLines.join('\n');
+    }
+  } else if(type==='ol'){
+    const lines = (selected||ta.value).split('\n');
+    const allNum = lines.every((l,i)=>l.trimStart().startsWith((i+1)+'. '));
+    const newLines = lines.map((l,i)=> allNum ? l.replace(/^\d+\.\s/,'') : (i+1)+'. '+l);
+    if(selected){
+      ta.value = before+newLines.join('\n')+after;
+      ta.selectionStart=start; ta.selectionEnd=start+newLines.join('\n').length;
+    } else {
+      ta.value = newLines.join('\n');
+    }
+  } else if(type==='upper'){
+    if(selected){ ta.value=before+selected.toUpperCase()+after; ta.selectionStart=start; ta.selectionEnd=end; }
+    else { ta.value=ta.value.toUpperCase(); }
+  } else if(type==='lower'){
+    if(selected){ ta.value=before+selected.toLowerCase()+after; ta.selectionStart=start; ta.selectionEnd=end; }
+    else { ta.value=ta.value.toLowerCase(); }
+  } else if(type==='title'){
+    const toTitle = s => s.replace(/\w\S*/g, t=>t.charAt(0).toUpperCase()+t.slice(1).toLowerCase());
+    if(selected){ ta.value=before+toTitle(selected)+after; ta.selectionStart=start; ta.selectionEnd=end; }
+    else { ta.value=toTitle(ta.value); }
+  } else if(type==='clear'){
+    let v = selected||ta.value;
+    v = v.replace(/\*\*(.*?)\*\*/g,'$1').replace(/__(.*?)__/g,'$1').replace(/_(.*?)_/g,'$1').replace(/~~(.*?)~~/g,'$1');
+    if(selected){ ta.value=before+v+after; ta.selectionStart=start; ta.selectionEnd=start+v.length; }
+    else ta.value=v;
+  }
+  ta.dispatchEvent(new Event('input'));
+  ta.focus();
+  fmtUpdateState();
+}
+
+function fmtFontSize(size){
+  const ta = fmtGetTA();
+  if(!ta) return;
+  if(size==='small') ta.style.fontSize='11px';
+  else if(size==='large') ta.style.fontSize='16px';
+  else ta.style.fontSize='13px';
+  ta.focus();
+}
+
+function fmtUpdateState(){
+  // Update active states on toolbar buttons based on cursor position
+  const ta = fmtGetTA();
+  if(!ta) return;
+  const start=ta.selectionStart, end=ta.selectionEnd;
+  const before=ta.value.substring(0,start);
+  const after=ta.value.substring(end);
+  const sel=ta.value.substring(start,end);
+  document.getElementById('fmt-bold').classList.toggle('active', before.endsWith('**')&&after.startsWith('**'));
+  document.getElementById('fmt-italic').classList.toggle('active', before.endsWith('_')&&after.startsWith('_'));
+  document.getElementById('fmt-underline').classList.toggle('active', before.endsWith('__')&&after.startsWith('__'));
+  document.getElementById('fmt-strike').classList.toggle('active', before.endsWith('~~')&&after.startsWith('~~'));
+}
+
+function showFormatToolbar(){
+  const tb = document.getElementById('format-toolbar');
+  tb.classList.add('visible');
+  // Push header down to make room
+  document.getElementById('header').style.marginTop = tb.offsetHeight + 'px';
+  document.getElementById('fmt-editing-hint').textContent = '— edit aktif, pilih teks lalu klik format';
+}
+
+function hideFormatToolbar(){
+  const tb = document.getElementById('format-toolbar');
+  tb.classList.remove('visible');
+  document.getElementById('header').style.marginTop = '0';
+  document.getElementById('fmt-editing-hint').textContent = '— klik sel untuk mulai edit';
+}
+
+// Keep old name for backward compat
+function applyFormatting(ta, type){ fmtApply(type); }
+
+function startEdit(td, rowId, colKey, headerColor){
+  if(editingCell) finishEdit();
+  const currentVal=getRowField(rowId,colKey);
+  td.innerHTML='';
+
+  const ta=document.createElement('textarea'); ta.className='cell-editor';
+  ta.value=currentVal; ta.style.borderColor=headerColor; ta.style.minWidth=(td.style.minWidth||'120px');
+  ta.oninput=function(){
+    this.style.height='auto'; this.style.height=this.scrollHeight+'px';
+  };
+  ta.onblur=function(e){
+    // Delay finishEdit so toolbar clicks register first
+    setTimeout(()=>{
+      if(!editingCell) return;
+      // Check if focus went to format toolbar
+      const active = document.activeElement;
+      const tb = document.getElementById('format-toolbar');
+      if(tb && tb.contains(active)) return;
+      finishEdit();
+    }, 150);
+  };
+  ta.onkeydown=function(e){
+    if(e.key==='Escape'){ cancelEdit(td,rowId,colKey); return; }
+    if(e.key==='Tab'){e.preventDefault();finishEdit(); return;}
+    // Keyboard shortcuts
+    if(e.ctrlKey||e.metaKey){
+      if(e.key==='b'){ e.preventDefault(); fmtApply('bold'); return; }
+      if(e.key==='i'){ e.preventDefault(); fmtApply('italic'); return; }
+      if(e.key==='u'){ e.preventDefault(); fmtApply('underline'); return; }
+    }
+  };
+  ta.onkeyup=function(){ fmtUpdateState(); };
+  ta.onmouseup=function(){ fmtUpdateState(); };
+  td.appendChild(ta);
+
+  ta.style.height='auto';
+  ta.style.height=Math.max(55,ta.scrollHeight)+'px';
+  ta.focus();
+  ta.selectionStart=ta.selectionEnd=ta.value.length;
+
+  editingCell={rowId,colKey,td,ta};
+
+  // Show format toolbar
+  showFormatToolbar();
+  fmtUpdateState();
+}
+
+// Fix 4: getCursorPositionFromClick helper
+function getCursorPositionFromClick(ta, text, event){
+  // Use a hidden clone to estimate cursor position from mouse coordinates
+  const clone=document.createElement('div');
+  clone.style.cssText=window.getComputedStyle(ta).cssText;
+  clone.style.position='absolute';
+  clone.style.visibility='hidden';
+  clone.style.whiteSpace='pre-wrap';
+  clone.style.wordBreak='break-word';
+  clone.style.width=ta.offsetWidth+'px';
+  clone.style.height='auto';
+  clone.style.overflow='hidden';
+  document.body.appendChild(clone);
+
+  const rect=ta.getBoundingClientRect();
+  const relX=event.clientX-rect.left+ta.scrollLeft;
+  const relY=event.clientY-rect.top+ta.scrollTop;
+
+  let best=text.length;
+  for(let i=0;i<=text.length;i++){
+    clone.textContent=text.substring(0,i);
+    // rough estimate using character count - just place at end
+  }
+  document.body.removeChild(clone);
+  return best;
+}
+
+// Fix 4: startEdit with click-position cursor support
+function startEditAtClick(td, rowId, colKey, headerColor, clickEvent){
+  startEdit(td, rowId, colKey, headerColor);
+  // After textarea is created and focused, position cursor using caretPositionFromPoint
+  if(!editingCell) return;
+  const ta=editingCell.ta;
+  // Use requestAnimationFrame to ensure textarea is rendered
+  requestAnimationFrame(()=>{
+    ta.focus();
+    if(clickEvent && document.caretPositionFromPoint){
+      const pos=document.caretPositionFromPoint(clickEvent.clientX, clickEvent.clientY);
+      if(pos && pos.offset!==undefined){
+        // caretPositionFromPoint gives offset in the node, map to textarea value
+        try{
+          const range=pos.offset;
+          ta.selectionStart=ta.selectionEnd=Math.min(range, ta.value.length);
+        }catch(e){}
+      }
+    } else if(clickEvent && document.caretRangeFromPoint){
+      // Chrome/Safari fallback
+      const range=document.caretRangeFromPoint(clickEvent.clientX, clickEvent.clientY);
+      if(range){
+        try{
+          const offset=range.startOffset;
+          ta.selectionStart=ta.selectionEnd=Math.min(offset, ta.value.length);
+        }catch(e){}
+      }
+    }
+  });
+}
+function finishEdit(){
+  if(!editingCell) return;
+  const {rowId,colKey,td,ta}=editingCell;
+  const newVal=ta.value;
+  const oldVal=getRowField(rowId,colKey);
+  editingCell=null;
+  td.onclick=null; td.innerHTML='';
+  if(newVal){ const div=document.createElement('div'); div.className='cell-text'; div.innerHTML=renderFormattedText(newVal); td.appendChild(div); }
+  else { const ph=document.createElement('div'); ph.className='cell-placeholder'; ph.textContent='Klik untuk edit'; td.appendChild(ph); }
+  const dc2=DEPT_COLORS[activeDept]||{header:'#2D3748',light:'#F7FAFC'};
+  const rId=rowId; const cKey=colKey;
+  td.onclick=function(e){ startEditAtClick(this,rId,cKey,dc2.header,e); };
+  if(newVal!==oldVal){
+    pushUndo();
+    updateRowField(rowId,colKey,newVal);
+    setUnsaved(true);
+  }
+  hideFormatToolbar();
+}
+
+function renderFormattedText(text){
+  // Convert markdown-like markers to HTML for display
+  let html = text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/__(.*?)__/g,'<u>$1</u>')
+    .replace(/~~(.*?)~~/g,'<s>$1</s>')
+    .replace(/_(.*?)_/g,'<em>$1</em>')
+    .replace(/^• (.+)/gm,'<span style="margin-left:4px;">• $1</span>')
+    .replace(/^(\d+)\. (.+)/gm,'<span style="margin-left:4px;">$1. $2</span>')
+    .replace(/
+/g,'<br>');
+  return html;
+}
+function cancelEdit(td,rowId,colKey){
+  editingCell=null;
+  const val=getRowField(rowId,colKey); td.innerHTML='';
+  const dc3=DEPT_COLORS[activeDept]||{header:'#2D3748',light:'#F7FAFC'};
+  if(val){const div=document.createElement('div');div.className='cell-text';div.textContent=val;td.appendChild(div);}
+  else{const ph=document.createElement('div');ph.className='cell-placeholder';ph.textContent='Klik untuk edit';td.appendChild(ph);}
+  td.onclick=function(e){startEditAtClick(this,rowId,colKey,dc3.header,e);};
+  hideFormatToolbar();
+}
+function getRowField(rowId,colKey){
+  for(const dept of DEPARTMENTS){ const row=(appData[dept]||[]).find(r=>r.id===rowId); if(row) return row[colKey]||''; }
+  return '';
+}
+function updateRowField(rowId,colKey,val){
+  for(const dept of DEPARTMENTS){ const row=(appData[dept]||[]).find(r=>r.id===rowId); if(row){row[colKey]=val;return;} }
+}
+
+// ============================================================
+// ADD / DELETE PROGRES COLUMN (Feature 2 & new Delete)
+// ============================================================
+function addProgresCol(){
+  const progCols=COLS.filter(c=>c.key.startsWith('progres'));
+  const nextNum=progCols.length+1;
+  const newKey='progres'+nextNum;
+  const newLabel='Progres '+nextNum;
+  pushUndo();
+  COLS.push({key:newKey, label:newLabel, width:200, type:'text'});
+  // Add field to every row in every dept
+  DEPARTMENTS.forEach(dept=>{
+    (appData[dept]||[]).forEach(row=>{ if(row[newKey]===undefined) row[newKey]=''; });
+  });
+  renderAll(); setUnsaved(true);
+  showNotif('Kolom "'+newLabel+'" berhasil ditambahkan!','success');
+}
+
+function deleteProgresCol(){
+  const progCols=COLS.filter(c=>c.key.startsWith('progres'));
+  if(progCols.length===0){ showNotif("Tidak ada kolom Progres untuk dihapus","info"); return; }
+  // Show picker if more than 1, else confirm for last one
+  const colOptions=progCols.map((c,i)=>`${c.label} (Progres ${COLS.indexOf(c)+1-COLS.findIndex(x=>x.key.startsWith('progres'))})`);
+  let targetKey;
+  if(progCols.length===1){
+    if(!confirm('Hapus kolom "'+progCols[0].label+'"? Data di kolom ini akan hilang.')) return;
+    targetKey=progCols[0].key;
+  } else {
+    // Build a simple modal-like prompt with options
+    const labels=progCols.map(c=>c.label).join('\n');
+    const input=prompt('Pilih kolom yang akan dihapus (ketik nomor):\n'+progCols.map((c,i)=>(i+1)+'. '+c.label).join('\n'));
+    if(input===null) return;
+    const idx=parseInt(input,10)-1;
+    if(isNaN(idx)||idx<0||idx>=progCols.length){ showNotif("Pilihan tidak valid","error"); return; }
+    targetKey=progCols[idx].key;
+    if(!confirm('Hapus kolom "'+progCols[idx].label+'"? Data di kolom ini akan hilang.')) return;
+  }
+  pushUndo();
+  const colIdx=COLS.findIndex(c=>c.key===targetKey);
+  if(colIdx>=0) COLS.splice(colIdx,1);
+  // Remove field from all rows
+  DEPARTMENTS.forEach(dept=>{
+    (appData[dept]||[]).forEach(row=>{ delete row[targetKey]; });
+  });
+  renderAll(); setUnsaved(true);
+  showNotif('Kolom berhasil dihapus. Gunakan Undo jika tidak sengaja.','info');
+}
+
+// ============================================================
+// ADD / DELETE ROW
+// ============================================================
+function addRow(){
+  if(!window._isAdmin){ showNotif("&#128274; Hanya admin yang bisa menambah baris.","error"); return; }
+  if(!appData[activeDept]) appData[activeDept]=[];
+  pushUndo();
+  const newRow={id:generateId(),tglTemuan:'',temuan:'',rekomendasi:'',pic:'',status:'OPEN',persentase:0,
+    deadline:'',dokumentasi:[],dataPendukung:[]};
+  // Dynamically add all progres fields
+  COLS.filter(c=>c.key.startsWith('progres')).forEach(c=>{ newRow[c.key]=''; });
+  appData[activeDept].push(newRow);
+  updateStats(); renderSidebar(); renderTable(); setUnsaved(true);
+  showNotif("Baris baru ditambahkan.","info");
+  const wrap=document.getElementById('table-wrap'); wrap.scrollTop=wrap.scrollHeight;
+}
+function deleteRow(rowId){
+  if(!window._isAdmin){ showNotif("&#128274; Hanya admin yang bisa menghapus baris.","error"); return; }
+  if(!confirm('Hapus baris ini?')) return;
+  for(const dept of DEPARTMENTS){
+    const rows=appData[dept]||[];
+    const idx=rows.findIndex(r=>r.id===rowId);
+    if(idx>=0){ pushUndo(); rows.splice(idx,1); editingCell=null; updateStats(); renderSidebar(); renderTable(); setUnsaved(true); showNotif("Baris berhasil dihapus.","info"); return; }
+  }
+}
+
+// ============================================================
+// RENDER ALL
+// ============================================================
+function renderAll(){ renderSidebar(); renderTable(); updateStats(); }
+
+// ============================================================
+// SOP PAGE
+// ============================================================
+function updateSopDeptFilter(){
+  const sel=document.getElementById('sop-dept-filter');
+  if(!sel) return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="ALL">Semua Departemen</option>';
+  DEPARTMENTS.forEach(d=>{ const opt=document.createElement('option'); opt.value=d; opt.textContent=d; sel.appendChild(opt); });
+  sel.value=DEPARTMENTS.includes(cur)?cur:'ALL';
+}
+
+function renderSopPage(){
+  updateSopDeptFilter();
+  renderSopStats();
+  renderSopGrid();
+}
+
+function renderSopStats(){
+  const row=document.getElementById('sop-stats-row');
+  const total=sopData.length;
+  const sopCount=sopData.filter(s=>s.type==='SOP').length;
+  const ikCount=sopData.filter(s=>s.type==='IK').length;
+  const memoCount=sopData.filter(s=>s.type==='Memo Internal').length;
+  const baCount=sopData.filter(s=>s.type==='Berita Acara').length;
+  const lainCount=sopData.filter(s=>s.type==='Lainnya').length;
+  row.innerHTML=`
+    <div class="sop-stat"><div class="snum">${total}</div><div class="slbl">Total Dokumen</div></div>
+    <div class="sop-stat"><div class="snum">${sopCount}</div><div class="slbl">SOP</div></div>
+    <div class="sop-stat"><div class="snum">${ikCount}</div><div class="slbl">Instruksi Kerja</div></div>
+    <div class="sop-stat"><div class="snum">${memoCount}</div><div class="slbl">Memo Internal</div></div>
+    <div class="sop-stat"><div class="snum">${baCount}</div><div class="slbl">Berita Acara</div></div>
+    ${lainCount>0?`<div class="sop-stat"><div class="snum">${lainCount}</div><div class="slbl">Lainnya</div></div>`:''}`;
+}
+
+function renderSopGrid(){
+  const grid=document.getElementById('sop-grid');
+  const search=(document.getElementById('sop-search').value||'').toLowerCase();
+  const deptF=document.getElementById('sop-dept-filter').value;
+  const typeF=document.getElementById('sop-type-filter').value;
+  const filtered=sopData.filter(s=>{
+    const mDept=deptF==='ALL'||s.dept===deptF;
+    const mType=typeF==='ALL'||s.type===typeF;
+    const mSearch=!search||s.name.toLowerCase().includes(search)||s.noDoc.toLowerCase().includes(search)||(s.desc||'').toLowerCase().includes(search);
+    return mDept&&mType&&mSearch;
+  });
+  if(filtered.length===0){
+    grid.innerHTML='<div style="color:#94A3B8;text-align:center;padding:40px;grid-column:1/-1;">Belum ada dokumen SOP/IK yang diupload.</div>';
+    return;
+  }
+  grid.innerHTML='';
+  filtered.forEach(sop=>{
+    const dc=DEPT_COLORS[sop.dept]||{header:'#2D3748',light:'#F7FAFC'};
+    const icon=sop.fileType&&sop.fileType.includes('pdf')?'📄':sop.fileType&&sop.fileType.includes('image')?'🖼️':sop.fileType&&sop.fileType.includes('word')?'📝':'📋';
+    const card=document.createElement('div'); card.className='sop-card';
+    card.innerHTML=`
+      <div class="sop-card-header">
+        <div class="sop-file-icon">${icon}</div>
+        <div>
+          <div class="sop-card-title">${sop.name}</div>
+          <div class="sop-card-meta">No. Dok: ${sop.noDoc||'-'} | ${sop.tglTerbit||'-'}</div>
+          <span class="sop-card-dept" style="background:${dc.light};color:${dc.header}">${sop.type} — ${sop.dept}</span>
+        </div>
+      </div>
+      ${sop.desc?`<div style="font-size:12px;color:#64748B;line-height:1.5;margin-bottom:6px;">${sop.desc}</div>`:''}
+      <div style="font-size:11px;color:#94A3B8;">Upload: ${sop.uploadedAt||''}</div>
+      <div class="sop-card-actions">
+        <button class="btn-sop-preview" onclick="previewSop('${sop.id}')">👁️ Preview</button>
+        <button class="btn-sop-del" onclick="deleteSop('${sop.id}')">🗑️ Hapus</button>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+// SOP UPLOAD
+let sopUploadBuffer=[];
+function handleSopUpload(ev){
+  const files=Array.from(ev.target.files);
+  if(files.length===0) return;
+  ev.target.value='';
+  sopUploadBuffer=[];
+  const meta=document.getElementById('sop-upload-meta');
+  const fields=document.getElementById('sop-meta-fields');
+  fields.innerHTML='';
+  let loaded=0;
+  files.forEach((file,i)=>{
+    const reader=new FileReader();
+    reader.onload=function(re){
+      sopUploadBuffer.push({fileName:file.name,fileType:file.type,dataUrl:re.result,idx:i});
+      loaded++;
+      if(loaded===files.length){
+        sopUploadBuffer.sort((a,b)=>a.idx-b.idx);
+        sopUploadBuffer.forEach((f,i2)=>{
+          const deptOpts=DEPARTMENTS.map(d=>`<option value="${d}">${d}</option>`).join('');
+          fields.innerHTML+=`<div style="border:1px solid #E2E8F0;border-radius:8px;padding:14px;margin-bottom:12px;">
+            <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:#1E293B;">📎 ${f.fileName}</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;">
+              <div><label style="font-size:11px;font-weight:600;color:#64748B;display:block;margin-bottom:3px;">Nama Dokumen *</label>
+                <input id="sopn-${i2}" type="text" value="${f.fileName.replace(/\.[^.]+$/,'')}" placeholder="Nama dokumen..." style="width:100%;border:2px solid #E2E8F0;border-radius:6px;padding:6px 10px;font-size:13px;outline:none;font-family:inherit;"/></div>
+              <div><label style="font-size:11px;font-weight:600;color:#64748B;display:block;margin-bottom:3px;">Tipe *</label>
+                <select id="sopt-${i2}" style="width:100%;border:2px solid #E2E8F0;border-radius:6px;padding:6px 10px;font-size:13px;outline:none;font-family:inherit;">
+                  <option value="SOP">SOP</option><option value="IK">Instruksi Kerja (IK)</option><option value="Memo Internal">Memo Internal</option><option value="Berita Acara">Berita Acara</option><option value="Lainnya">Lainnya</option></select></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+              <div><label style="font-size:11px;font-weight:600;color:#64748B;display:block;margin-bottom:3px;">Departemen *</label>
+                <select id="sopd-${i2}" style="width:100%;border:2px solid #E2E8F0;border-radius:6px;padding:6px 10px;font-size:13px;outline:none;font-family:inherit;">${deptOpts}</select></div>
+              <div><label style="font-size:11px;font-weight:600;color:#64748B;display:block;margin-bottom:3px;">No. Dokumen</label>
+                <input id="sopno-${i2}" type="text" placeholder="Contoh: SOP-MKT-001" style="width:100%;border:2px solid #E2E8F0;border-radius:6px;padding:6px 10px;font-size:13px;outline:none;font-family:inherit;"/></div>
+              <div><label style="font-size:11px;font-weight:600;color:#64748B;display:block;margin-bottom:3px;">Tgl Terbit</label>
+                <input id="sopta-${i2}" type="date" style="width:100%;border:2px solid #E2E8F0;border-radius:6px;padding:6px 10px;font-size:13px;outline:none;font-family:inherit;"/></div>
+            </div>
+            <div style="margin-top:8px;"><label style="font-size:11px;font-weight:600;color:#64748B;display:block;margin-bottom:3px;">Deskripsi Singkat</label>
+              <textarea id="sopdes-${i2}" rows="2" placeholder="Deskripsi isi dokumen..." style="width:100%;border:2px solid #E2E8F0;border-radius:6px;padding:6px 10px;font-size:13px;outline:none;font-family:inherit;resize:none;"></textarea></div>
+          </div>`;
+        });
+        meta.style.display='block';
+        meta.scrollIntoView({behavior:'smooth'});
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function confirmSopUpload(){
+  sopUploadBuffer.forEach((f,i)=>{
+    const name=document.getElementById('sopn-'+i).value.trim()||f.fileName;
+    const type=document.getElementById('sopt-'+i).value;
+    const dept=document.getElementById('sopd-'+i).value;
+    const noDoc=document.getElementById('sopno-'+i).value.trim();
+    const tglTerbit=document.getElementById('sopta-'+i).value;
+    const desc=document.getElementById('sopdes-'+i).value.trim();
+    sopData.push({
+      id:'sop-'+Date.now()+'-'+Math.random().toString(36).slice(2,5),
+      name,type,dept,noDoc,tglTerbit,desc,
+      fileDataUrl:f.dataUrl, fileType:f.fileType, fileName:f.fileName,
+      uploadedAt:new Date().toLocaleDateString('id-ID')
+    });
+  });
+  // Save to Firebase (via next saveData call) + local backup
+  try{ localStorage.setItem(SOP_STORAGE_KEY,JSON.stringify(sopData)); }catch(e){}
+  if(window._isAdmin){ window._fbSetDoc(window._fbSopRef(), {sopData:sopData, savedAt:new Date().toISOString()}); }
+  cancelSopUpload();
+  renderSopPage();
+  showNotif(sopUploadBuffer.length+' dokumen berhasil diupload!','success');
+  sopUploadBuffer=[];
+}
+function cancelSopUpload(){
+  document.getElementById('sop-upload-meta').style.display='none';
+  document.getElementById('sop-meta-fields').innerHTML='';
+  sopUploadBuffer=[];
+}
+function deleteSop(id){
+  if(!confirm('Hapus dokumen ini?')) return;
+  sopData=sopData.filter(s=>s.id!==id);
+  try{localStorage.setItem(SOP_STORAGE_KEY,JSON.stringify(sopData));}catch(e){}
+  if(window._isAdmin){ window._fbSetDoc(window._fbSopRef(), {sopData:sopData, savedAt:new Date().toISOString()}); }
+  renderSopPage(); showNotif('Dokumen dihapus.','info');
+}
+function previewSop(id){
+  const sop=sopData.find(s=>s.id===id);
+  if(!sop){ showNotif('Dokumen tidak ditemukan','error'); return; }
+  const dc=DEPT_COLORS[sop.dept]||{header:'#2D3748',light:'#F7FAFC'};
+  document.getElementById('sop-preview-title').textContent=sop.name;
+  const body=document.getElementById('sop-preview-body');
+
+  const metaHtml=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+      <div class="sop-detail-row"><label>Nama Dokumen</label><div class="val" style="font-weight:700;">${sop.name}</div></div>
+      <div class="sop-detail-row"><label>No. Dokumen</label><div class="val">${sop.noDoc||'-'}</div></div>
+      <div class="sop-detail-row"><label>Tipe</label><div class="val"><span style="background:${dc.light};color:${dc.header};border-radius:5px;padding:2px 10px;font-weight:700;font-size:12px;">${sop.type}</span></div></div>
+      <div class="sop-detail-row"><label>Departemen</label><div class="val">${sop.dept}</div></div>
+      <div class="sop-detail-row"><label>Tanggal Terbit</label><div class="val">${sop.tglTerbit||'-'}</div></div>
+      <div class="sop-detail-row"><label>Tanggal Upload</label><div class="val">${sop.uploadedAt||'-'}</div></div>
+    </div>
+    ${sop.desc?`<div class="sop-detail-row"><label>Deskripsi</label><div class="val">${sop.desc}</div></div>`:''}
+    <div id="sop-embed-area" style="margin-top:14px;"><div style="color:#94A3B8;text-align:center;padding:16px;">⏳ Memuat file...</div></div>`;
+  body.innerHTML=metaHtml;
+  openModal('modal-sop-preview');
+
+  setTimeout(()=>{
+    const embedArea=document.getElementById('sop-embed-area');
+    if(!embedArea) return;
+    try{
+      const bUrl=toBlobUrl(sop.fileDataUrl);
+      if(sop.fileType&&sop.fileType.startsWith('image/')){
+        embedArea.innerHTML='';
+        const img=document.createElement('img');
+        img.src=bUrl; img.alt='Preview';
+        img.style.cssText='max-width:100%;border-radius:8px;border:1px solid #E2E8F0;';
+        img.onerror=()=>{ embedArea.innerHTML=sopFallback(bUrl,sop); };
+        embedArea.appendChild(img);
+      } else if(sop.fileType&&sop.fileType.includes('pdf')){
+        embedArea.innerHTML='';
+        const topBar=document.createElement('div');
+        topBar.style.cssText='display:flex;gap:8px;margin-bottom:8px;align-items:center;flex-wrap:wrap;';
+        topBar.innerHTML=`<a href="${bUrl}" target="_blank" style="background:#1A237E;color:#fff;border-radius:7px;padding:5px 14px;text-decoration:none;font-weight:700;font-size:12px;">🔗 Buka di Tab Baru</a>
+          <a href="${bUrl}" download="${sop.fileName}" style="background:#22C55E;color:#fff;border-radius:7px;padding:5px 14px;text-decoration:none;font-weight:700;font-size:12px;">⬇️ Download PDF</a>`;
+        const obj=document.createElement('object');
+        obj.data=bUrl; obj.type='application/pdf';
+        obj.className='sop-embed';
+        const fb=document.createElement('div'); fb.className='sop-no-preview';
+        fb.innerHTML=`⚠️ Browser tidak mendukung preview PDF inline. <br><br>
+          <a href="${bUrl}" target="_blank" style="color:#2563EB;font-weight:700;">🔗 Buka di Tab Baru</a>`;
+        obj.appendChild(fb);
+        embedArea.appendChild(topBar);
+        embedArea.appendChild(obj);
+      } else {
+        embedArea.innerHTML=sopFallback(bUrl,sop);
+      }
+    }catch(e){ embedArea.innerHTML=sopFallback('',sop); }
+  },50);
+}
+
+function sopFallback(bUrl,sop){
+  return `<div class="sop-no-preview">
+    <div style="font-size:36px;margin-bottom:10px;">📎</div>
+    <div style="font-weight:700;margin-bottom:6px;">${sop.fileName||sop.name}</div>
+    <div style="font-size:12px;color:#94A3B8;margin-bottom:14px;">Preview tidak tersedia untuk tipe file ini.</div>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+      ${bUrl?`<a href="${bUrl}" target="_blank" style="background:#1A237E;color:#fff;border-radius:8px;padding:7px 16px;text-decoration:none;font-weight:700;font-size:12px;">🔗 Buka di Tab Baru</a>`:''}
+      ${bUrl?`<a href="${bUrl}" download="${sop.fileName||sop.name}" style="background:#22C55E;color:#fff;border-radius:8px;padding:7px 16px;text-decoration:none;font-weight:700;font-size:12px;">⬇️ Download File</a>`:''}
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// EXPORT EXCEL PAGE
+// ============================================================
+function renderExportPage(){
+  // Update dept dropdown
+  const sel=document.getElementById('export-dept-filter');
+  if(!sel) return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="ALL">Semua Departemen</option>';
+  DEPARTMENTS.forEach(d=>{ const opt=document.createElement('option'); opt.value=d; opt.textContent=d; sel.appendChild(opt); });
+  sel.value=DEPARTMENTS.includes(cur)?cur:'ALL';
+  // Set default tanggal
+  const dtInp=document.getElementById('export-date');
+  if(!dtInp.value){ const now=new Date(); dtInp.value=now.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}); }
+  // Reset preview
+  document.getElementById('export-table-preview').style.display='none';
+  document.getElementById('export-preview-info').style.display='none';
+}
+
+function getExportRows(){
+  const deptF=document.getElementById('export-dept-filter').value;
+  const statusF=document.getElementById('export-status-filter').value;
+  let result=[];
+  const depts=deptF==='ALL'?DEPARTMENTS:[deptF];
+  depts.forEach(dept=>{
+    (appData[dept]||[]).forEach(row=>{
+      if(statusF==='ALL'||row.status===statusF) result.push({...row,_dept:dept});
+    });
+  });
+  return result;
+}
+
+function previewExport(){
+  const rows=getExportRows();
+  const infoEl=document.getElementById('export-preview-info');
+  const infoText=document.getElementById('export-preview-text');
+  if(rows.length===0){
+    infoEl.style.display='block'; infoText.textContent='⚠️ Tidak ada data yang sesuai filter. Coba ubah filter departemen atau status.';
+    document.getElementById('export-table-preview').style.display='none'; return;
+  }
+  infoEl.style.display='block'; infoText.textContent=`✅ ${rows.length} temuan siap di-export. Klik tombol Download untuk mengunduh file Excel.`;
+  exportPreviewData=rows;
+  // render preview table
+  const tbl=document.getElementById('export-preview-table');
+  tbl.innerHTML='';
+  const headers=['No','Departemen','Tanggal Temuan','Daftar Temuan','Rekomendasi','PIC','Status','% Selesai','Deadline'];
+  const thead=document.createElement('thead'); const tr=document.createElement('tr');
+  headers.forEach(h=>{ const th=document.createElement('th'); th.textContent=h; tr.appendChild(th); });
+  thead.appendChild(tr); tbl.appendChild(thead);
+  const tbody=document.createElement('tbody');
+  rows.slice(0,10).forEach((row,i)=>{
+    const tr2=document.createElement('tr');
+    [i+1,row._dept,row.tglTemuan,row.temuan,row.rekomendasi,row.pic,row.status,(row.persentase||0)+'%',row.deadline].forEach(v=>{
+      const td=document.createElement('td'); td.textContent=v||''; tr2.appendChild(td);
+    });
+    tbody.appendChild(tr2);
+  });
+  if(rows.length>10){
+    const note=document.createElement('tr'); const td=document.createElement('td'); td.colSpan=headers.length;
+    td.style.textAlign='center'; td.style.padding='8px'; td.style.color='#64748B'; td.style.fontSize='12px';
+    td.textContent=`...dan ${rows.length-10} baris lainnya`; note.appendChild(td); tbody.appendChild(note);
+  }
+  tbl.appendChild(tbody);
+  document.getElementById('export-table-preview').style.display='block';
+}
+
+function doExportExcel(){
+  const rows=exportPreviewData.length>0?exportPreviewData:getExportRows();
+  if(rows.length===0){ showNotif("Tidak ada data untuk di-export","error"); return; }
+  const deptF=document.getElementById('export-dept-filter').value;
+  const tglExport=document.getElementById('export-date').value||new Date().toLocaleDateString('id-ID');
+
+  // Build HTML table for Excel (with KOP)
+  const depts=deptF==='ALL'?DEPARTMENTS:[deptF];
+  let htmlRows='';
+  let grandTotal=0; let grandOpen=0; let grandClose=0; let grandProg=0;
+
+  depts.forEach(dept=>{
+    const deptRows=rows.filter(r=>r._dept===dept);
+    if(deptRows.length===0) return;
+    grandTotal+=deptRows.length;
+    // Dept header row
+    htmlRows+=`<tr><td colspan="13" style="background:#1A237E;color:#fff;font-weight:bold;padding:8px 12px;font-size:13px;">DEPARTEMEN: ${dept}</td></tr>`;
+    // Column headers
+    htmlRows+=`<tr style="background:#E8EEFF;">
+      <th style="border:1px solid #ccc;padding:6px;white-space:nowrap;font-weight:bold;">No</th>
+      <th style="border:1px solid #ccc;padding:6px;white-space:nowrap;font-weight:bold;">Tanggal Temuan</th>
+      <th style="border:1px solid #ccc;padding:6px;white-space:nowrap;font-weight:bold;min-width:250px;">Daftar Temuan</th>
+      <th style="border:1px solid #ccc;padding:6px;white-space:nowrap;font-weight:bold;min-width:200px;">Rekomendasi Perbaikan</th>
+      <th style="border:1px solid #ccc;padding:6px;white-space:nowrap;font-weight:bold;">PIC</th>
+      <th style="border:1px solid #ccc;padding:6px;white-space:nowrap;font-weight:bold;">Status</th>
+      <th style="border:1px solid #ccc;padding:6px;white-space:nowrap;font-weight:bold;">% Selesai</th>
+      <th style="border:1px solid #ccc;padding:6px;white-space:nowrap;font-weight:bold;">Deadline</th>
+      <th style="border:1px solid #ccc;padding:6px;white-space:nowrap;font-weight:bold;min-width:160px;">Progres 1</th>
+      <th style="border:1px solid #ccc;padding:6px;white-space:nowrap;font-weight:bold;min-width:160px;">Progres 2</th>
+      <th style="border:1px solid #ccc;padding:6px;white-space:nowrap;font-weight:bold;min-width:160px;">Progres 3</th>
+      <th style="border:1px solid #ccc;padding:6px;white-space:nowrap;font-weight:bold;min-width:160px;">Progres 4</th>
+    </tr>`;
+    deptRows.forEach((row,i)=>{
+      const st=row.status||'OPEN';
+      const stStyle=st==='CLOSE'?'background:#D1FAE5;color:#065F46':st==='OPEN'?'background:#FFF3CD;color:#856404':st==='IN PROGRESS'?'background:#DBEAFE;color:#1E40AF':'background:#FEE2E2;color:#991B1B';
+      if(st==='OPEN') grandOpen++;
+      if(st==='CLOSE') grandClose++;
+      if(st==='IN PROGRESS') grandProg++;
+      htmlRows+=`<tr>
+        <td style="border:1px solid #E2E8F0;padding:6px;text-align:center;">${i+1}</td>
+        <td style="border:1px solid #E2E8F0;padding:6px;white-space:nowrap;">${row.tglTemuan||''}</td>
+        <td style="border:1px solid #E2E8F0;padding:6px;">${(row.temuan||'').replace(/</g,'&lt;')}</td>
+        <td style="border:1px solid #E2E8F0;padding:6px;">${(row.rekomendasi||'').replace(/</g,'&lt;')}</td>
+        <td style="border:1px solid #E2E8F0;padding:6px;">${row.pic||''}</td>
+        <td style="border:1px solid #E2E8F0;padding:6px;text-align:center;${stStyle};font-weight:bold;">${st}</td>
+        <td style="border:1px solid #E2E8F0;padding:6px;text-align:center;font-weight:bold;">${row.persentase||0}%</td>
+        <td style="border:1px solid #E2E8F0;padding:6px;white-space:nowrap;">${row.deadline||''}</td>
+        <td style="border:1px solid #E2E8F0;padding:6px;">${row.progres1||''}</td>
+        <td style="border:1px solid #E2E8F0;padding:6px;">${row.progres2||''}</td>
+        <td style="border:1px solid #E2E8F0;padding:6px;">${row.progres3||''}</td>
+        <td style="border:1px solid #E2E8F0;padding:6px;">${row.progres4||''}</td>
+      </tr>`;
+    });
+    // subtotal row
+    const dClose=deptRows.filter(r=>r.status==='CLOSE').length;
+    const dOpen=deptRows.filter(r=>r.status==='OPEN').length;
+    const dProg=deptRows.filter(r=>r.status==='IN PROGRESS').length;
+    htmlRows+=`<tr style="background:#F1F5F9;font-weight:bold;">
+      <td colspan="5" style="border:1px solid #E2E8F0;padding:6px;text-align:right;color:#374151;">Total ${dept}:</td>
+      <td colspan="7" style="border:1px solid #E2E8F0;padding:6px;color:#374151;">${deptRows.length} temuan | OPEN: ${dOpen} | IN PROGRESS: ${dProg} | CLOSE: ${dClose}</td>
+    </tr><tr><td colspan="13" style="padding:4px;"></td></tr>`;
+  });
+
+  // Grand summary
+  htmlRows+=`<tr style="background:#1A237E;color:#fff;font-weight:bold;">
+    <td colspan="13" style="padding:8px 12px;">REKAPITULASI TOTAL: ${grandTotal} Temuan | OPEN: ${grandOpen} | IN PROGRESS: ${grandProg} | CLOSE: ${grandClose} | Tanggal Export: ${tglExport}</td>
+  </tr>`;
+
+  const htmlContent=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="UTF-8">
+<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Temuan Audit</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+<style>
+  body{font-family:Arial,sans-serif;font-size:11pt;}
+  td,th{vertical-align:top;}
+</style>
+</head>
+<body>
+<table style="width:100%;border-collapse:collapse;">
+  <!-- KOP SURAT -->
+  <tr>
+    <td colspan="13" style="padding:0;">
+      <table style="width:100%;border:2px solid #1A237E;border-collapse:collapse;">
+        <tr>
+          <td style="width:140px;padding:10px;text-align:center;vertical-align:middle;border-right:2px solid #1A237E;">
+            <div style="background:#1A237E;color:#fff;padding:8px 12px;border-radius:6px;display:inline-block;">
+              <div style="font-size:9pt;font-weight:bold;letter-spacing:1px;">CV.</div>
+              <div style="font-size:16pt;font-weight:900;color:#F59E0B;letter-spacing:2px;">KENCANA</div>
+              <div style="font-size:9pt;font-weight:bold;letter-spacing:2px;">PRINT</div>
+            </div>
+          </td>
+          <td style="padding:10px 18px;vertical-align:middle;">
+            <div style="font-size:16pt;font-weight:900;color:#1A237E;letter-spacing:1px;">DAFTAR TEMUAN INTERNAL AUDIT</div>
+            <div style="font-size:10pt;color:#374151;margin-top:4px;">CV. Kencana Print — Monitoring &amp; Tracking Temuan</div>
+            <div style="font-size:9pt;color:#64748B;margin-top:2px;">
+              Departemen: <strong>${deptF==='ALL'?'Semua Departemen':deptF}</strong> &nbsp;|&nbsp; Tanggal Export: <strong>${tglExport}</strong>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td colspan="13" style="padding:6px;"></td></tr>
+  ${htmlRows}
+</table>
+</body></html>`;
+
+  const blob=new Blob([htmlContent],{type:'application/vnd.ms-excel;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url;
+  const fname='Temuan_Internal_Audit'+(deptF!=='ALL'?'_'+deptF.replace(/[^a-zA-Z0-9]/g,'_'):'_Semua')+'_'+tglExport.replace(/[^a-zA-Z0-9]/g,'_')+'.xls';
+  a.download=fname; a.click();
+  URL.revokeObjectURL(url);
+  showNotif(`Export berhasil! File "${fname}" sedang didownload.`,'success');
+}
+
+// ============================================================
+// SIDEBAR TOGGLE (Fix 5)
+// ============================================================
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  const btn=document.getElementById('sidebar-toggle');
+  const isCollapsed=sb.classList.contains('collapsed');
+  sb.classList.toggle('collapsed');
+  btn.textContent=isCollapsed?'◀':'▶';
+  btn.title=isCollapsed?'Sembunyikan Departemen':'Tampilkan Departemen';
+}
+
+// ============================================================
+// AUTH UI FUNCTIONS
+// ============================================================
+function renderAuthBar(){
+  const user = window._currentUser;
+  const isAdmin = window._isAdmin;
+  const badge = document.getElementById('auth-badge');
+  const statusText = document.getElementById('auth-status-text');
+  const btnLogin = document.getElementById('btn-fb-login');
+  const btnLogout = document.getElementById('btn-fb-logout');
+  const dot = document.getElementById('auth-sync-dot');
+
+  if(user && isAdmin){
+    badge.className='badge-admin'; badge.innerHTML='&#9989; Admin';
+    statusText.textContent = user.email + ' — sinkronisasi aktif';
+    dot.style.background='#22C55E';
+    btnLogin.style.display='none';
+    btnLogout.style.display='inline-block';
+  } else if(user && !isAdmin){
+    badge.className='badge-viewer'; badge.innerHTML='&#128065; View Only';
+    statusText.textContent = user.email + ' (tidak punya akses edit)';
+    dot.style.background='#F59E0B';
+    btnLogin.style.display='none';
+    btnLogout.style.display='inline-block';
+  } else {
+    badge.className='badge-viewer'; badge.innerHTML='&#128065; View Only';
+    statusText.textContent = 'Belum login — data hanya bisa dilihat';
+    dot.style.background='#64748B';
+    btnLogin.style.display='inline-block';
+    btnLogout.style.display='none';
+  }
+}
+
+function applyReadOnlyMode(){
+  const isAdmin = window._isAdmin;
+  if(isAdmin){
+    document.body.classList.remove('readonly-mode');
+  } else {
+    document.body.classList.add('readonly-mode');
+    // Block editing cells
+    const origStartEdit = window.startEditAtClick;
+    window.startEditAtClick = function(td, rowId, colKey, headerColor, clickEvent){
+      if(!window._isAdmin){ showNotif("&#128274; Mode View: login admin untuk edit","info"); return; }
+      origStartEdit(td, rowId, colKey, headerColor, clickEvent);
+    };
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+// Set initial states
+window._currentUser = null;
+window._isAdmin = false;
+renderAuthBar();
+
+loadData();
+loadSop();
+renderAll();
+updateSopDeptFilter();
+</script>
+
+
+</body></html>
