@@ -82,7 +82,13 @@
         if(d.appData)  { appData = d.appData;  migrateDocs(); }
         if(d.COLS)     { window.COLS     = d.COLS; }
         if(d.notulenData) { window.notulenData = d.notulenData; }
-        if(d.DEPARTMENTS) { DEPARTMENTS = d.DEPARTMENTS; }
+        if(d.DEPARTMENTS && Array.isArray(d.DEPARTMENTS)) {
+          DEPARTMENTS.length = 0;
+          d.DEPARTMENTS.forEach(dep => DEPARTMENTS.push(dep));
+        }
+        if(d.DEPT_COLORS) {
+          Object.assign(DEPT_COLORS, d.DEPT_COLORS);
+        }
       }
       const sopSnap = await getDoc(doc(db,"dashboard","sop"));
       if(sopSnap.exists() && sopSnap.data().sopData){
@@ -114,7 +120,13 @@
       if(window.editingCell) return;
       if(d.appData)     { window.appData     = d.appData;     migrateDocs(); }
       if(d.COLS)        { window.COLS        = d.COLS; }
-      if(d.DEPARTMENTS) { window.DEPARTMENTS = d.DEPARTMENTS; }
+      if(d.DEPARTMENTS && Array.isArray(d.DEPARTMENTS)) {
+        DEPARTMENTS.length = 0;
+        d.DEPARTMENTS.forEach(dep => DEPARTMENTS.push(dep));
+      }
+      if(d.DEPT_COLORS) {
+        Object.assign(DEPT_COLORS, d.DEPT_COLORS);
+      }
       if(d.notulenData) { window.notulenData = d.notulenData; if(window.currentPage==='notulen') renderNotulenPage(); }
       // Simpan ke localStorage sebagai cache
       try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(window.appData)); }catch(e){}
@@ -124,7 +136,7 @@
       console.warn("Firestore realtime sync error:", error);
       loadDataFallback();
     });
-
+    
     _unsubSop = onSnapshot(doc(db,"dashboard","sop"), snap => {
       if(!snap.exists()) return;
       const d = snap.data();
@@ -1365,6 +1377,7 @@ async function saveData(){
       appData: appData,
       COLS: COLS,
       DEPARTMENTS: DEPARTMENTS,
+      DEPT_COLORS: DEPT_COLORS,
       notulenData: notulenData,
       savedAt: new Date().toISOString(),
       savedBy: window._currentUser ? window._currentUser.email : 'unknown'
@@ -1551,15 +1564,34 @@ function confirmAddDept(){
   if(!name){ showNotif("Nama departemen tidak boleh kosong","error"); return; }
   if(DEPARTMENTS.includes(name)){ showNotif("Departemen sudah ada","error"); return; }
   const color=document.getElementById('new-dept-color').value;
+  pushUndo();
   DEPARTMENTS.push(name);
   DEPT_COLORS[name]={header:color, light:color+'22'};
   appData[name]=[];
   document.getElementById('new-dept-name').value='';
   closeModal('modal-dept');
-  // Update SOP dept filter
   updateSopDeptFilter();
-  renderAll(); setUnsaved(true);
-  showNotif("Departemen '"+name+"' berhasil ditambahkan!","success");
+  renderAll();
+  setUnsaved(true);
+  // AUTO-SAVE langsung ke Firebase supaya tidak hilang
+  if(window._isAdmin){
+    window._fbSetDoc(window._fbDocRef(), {
+      appData: appData,
+      COLS: COLS,
+      DEPARTMENTS: DEPARTMENTS,
+      DEPT_COLORS: DEPT_COLORS,
+      notulenData: notulenData,
+      savedAt: new Date().toISOString(),
+      savedBy: window._currentUser ? window._currentUser.email : 'auto-save-dept'
+    }).then(()=>{
+      showNotif("✅ Departemen '"+name+"' berhasil ditambahkan & tersimpan permanen!","success");
+      setUnsaved(false);
+    }).catch(e=>{
+      showNotif("⚠️ Departemen ditambahkan tapi gagal simpan otomatis: "+e.message,"error");
+    });
+  } else {
+    showNotif("Departemen '"+name+"' berhasil ditambahkan!","success");
+  }
 }
 
 // ============================================================
