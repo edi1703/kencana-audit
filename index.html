@@ -79,7 +79,7 @@
       const snap = await getDoc(doc(db,"dashboard","main"));
       if(snap.exists()){
         const d = snap.data();
-        if(d.appData)  { window.appData  = d.appData;  migrateDocs(); renderAll(); }
+        if(d.appData)  { window.appData  = d.appData;  migrateDocs(); }
         if(d.COLS)     { window.COLS     = d.COLS; }
         if(d.notulenData) { window.notulenData = d.notulenData; }
         if(d.DEPARTMENTS) { window.DEPARTMENTS = d.DEPARTMENTS; }
