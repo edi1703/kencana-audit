@@ -79,10 +79,10 @@
       const snap = await getDoc(doc(db,"dashboard","main"));
       if(snap.exists()){
         const d = snap.data();
-        if(d.appData)  { window.appData  = d.appData;  migrateDocs(); }
+        if(d.appData)  { appData = d.appData;  migrateDocs(); }
         if(d.COLS)     { window.COLS     = d.COLS; }
         if(d.notulenData) { window.notulenData = d.notulenData; }
-        if(d.DEPARTMENTS) { window.DEPARTMENTS = d.DEPARTMENTS; }
+        if(d.DEPARTMENTS) { DEPARTMENTS = d.DEPARTMENTS; }
       }
       const sopSnap = await getDoc(doc(db,"dashboard","sop"));
       if(sopSnap.exists() && sopSnap.data().sopData){
