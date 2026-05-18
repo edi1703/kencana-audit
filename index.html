@@ -88,13 +88,13 @@
       if(sopSnap.exists() && sopSnap.data().sopData){
         window.sopData = sopSnap.data().sopData;
       }
+      hideLoadingOverlay();
       renderAll();
     }catch(e){
       console.warn("Firebase read-only load failed, fallback localStorage:", e);
       loadDataFallback();
       return;
     }
-    hideLoadingOverlay();
   }
 
   // ── REALTIME SYNC (untuk admin) ────────────────────────────
