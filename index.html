@@ -116,6 +116,8 @@
       if(d.COLS)        { window.COLS        = d.COLS; }
       if(d.DEPARTMENTS) { window.DEPARTMENTS = d.DEPARTMENTS; }
       if(d.notulenData) { window.notulenData = d.notulenData; if(window.currentPage==='notulen') renderNotulenPage(); }
+      // Simpan ke localStorage sebagai cache
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(window.appData)); }catch(e){}
       hideLoadingOverlay();
       renderAll();
     }, (error) => {
