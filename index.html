@@ -90,9 +90,11 @@
       }
       renderAll();
     }catch(e){
-      console.warn("Firebase read-only load failed, pakai localStorage:", e);
-      // fallback ke localStorage
+      console.warn("Firebase read-only load failed, fallback localStorage:", e);
+      loadDataFallback();
+      return;
     }
+    hideLoadingOverlay();
   }
 
   // ── REALTIME SYNC (untuk admin) ────────────────────────────
@@ -103,7 +105,10 @@
     if(_unsubSop)  _unsubSop();
 
     _unsubMain = onSnapshot(doc(db,"dashboard","main"), snap => {
-      if(!snap.exists()) return;
+      if(!snap.exists()){
+        loadDataFallback();
+        return;
+      }
       const d = snap.data();
       // Jangan overwrite kalau sedang edit
       if(window.editingCell) return;
@@ -111,7 +116,11 @@
       if(d.COLS)        { window.COLS        = d.COLS; }
       if(d.DEPARTMENTS) { window.DEPARTMENTS = d.DEPARTMENTS; }
       if(d.notulenData) { window.notulenData = d.notulenData; if(window.currentPage==='notulen') renderNotulenPage(); }
+      hideLoadingOverlay();
       renderAll();
+    }, (error) => {
+      console.warn("Firestore realtime sync error:", error);
+      loadDataFallback();
     });
 
     _unsubSop = onSnapshot(doc(db,"dashboard","sop"), snap => {
@@ -1263,7 +1272,12 @@ let exportPreviewData = [];
 // STORAGE
 // ============================================================
 function loadData(){
-  // Try localStorage as instant fallback while Firebase loads
+  appData = {};
+  showLoadingOverlay();
+  // Data diambil dari Firebase via onAuthStateChanged di atas
+  // localStorage hanya dipakai kalau Firebase benar-benar gagal
+}
+function loadDataFallback(){
   try{
     const r=localStorage.getItem(STORAGE_KEY);
     if(r){ appData=JSON.parse(r); migrateDocs(); }
@@ -1271,7 +1285,23 @@ function loadData(){
   }catch(e){
     appData=JSON.parse(JSON.stringify(DEFAULT_DATA)); migrateDocs();
   }
-  // Firebase load happens in onAuthStateChanged (firebase module above)
+  hideLoadingOverlay();
+  renderAll();
+}
+function showLoadingOverlay(){
+  let ov=document.getElementById('firebase-loading-overlay');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='firebase-loading-overlay';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(255,255,255,0.94);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;font-family:inherit;';
+    ov.innerHTML='<div style="width:52px;height:52px;border:6px solid #E2E8F0;border-top-color:#1A237E;border-radius:50%;animation:spin 0.8s linear infinite;"></div><div style="font-size:16px;font-weight:800;color:#1A237E;letter-spacing:0.3px;">Memuat data dari server...</div><div style="font-size:12px;color:#64748B;">Mohon tunggu sebentar</div><style>@keyframes spin{to{transform:rotate(360deg);}}</style>';
+    document.body.appendChild(ov);
+  }
+  ov.style.display='flex';
+}
+function hideLoadingOverlay(){
+  const ov=document.getElementById('firebase-loading-overlay');
+  if(ov) ov.style.display='none';
 }
 function migrateDocs(){
   // Ensure all rows have dokumentasi as array and persentase as number
