@@ -1312,13 +1312,7 @@ let exportPreviewData = [];
 // ============================================================
 function loadData(){
   appData = {};
-  showLoadingOverlay();
-  // Coba load dari localStorage dulu sebagai tampilan sementara
-  try{
-    const r=localStorage.getItem(STORAGE_KEY);
-    if(r){ appData=JSON.parse(r); migrateDocs(); renderAll(); }
-  }catch(e){}
-  // Data Firebase akan override via onAuthStateChanged di atas
+  // Firebase load happens in onAuthStateChanged (firebase module above)
 }
 function loadDataFallback(){
   try{
