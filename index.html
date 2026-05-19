@@ -682,6 +682,12 @@ body.home-active{overflow:hidden;}
   <div style="background:linear-gradient(135deg,#4C1D95 0%,#6D28D9 50%,#7C3AED 100%);color:#fff;padding:0 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;flex-shrink:0;box-shadow:0 3px 16px rgba(109,40,217,0.4);min-height:62px;">
     <div style="display:flex;align-items:center;gap:14px;">
       <button onclick="closeNotulen()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:8px;padding:6px 14px;cursor:pointer;font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px;">← Home</button>
+      <div id="notulen-auth-bar" style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.2);border-radius:8px;padding:4px 12px;">
+  <span id="notulen-auth-dot" style="width:8px;height:8px;border-radius:50%;background:#64748B;display:inline-block;"></span>
+  <span id="notulen-auth-text" style="font-size:11px;color:rgba(255,255,255,0.8);">Memuat...</span>
+  <button id="notulen-btn-login" onclick="fbLogin()" style="display:none;background:#4285F4;color:#fff;border:none;border-radius:6px;padding:4px 12px;cursor:pointer;font-weight:700;font-size:11px;">🔑 Login</button>
+  <button id="notulen-btn-logout" onclick="fbLogout()" style="display:none;background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px;">Logout</button>
+</div>
       <div style="width:1px;height:32px;background:rgba(255,255,255,0.2);"></div>
       <div style="font-size:22px;">📝</div>
       <div>
@@ -3229,6 +3235,29 @@ function renderAuthBar(){
     btnLogin.style.display='inline-block';
     btnLogout.style.display='none';
   }
+  // Sync ke notulen auth bar juga
+  const dot2 = document.getElementById('notulen-auth-dot');
+  const txt2 = document.getElementById('notulen-auth-text');
+  const btnLogin2 = document.getElementById('notulen-btn-login');
+  const btnLogout2 = document.getElementById('notulen-btn-logout');
+  if(dot2 && txt2){
+    if(user && isAdmin){
+      dot2.style.background='#22C55E';
+      txt2.textContent='✅ Admin: '+user.email;
+      if(btnLogin2) btnLogin2.style.display='none';
+      if(btnLogout2) btnLogout2.style.display='inline-block';
+    } else if(user){
+      dot2.style.background='#F59E0B';
+      txt2.textContent='👁 '+user.email;
+      if(btnLogin2) btnLogin2.style.display='none';
+      if(btnLogout2) btnLogout2.style.display='inline-block';
+    } else {
+      dot2.style.background='#EF4444';
+      txt2.textContent='Belum login';
+      if(btnLogin2) btnLogin2.style.display='inline-block';
+      if(btnLogout2) btnLogout2.style.display='none';
+    }
+  }
 }
 
 function applyReadOnlyMode(){
@@ -3748,6 +3777,31 @@ function populateMonthFilter(){
 
 // === RENDER NOTULEN PAGE ===
 function renderNotulenPage(){
+  // Update auth bar di notulen
+  const dot = document.getElementById('notulen-auth-dot');
+  const txt = document.getElementById('notulen-auth-text');
+  const btnLogin = document.getElementById('notulen-btn-login');
+  const btnLogout = document.getElementById('notulen-btn-logout');
+  const user = window._currentUser;
+  const isAdmin = window._isAdmin;
+  if(dot && txt){
+    if(user && isAdmin){
+      dot.style.background='#22C55E';
+      txt.textContent='Admin: '+user.email;
+      if(btnLogin) btnLogin.style.display='none';
+      if(btnLogout) btnLogout.style.display='inline-block';
+    } else if(user){
+      dot.style.background='#F59E0B';
+      txt.textContent=user.email;
+      if(btnLogin) btnLogin.style.display='none';
+      if(btnLogout) btnLogout.style.display='inline-block';
+    } else {
+      dot.style.background='#EF4444';
+      txt.textContent='Belum login — klik Login untuk menyimpan';
+      if(btnLogin) btnLogin.style.display='inline-block';
+      if(btnLogout) btnLogout.style.display='none';
+    }
+  }
   if(!document.getElementById('notul-list')) return;
   populateMonthFilter();
   renderNotulenStats();
