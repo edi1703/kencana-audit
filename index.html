@@ -3574,6 +3574,7 @@ function saveMeeting(){
   setUnsaved(true);
   renderNotulenPage();
   showNotif('Meeting berhasil ' + (_editMtgId?'diupdate':'ditambahkan') + '! (' + agendas.length + ' agenda tersimpan)', 'success');
+  saveData();
 }
 
 // === DELETE MEETING ===
@@ -3715,6 +3716,7 @@ function savePctMtg(){
   document.getElementById('modal-pct-mtg').classList.remove('open');
   setUnsaved(true);
   renderNotulenPage();
+  saveData();
 }
 
 // === RENDER STATS ===
