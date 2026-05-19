@@ -707,7 +707,7 @@ body.home-active{overflow:hidden;}
         <div class="nstat-num" id="nstat-done">0</div><div class="nstat-lbl">Done</div>
       </div>
       <button onclick="openModalMeeting()" id="btn-add-meeting" style="background:#F59E0B;color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;font-size:13px;display:none;">➕ Tambah Meeting</button>
-      <button onclick="saveData()" style="background:rgba(255,255,255,0.18);color:#fff;border:1px solid rgba(255,255,255,0.35);border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:12px;">💾 Simpan</button>
+      <button onclick="window.notulenData=notulenData;saveData();" style="background:rgba(255,255,255,0.18);color:#fff;border:1px solid rgba(255,255,255,0.35);border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:12px;">💾 Simpan</button>
     </div>
   </div>
 
@@ -3397,7 +3397,8 @@ homeTick(); setInterval(homeTick,1000);
 // ============================================================
 // NOTULEN MEETING — DATA & LOGIC
 // ============================================================
-let notulenData = window.notulenData || [];
+if(!window.notulenData) window.notulenData = [];
+let notulenData = window.notulenData;
 
 function generateMtgId(){
   return 'mtg-' + Date.now() + '-' + Math.random().toString(36).substr(2,6);
@@ -3599,6 +3600,7 @@ function saveMeeting(){
       _open: true
     });
   }
+  window.notulenData = notulenData;
   closeModalMeeting();
   setUnsaved(true);
   renderNotulenPage();
@@ -3611,7 +3613,14 @@ function deleteMeeting(mtgId){
   if(!window._isAdmin){ showNotif("&#128274; Hanya admin yang bisa menghapus meeting.","error"); return; }
   if(!confirm('Hapus meeting ini beserta semua agenda di dalamnya?')) return;
   const idx = notulenData.findIndex(x=>x.id===mtgId);
-  if(idx>=0){ notulenData.splice(idx,1); setUnsaved(true); renderNotulenPage(); showNotif('Meeting dihapus.','info'); }
+  if(idx>=0){ 
+  notulenData.splice(idx,1); 
+  window.notulenData = notulenData;
+  setUnsaved(true); 
+  saveData();
+  renderNotulenPage(); 
+  showNotif('Meeting dihapus.','info'); 
+}
 }
 
 // === TOGGLE MEETING CARD ===
@@ -3688,6 +3697,7 @@ function commitMtgEdit({td,mtgId,agId,field}){
   if(!ag) return;
   ag[field]=val;
   setUnsaved(true);
+  window.notulenData = notulenData;
   // Re-render just this cell text
   td.innerHTML=val?`<div class="cell-text">${val.replace(/</g,'&lt;')}</div>`:
     `<div class="cell-placeholder">Klik untuk edit...</div>`;
@@ -3707,6 +3717,8 @@ function setMtgStatus(mtgId,agId,val){
   // Re-render status style
   const sel = document.querySelector(`[data-mtg-status="${mtgId}-${agId}"]`);
   if(sel) applyMtgStatusStyle(sel, val);
+  window.notulenData = notulenData;
+  saveData();
 }
 function applyMtgStatusStyle(sel,val){
   const map={
