@@ -715,6 +715,7 @@ body.home-active{overflow:hidden;}
       </div>
       <button onclick="openModalMeeting()" id="btn-add-meeting" style="background:#F59E0B;color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;font-size:13px;display:none;">➕ Tambah Meeting</button>
       <button onclick="saveNotulenOnly();" style="background:rgba(255,255,255,0.18);color:#fff;border:1px solid rgba(255,255,255,0.35);border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:12px;">💾 Simpan</button>
+<button onclick="exportNotulenExcel()" style="background:#22C55E;color:#fff;border:none;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px;">📊 Export Excel</button>
     </div>
   </div>
 
@@ -4714,7 +4715,272 @@ function renderFlowGrid(){
     grid.appendChild(card);
   });
 }
+// ============================================================
+// EXPORT EXCEL NOTULEN MEETING
+// ============================================================
+function exportNotulenExcel(){
+  const filtered = notulenData;
+  if(!filtered || filtered.length === 0){
+    showNotif('Tidak ada data notulen untuk di-export.','error');
+    return;
+  }
 
+  const HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const BULAN_PANJANG = ['Januari','Februari','Maret','April','Mei','Juni',
+    'Juli','Agustus','September','Oktober','November','Desember'];
+
+  function formatTgl(tglStr){
+    if(!tglStr) return '-';
+    const d = new Date(tglStr);
+    if(isNaN(d.getTime())) return tglStr;
+    return HARI[d.getDay()] + ', ' + d.getDate() + ' ' + BULAN_PANJANG[d.getMonth()] + ' ' + d.getFullYear();
+  }
+
+  const now = new Date();
+  const tglExport = now.getDate() + ' ' + BULAN_PANJANG[now.getMonth()] + ' ' + now.getFullYear();
+  const jamExport = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+
+  // Hitung statistik
+  const allAgendas = filtered.flatMap(m => m.agendas || []);
+  const totalMeeting = filtered.length;
+  const totalAgenda = allAgendas.length;
+  const totalDone = allAgendas.filter(a => a.status === 'DONE').length;
+  const totalProg = allAgendas.filter(a => a.status === 'ON PROGRESS').length;
+  const totalPending = allAgendas.filter(a => a.status === 'PENDING').length;
+
+  // Warna status
+  function statusStyle(status){
+    if(status === 'DONE') return 'background:#D1FAE5;color:#065F46;';
+    if(status === 'ON PROGRESS') return 'background:#DBEAFE;color:#1E40AF;';
+    if(status === 'PENDING') return 'background:#FEE2E2;color:#991B1B;';
+    return '';
+  }
+
+  // Build baris meeting
+  let allRows = '';
+  filtered.forEach((mtg, mtgIdx) => {
+    const d = new Date(mtg.tgl || '');
+    const isValid = !isNaN(d.getTime());
+    const tglLengkap = formatTgl(mtg.tgl);
+    const peserta = (mtg.peserta || []).join(', ') || '-';
+    const agendas = mtg.agendas || [];
+    const done = agendas.filter(a => a.status === 'DONE').length;
+    const totalAg = agendas.length;
+    const pct = totalAg === 0 ? 0 : Math.round(agendas.reduce((s,a) => s+(a.pct||0),0)/totalAg);
+    const pctColor = pct >= 80 ? '#22C55E' : pct >= 40 ? '#F59E0B' : '#EF4444';
+
+    // Header meeting
+    allRows += `
+    <tr>
+      <td colspan="8" style="background:linear-gradient(90deg,#4C1D95,#7C3AED);color:#fff;padding:10px 14px;font-weight:800;font-size:13px;border-radius:0;">
+        📋 MEETING ${mtgIdx + 1}: ${mtg.judul || '(Tanpa Judul)'}
+      </td>
+    </tr>
+    <tr style="background:#F3F0FF;">
+      <td colspan="2" style="padding:6px 12px;font-size:11px;color:#5B21B6;border:1px solid #DDD6FE;">
+        📅 <strong>Tanggal:</strong> ${tglLengkap}
+      </td>
+      <td colspan="2" style="padding:6px 12px;font-size:11px;color:#5B21B6;border:1px solid #DDD6FE;">
+        📍 <strong>Lokasi:</strong> ${mtg.lokasi || '-'}
+      </td>
+      <td colspan="2" style="padding:6px 12px;font-size:11px;color:#5B21B6;border:1px solid #DDD6FE;">
+        👥 <strong>Peserta:</strong> ${peserta}
+      </td>
+      <td colspan="2" style="padding:6px 12px;font-size:11px;color:#5B21B6;border:1px solid #DDD6FE;">
+        ✅ <strong>Progress:</strong> 
+        <span style="color:${pctColor};font-weight:800;">${pct}% (${done}/${totalAg} done)</span>
+      </td>
+    </tr>`;
+
+    if(agendas.length === 0){
+      allRows += `
+      <tr>
+        <td colspan="8" style="text-align:center;padding:10px;color:#94A3B8;font-size:12px;border:1px solid #E2E8F0;font-style:italic;">
+          Belum ada agenda tercatat
+        </td>
+      </tr>`;
+    } else {
+      // Header kolom agenda
+      allRows += `
+      <tr style="background:#EDE9FE;">
+        <th style="padding:8px 10px;font-size:11px;font-weight:800;color:#5B21B6;border:1px solid #C4B5FD;text-align:center;min-width:35px;">No</th>
+        <th style="padding:8px 10px;font-size:11px;font-weight:800;color:#5B21B6;border:1px solid #C4B5FD;min-width:260px;">Hasil Meeting / Agenda</th>
+        <th style="padding:8px 10px;font-size:11px;font-weight:800;color:#5B21B6;border:1px solid #C4B5FD;min-width:130px;">PIC</th>
+        <th style="padding:8px 10px;font-size:11px;font-weight:800;color:#5B21B6;border:1px solid #C4B5FD;min-width:110px;">Deadline</th>
+        <th style="padding:8px 10px;font-size:11px;font-weight:800;color:#5B21B6;border:1px solid #C4B5FD;min-width:110px;text-align:center;">Status</th>
+        <th style="padding:8px 10px;font-size:11px;font-weight:800;color:#5B21B6;border:1px solid #C4B5FD;min-width:70px;text-align:center;">% Selesai</th>
+        <th style="padding:8px 10px;font-size:11px;font-weight:800;color:#5B21B6;border:1px solid #C4B5FD;min-width:180px;">Progres 1</th>
+        <th style="padding:8px 10px;font-size:11px;font-weight:800;color:#5B21B6;border:1px solid #C4B5FD;min-width:180px;">Progres 2</th>
+      </tr>`;
+
+      // Baris agenda
+      agendas.forEach((ag, agIdx) => {
+        const rowBg = agIdx % 2 === 0 ? '#FFFFFF' : '#FAF9FF';
+        const ss = statusStyle(ag.status || 'ON PROGRESS');
+        allRows += `
+        <tr style="background:${rowBg};">
+          <td style="text-align:center;font-weight:700;color:#64748B;padding:7px 10px;border:1px solid #E2E8F0;">${agIdx+1}</td>
+          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-size:12px;line-height:1.5;">${(ag.agenda||'').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</td>
+          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-size:12px;">${ag.pic||'-'}</td>
+          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-size:12px;white-space:nowrap;">${ag.deadline||'-'}</td>
+          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-size:12px;text-align:center;${ss}font-weight:700;">${ag.status||'ON PROGRESS'}</td>
+          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-size:12px;text-align:center;font-weight:800;color:${ag.pct>=80?'#22C55E':ag.pct>=40?'#F59E0B':'#EF4444'};">${ag.pct||0}%</td>
+          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-size:12px;">${(ag.progres1||ag.progres||'').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</td>
+          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-size:12px;">${(ag.progres2||'').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</td>
+        </tr>`;
+      });
+
+      // Sub-total meeting
+      allRows += `
+      <tr style="background:#F3F0FF;font-weight:700;">
+        <td colspan="4" style="padding:7px 12px;border:1px solid #DDD6FE;font-size:11px;color:#5B21B6;text-align:right;">
+          Subtotal Meeting ini:
+        </td>
+        <td colspan="4" style="padding:7px 12px;border:1px solid #DDD6FE;font-size:11px;color:#5B21B6;">
+          ${totalAg} agenda | 
+          DONE: ${done} | 
+          ON PROGRESS: ${agendas.filter(a=>a.status==='ON PROGRESS').length} | 
+          PENDING: ${agendas.filter(a=>a.status==='PENDING').length} | 
+          Progress: ${pct}%
+        </td>
+      </tr>`;
+    }
+
+    // Spacer antar meeting
+    allRows += `<tr><td colspan="8" style="padding:6px;border:none;background:#F8FAFC;"></td></tr>`;
+  });
+
+  // Grand summary
+  allRows += `
+  <tr style="background:#4C1D95;color:#fff;font-weight:800;">
+    <td colspan="8" style="padding:10px 14px;font-size:12px;">
+      📊 REKAPITULASI TOTAL: ${totalMeeting} Meeting | ${totalAgenda} Agenda | 
+      DONE: ${totalDone} | ON PROGRESS: ${totalProg} | PENDING: ${totalPending} | 
+      Diekspor: ${tglExport} ${jamExport} WIB
+    </td>
+  </tr>`;
+
+  // Logo base64 (sama dengan yang ada di header)
+  const logoB64 = `data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEI=`;
+
+  const htmlContent = `
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:x="urn:schemas-microsoft-com:office:excel"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="UTF-8">
+<!--[if gte mso 9]>
+<xml>
+  <x:ExcelWorkbook>
+    <x:ExcelWorksheets>
+      <x:ExcelWorksheet>
+        <x:Name>Notulen Meeting</x:Name>
+        <x:WorksheetOptions>
+          <x:DisplayGridlines/>
+        </x:WorksheetOptions>
+      </x:ExcelWorksheet>
+    </x:ExcelWorksheets>
+  </x:ExcelWorkbook>
+</xml>
+<![endif]-->
+<style>
+  body { font-family: Arial, sans-serif; font-size: 11pt; }
+  td, th { vertical-align: top; }
+  table { border-collapse: collapse; width: 100%; }
+</style>
+</head>
+<body>
+<table style="width:100%;border-collapse:collapse;">
+
+  <!-- ===== KOP SURAT ===== -->
+  <tr>
+    <td colspan="8" style="padding:0;">
+      <table style="width:100%;border:2px solid #4C1D95;border-collapse:collapse;">
+        <tr>
+          <td style="width:160px;padding:12px;text-align:center;vertical-align:middle;border-right:2px solid #4C1D95;">
+            <div style="background:linear-gradient(135deg,#4C1D95,#7C3AED);color:#fff;padding:10px 14px;border-radius:8px;display:inline-block;">
+              <div style="font-size:9pt;font-weight:bold;letter-spacing:1px;color:rgba(255,255,255,0.8);">CV.</div>
+              <div style="font-size:18pt;font-weight:900;color:#FCD34D;letter-spacing:2px;">KENCANA</div>
+              <div style="font-size:9pt;font-weight:bold;letter-spacing:3px;color:#fff;">PRINT</div>
+            </div>
+          </td>
+          <td style="padding:12px 20px;vertical-align:middle;">
+            <div style="font-size:18pt;font-weight:900;color:#4C1D95;letter-spacing:1px;">
+              📝 NOTULEN MEETING
+            </div>
+            <div style="font-size:11pt;color:#374151;margin-top:4px;font-weight:600;">
+              CV. Kencana Print — Dokumentasi Hasil Rapat & Tindak Lanjut
+            </div>
+            <div style="font-size:9pt;color:#64748B;margin-top:4px;">
+              Garment &nbsp;·&nbsp; MMT & Spanduk &nbsp;·&nbsp; Kaosan &nbsp;·&nbsp; Digital Printing
+            </div>
+            <div style="font-size:9pt;color:#64748B;margin-top:2px;">
+              Total Meeting: <strong>${totalMeeting}</strong> &nbsp;|&nbsp;
+              Total Agenda: <strong>${totalAgenda}</strong> &nbsp;|&nbsp;
+              Tanggal Export: <strong>${tglExport}, ${jamExport} WIB</strong>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Spacer -->
+  <tr><td colspan="8" style="padding:8px;"></td></tr>
+
+  <!-- ===== RINGKASAN STATISTIK ===== -->
+  <tr>
+    <td colspan="8" style="padding:0;">
+      <table style="width:100%;border-collapse:collapse;border:1px solid #E2E8F0;border-radius:8px;">
+        <tr style="background:#F3F0FF;">
+          <td style="padding:10px 16px;text-align:center;border-right:1px solid #DDD6FE;">
+            <div style="font-size:22pt;font-weight:900;color:#7C3AED;">${totalMeeting}</div>
+            <div style="font-size:9pt;color:#64748B;">Total Meeting</div>
+          </td>
+          <td style="padding:10px 16px;text-align:center;border-right:1px solid #DDD6FE;">
+            <div style="font-size:22pt;font-weight:900;color:#1E293B;">${totalAgenda}</div>
+            <div style="font-size:9pt;color:#64748B;">Total Agenda</div>
+          </td>
+          <td style="padding:10px 16px;text-align:center;border-right:1px solid #DDD6FE;">
+            <div style="font-size:22pt;font-weight:900;color:#065F46;">${totalDone}</div>
+            <div style="font-size:9pt;color:#64748B;">DONE</div>
+          </td>
+          <td style="padding:10px 16px;text-align:center;border-right:1px solid #DDD6FE;">
+            <div style="font-size:22pt;font-weight:900;color:#1E40AF;">${totalProg}</div>
+            <div style="font-size:9pt;color:#64748B;">ON PROGRESS</div>
+          </td>
+          <td style="padding:10px 16px;text-align:center;">
+            <div style="font-size:22pt;font-weight:900;color:#991B1B;">${totalPending}</div>
+            <div style="font-size:9pt;color:#64748B;">PENDING</div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Spacer -->
+  <tr><td colspan="8" style="padding:8px;"></td></tr>
+
+  <!-- ===== DATA MEETING ===== -->
+  ${allRows}
+
+</table>
+</body>
+</html>`;
+
+  const blob = new Blob([htmlContent], {type: 'application/vnd.ms-excel;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const fname = 'Notulen_Meeting_Kencana_Print_' +
+    now.getFullYear() +
+    String(now.getMonth()+1).padStart(2,'0') +
+    String(now.getDate()).padStart(2,'0') + '.xls';
+  a.download = fname;
+  a.click();
+  URL.revokeObjectURL(url);
+  showNotif('✅ Export Excel Notulen berhasil! File "' + fname + '" didownload.', 'success');
+}
 loadFlowData();
 </script>
 <!-- FORM MEETING FULLSCREEN -->
