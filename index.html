@@ -715,7 +715,7 @@ body.home-active{overflow:hidden;}
       </div>
       <button onclick="openModalMeeting()" id="btn-add-meeting" style="background:#F59E0B;color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;font-size:13px;display:none;">➕ Tambah Meeting</button>
       <button onclick="saveNotulenOnly();" style="background:rgba(255,255,255,0.18);color:#fff;border:1px solid rgba(255,255,255,0.35);border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:12px;">💾 Simpan</button>
-<button onclick="window.notulenData=notulenData;exportNotulenExcel()" style="background:#22C55E;color:#fff;border:none;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px;">📊 Export Excel</button>
+<button onclick="notulenData=(window.notulenData&&window.notulenData.length>0)?window.notulenData:notulenData;exportNotulenExcel();" style="background:#22C55E;color:#fff;border:none;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px;">📊 Export Excel</button>
     </div>
   </div>
 
@@ -4117,7 +4117,7 @@ function renderNotulenPage(){
 
 function goToNotulen(){
   // Sync data terbaru
-  notulenData = window.notulenData || notulenData;
+  notulenData = (window.notulenData && window.notulenData.length > 0) ? window.notulenData : notulenData;
   // Sembunyikan halaman home
   const pgHome = document.getElementById('page-home');
   if(pgHome){ pgHome.classList.remove('active'); }
@@ -4721,10 +4721,11 @@ function renderFlowGrid(){
 // EXPORT EXCEL NOTULEN MEETING
 // ============================================================
 function exportNotulenExcel(){
-  // Pastikan pakai data terbaru
-  const filtered = window.notulenData && window.notulenData.length > 0 
-    ? window.notulenData 
-    : notulenData;
+  // Sync dulu sebelum export
+  if(window.notulenData && window.notulenData.length > 0){
+    notulenData = window.notulenData;
+  }
+  const filtered = notulenData;
   if(!filtered || filtered.length === 0){
     showNotif('Tidak ada data notulen untuk di-export.','error');
     return;
