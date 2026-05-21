@@ -81,7 +81,10 @@
         const d = snap.data();
         if(d.appData)  { appData = d.appData;  migrateDocs(); }
         if(d.COLS)     { window.COLS     = d.COLS; }
-        if(d.notulenData) { window.notulenData = d.notulenData; }
+        if(d.notulenData) {
+  window.notulenData = d.notulenData;
+  notulenData = d.notulenData;
+}
         if(d.DEPARTMENTS && Array.isArray(d.DEPARTMENTS)) {
           DEPARTMENTS.length = 0;
           d.DEPARTMENTS.forEach(dep => DEPARTMENTS.push(dep));
@@ -127,7 +130,11 @@
       if(d.DEPT_COLORS) {
         Object.assign(DEPT_COLORS, d.DEPT_COLORS);
       }
-      if(d.notulenData) { window.notulenData = d.notulenData; if(window.currentPage==='notulen') renderNotulenPage(); }
+      if(d.notulenData) {
+  window.notulenData = d.notulenData;
+  notulenData = d.notulenData;
+  if(window.currentPage==='notulen') renderNotulenPage();
+}
       // Simpan ke localStorage sebagai cache
       try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(window.appData)); }catch(e){}
       hideLoadingOverlay();
@@ -1407,47 +1414,38 @@ async function saveData(){
   }
 }
 async function saveNotulenOnly(){
-  // Sync dulu variabel lokal ke window
+  // Sync variabel lokal ke window
   window.notulenData = notulenData;
 
-  // Cek login
   if(!window._currentUser){
     showNotif("⛔ Silakan login terlebih dahulu untuk menyimpan notulen.", "error");
     return;
   }
 
-  // Cek isAdmin (hanya admin yang bisa save ke Firebase)
   if(!window._isAdmin){
     showNotif("⛔ Hanya admin yang bisa menyimpan data ke server.", "error");
     return;
   }
 
-  // Tampilkan loading
   const btnSimpan = document.querySelector('#page-notulen-full button[onclick="saveNotulenOnly();"]');
   if(btnSimpan){ btnSimpan.textContent = "⏳ Menyimpan..."; btnSimpan.disabled = true; }
 
   try {
-    // Ambil referensi Firestore
     const db = window._fbDb;
     if(!db) throw new Error("Firestore belum diinisialisasi.");
 
-    const mainRef = window._fbDocRef(); // doc(db, "dashboard", "main")
+    // Import langsung dari Firebase SDK agar merge:true berfungsi
+    const { doc, setDoc } = await import(
+      "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
+    );
 
-    // Gunakan setDoc dengan merge:true agar HANYA notulenData yang diupdate
-    // Data appData (Dashboard Temuan) TIDAK tersentuh
-    await window._fbSetDoc(mainRef, {
+    const mainRef = doc(db, "dashboard", "main");
+
+    await setDoc(mainRef, {
       notulenData: notulenData,
       savedAt: new Date().toISOString(),
       savedBy: window._currentUser ? window._currentUser.email : 'unknown'
-    }, { merge: true }); // <-- merge:true = hanya update field yang disebut
-
-    // Backup lokal
-    try {
-      const localBackup = localStorage.getItem(STORAGE_KEY);
-      let localData = localBackup ? JSON.parse(localBackup) : {};
-      // Tidak perlu simpan notulen di localStorage appData
-      // localStorage sudah dihandle oleh onSnapshot
-    } catch(e){}
+    }, { merge: true });
 
     showNotif("✅ Notulen berhasil disimpan ke Firebase!", "success");
     setUnsaved(false);
@@ -3685,7 +3683,7 @@ function renderMtgFormRows(){
 }
 
 // === SAVE MEETING (header + agendas from form rows) ===
-function saveMeeting(){
+async function saveMeeting(){
   const tgl = document.getElementById('mtg-tgl').value.trim();
   const judul = document.getElementById('mtg-judul').value.trim();
   if(!tgl){ alert('Tanggal meeting wajib diisi'); return; }
@@ -3726,10 +3724,10 @@ function saveMeeting(){
   }
   window.notulenData = notulenData;
   closeModalMeeting();
-  setUnsaved(true);
   renderNotulenPage();
-  showNotif('Meeting berhasil ' + (_editMtgId?'diupdate':'ditambahkan') + '! (' + agendas.length + ' agenda tersimpan)', 'success');
-  saveNotulenOnly();
+  showNotif('Meeting berhasil ' + (_editMtgId?'diupdate':'ditambahkan') + '! (' + agendas.length + ' agenda tersimpan). Menyimpan ke server...', 'success');
+  await saveNotulenOnly();
+  setUnsaved(false);
 }
 
 // === DELETE MEETING ===
@@ -3842,7 +3840,7 @@ function setMtgStatus(mtgId,agId,val){
   const sel = document.querySelector(`[data-mtg-status="${mtgId}-${agId}"]`);
   if(sel) applyMtgStatusStyle(sel, val);
   window.notulenData = notulenData;
-  saveNotulenOnly();
+  saveNotulenOnly().catch(e => console.error('setMtgStatus save error:', e));
 }
 function applyMtgStatusStyle(sel,val){
   const map={
@@ -3878,10 +3876,10 @@ function savePctMtg(){
   ag.pct=val;
   if(val===100) ag.status='DONE';
   else if(val>0) ag.status='ON PROGRESS';
+  window.notulenData = notulenData;
   document.getElementById('modal-pct-mtg').classList.remove('open');
-  setUnsaved(true);
   renderNotulenPage();
-  saveNotulenOnly();
+  saveNotulenOnly().catch(e => console.error('savePctMtg save error:', e));
 }
 
 // === RENDER STATS ===
