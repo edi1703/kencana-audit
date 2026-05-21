@@ -707,7 +707,7 @@ body.home-active{overflow:hidden;}
         <div class="nstat-num" id="nstat-done">0</div><div class="nstat-lbl">Done</div>
       </div>
       <button onclick="openModalMeeting()" id="btn-add-meeting" style="background:#F59E0B;color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;font-size:13px;display:none;">➕ Tambah Meeting</button>
-      <button onclick="window.notulenData=notulenData;saveData();" style="background:rgba(255,255,255,0.18);color:#fff;border:1px solid rgba(255,255,255,0.35);border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:12px;">💾 Simpan</button>
+      <button onclick="saveNotulenOnly();" style="background:rgba(255,255,255,0.18);color:#fff;border:1px solid rgba(255,255,255,0.35);border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:12px;">💾 Simpan</button>
     </div>
   </div>
 
@@ -1404,6 +1404,59 @@ async function saveData(){
     btn.disabled=false; btn.textContent="💾 Simpan";
     showNotif("❌ Gagal menyimpan: "+e.message,"error");
     console.error("Firebase save error:", e);
+  }
+}
+async function saveNotulenOnly(){
+  // Sync dulu variabel lokal ke window
+  window.notulenData = notulenData;
+
+  // Cek login
+  if(!window._currentUser){
+    showNotif("⛔ Silakan login terlebih dahulu untuk menyimpan notulen.", "error");
+    return;
+  }
+
+  // Cek isAdmin (hanya admin yang bisa save ke Firebase)
+  if(!window._isAdmin){
+    showNotif("⛔ Hanya admin yang bisa menyimpan data ke server.", "error");
+    return;
+  }
+
+  // Tampilkan loading
+  const btnSimpan = document.querySelector('#page-notulen-full button[onclick="saveNotulenOnly();"]');
+  if(btnSimpan){ btnSimpan.textContent = "⏳ Menyimpan..."; btnSimpan.disabled = true; }
+
+  try {
+    // Ambil referensi Firestore
+    const db = window._fbDb;
+    if(!db) throw new Error("Firestore belum diinisialisasi.");
+
+    const mainRef = window._fbDocRef(); // doc(db, "dashboard", "main")
+
+    // Gunakan setDoc dengan merge:true agar HANYA notulenData yang diupdate
+    // Data appData (Dashboard Temuan) TIDAK tersentuh
+    await window._fbSetDoc(mainRef, {
+      notulenData: notulenData,
+      savedAt: new Date().toISOString(),
+      savedBy: window._currentUser ? window._currentUser.email : 'unknown'
+    }, { merge: true }); // <-- merge:true = hanya update field yang disebut
+
+    // Backup lokal
+    try {
+      const localBackup = localStorage.getItem(STORAGE_KEY);
+      let localData = localBackup ? JSON.parse(localBackup) : {};
+      // Tidak perlu simpan notulen di localStorage appData
+      // localStorage sudah dihandle oleh onSnapshot
+    } catch(e){}
+
+    showNotif("✅ Notulen berhasil disimpan ke Firebase!", "success");
+    setUnsaved(false);
+
+  } catch(e) {
+    console.error("saveNotulenOnly error:", e);
+    showNotif("❌ Gagal menyimpan: " + e.message, "error");
+  } finally {
+    if(btnSimpan){ btnSimpan.textContent = "💾 Simpan"; btnSimpan.disabled = false; }
   }
 }
 function loadSop(){
@@ -3676,7 +3729,7 @@ function saveMeeting(){
   setUnsaved(true);
   renderNotulenPage();
   showNotif('Meeting berhasil ' + (_editMtgId?'diupdate':'ditambahkan') + '! (' + agendas.length + ' agenda tersimpan)', 'success');
-  saveData();
+  saveNotulenOnly();
 }
 
 // === DELETE MEETING ===
@@ -3688,7 +3741,7 @@ function deleteMeeting(mtgId){
   notulenData.splice(idx,1); 
   window.notulenData = notulenData;
   setUnsaved(true); 
-  saveData();
+  saveNotulenOnly();
   renderNotulenPage(); 
   showNotif('Meeting dihapus.','info'); 
 }
@@ -3789,7 +3842,7 @@ function setMtgStatus(mtgId,agId,val){
   const sel = document.querySelector(`[data-mtg-status="${mtgId}-${agId}"]`);
   if(sel) applyMtgStatusStyle(sel, val);
   window.notulenData = notulenData;
-  saveData();
+  saveNotulenOnly();
 }
 function applyMtgStatusStyle(sel,val){
   const map={
@@ -3828,7 +3881,7 @@ function savePctMtg(){
   document.getElementById('modal-pct-mtg').classList.remove('open');
   setUnsaved(true);
   renderNotulenPage();
-  saveData();
+  saveNotulenOnly();
 }
 
 // === RENDER STATS ===
