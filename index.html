@@ -353,33 +353,52 @@ thead tr th{
 .mtg-agenda-toolbar-title{font-size:12px;font-weight:800;color:#374151;flex:1;}
 
 /* Agenda Table */
-.mtg-table-wrap{overflow-x:auto;}
-.mtg-table{width:100%;border-collapse:collapse;min-width:900px;}
-.mtg-table thead th{padding:10px 12px;text-align:left;font-weight:800;font-size:12px;white-space:nowrap;border-right:1px solid rgba(255,255,255,0.2);color:#fff;background:linear-gradient(90deg,#5B21B6,#7C3AED);}
-.mtg-table thead th:last-child{border-right:none;text-align:center;min-width:70px;}
+.mtg-table-wrap{overflow-x:auto;overflow-y:hidden;}
+.mtg-table{width:100%;border-collapse:collapse;min-width:900px;table-layout:fixed;}
+
+/* Header sticky + tidak hilang saat scroll */
+.mtg-table thead{position:sticky;top:0;z-index:20;}
+.mtg-table thead th{
+  padding:8px 10px;text-align:left;font-weight:800;font-size:11px;
+  white-space:nowrap;border-right:1px solid rgba(255,255,255,0.2);
+  color:#fff;background:linear-gradient(90deg,#5B21B6,#7C3AED);
+  position:sticky;top:0;z-index:20;
+}
+.mtg-table thead th:last-child{border-right:none;text-align:center;}
+
+/* Lebar kolom — TETAPKAN di sini */
+.mtg-table col.col-no    {width:38px;}
+.mtg-table col.col-hasil {width:auto;}   /* sisanya untuk kolom ini */
+.mtg-table col.col-pic   {width:110px;}
+.mtg-table col.col-dl    {width:105px;}
+.mtg-table col.col-status{width:120px;}
+.mtg-table col.col-pct   {width:90px;}
+.mtg-table col.col-prog  {width:165px;}  /* setiap kolom progres */
+.mtg-table col.col-aksi  {width:52px;}
+
+/* Baris */
 .mtg-table tbody tr{transition:background 0.1s;}
 .mtg-table tbody tr:nth-child(even){background:#F8FAFC;}
 .mtg-table tbody tr:hover{background:#EDE9FE;}
-.mtg-table tbody td{padding:9px 12px;border-right:1px solid #F1F5F9;border-bottom:1px solid #F1F5F9;font-size:13px;color:#1E293B;vertical-align:top;line-height:1.5;}
+.mtg-table tbody td{
+  padding:7px 9px;border-right:1px solid #F1F5F9;
+  border-bottom:1px solid #F1F5F9;font-size:12px;
+  color:#1E293B;vertical-align:top;line-height:1.45;
+  word-break:break-word;overflow-wrap:break-word;
+}
 .mtg-table tbody td:last-child{text-align:center;border-right:none;}
-td.mtg-editable{cursor:pointer;}
-td.mtg-editable:hover{background:rgba(109,40,217,0.06);}
-td.mtg-editable textarea.mtg-cell-editor{width:100%;min-height:50px;border:2px solid #7C3AED;border-radius:6px;padding:6px;font-size:13px;font-family:inherit;resize:vertical;outline:none;background:#fff;}
-.mtg-status-sel{border-radius:8px;padding:4px 8px;font-weight:700;font-size:12px;cursor:pointer;outline:none;border-width:2px;border-style:solid;width:100%;}
-.mtg-pct-wrap{display:flex;flex-direction:column;gap:3px;cursor:pointer;}
-.mtg-pct-num{font-weight:800;font-size:14px;}
-.mtg-pct-bar{height:6px;background:#E2E8F0;border-radius:3px;overflow:hidden;width:80px;}
-.mtg-pct-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#7C3AED,#A78BFA);}
-.btn-mtg-del{background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;border-radius:6px;padding:4px 8px;cursor:pointer;font-weight:700;font-size:12px;}
-.btn-mtg-del:hover{background:#991B1B;color:#fff;}
-.btn-mtg-add-row{background:#EDE9FE;color:#5B21B6;border:2px dashed #A78BFA;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:12px;transition:all 0.15s;}
-.btn-mtg-add-row:hover{background:#DDD6FE;}
-.btn-mtg-edit-meeting{background:#F3F4F6;color:#374151;border:1px solid #E2E8F0;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:600;}
-.btn-mtg-edit-meeting:hover{background:#E2E8F0;}
-.btn-mtg-del-meeting{background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:600;}
-.btn-mtg-del-meeting:hover{background:#991B1B;color:#fff;}
-.mtg-progres-cell{font-size:12px;color:#475569;}
 
+/* Scroll bar atas (mirror) */
+.mtg-scroll-top{
+  overflow-x:auto;overflow-y:hidden;height:10px;
+  background:#E2E8F0;border-radius:6px 6px 0 0;
+  border:1px solid #E2E8F0;border-bottom:none;cursor:pointer;
+}
+.mtg-scroll-top-inner{height:1px;}
+.mtg-scroll-top::-webkit-scrollbar{height:8px;}
+.mtg-scroll-top::-webkit-scrollbar-track{background:#E2E8F0;}
+.mtg-scroll-top::-webkit-scrollbar-thumb{background:#A78BFA;border-radius:4px;}
+.mtg-scroll-top::-webkit-scrollbar-thumb:hover{background:#7C3AED;}
 /* Modal Meeting */
 /* #modal-meeting is now a fullscreen page, styles applied inline */
 #modal-meeting.open{display:flex;}
@@ -3786,7 +3805,49 @@ function deleteAgendaRow(mtgId, agId){
   const idx = m.agendas.findIndex(a=>a.id===agId);
   if(idx>=0){ m.agendas.splice(idx,1); setUnsaved(true); renderNotulenPage(); }
 }
+// === SCROLL SYNC: mirror scroll bar atas ↔ tabel ===
+function initMtgScrollSync(mtgId){
+  const tw  = document.getElementById('tw-'+mtgId);
+  const stb = document.getElementById('stb-'+mtgId);
+  const tbl = document.getElementById('tbl-'+mtgId);
+  const stbi= document.getElementById('stbi-'+mtgId);
+  if(!tw||!stb||!tbl||!stbi) return;
+  stbi.style.width = tbl.scrollWidth+'px';
+  let a=false,b=false;
+  stb.addEventListener('scroll',()=>{ if(b) return; a=true; tw.scrollLeft=stb.scrollLeft; setTimeout(()=>a=false,20); });
+  tw.addEventListener('scroll', ()=>{ if(a) return; b=true; stb.scrollLeft=tw.scrollLeft;  setTimeout(()=>b=false,20); });
+}
 
+// === TAMBAH KOLOM PROGRES ===
+function addMtgProgresCol(mtgId){
+  if(!window._isAdmin){ showNotif('Hanya admin yang bisa menambah kolom.','error'); return; }
+  const m = notulenData.find(x=>x.id===mtgId);
+  if(!m) return;
+  if(!m._progCols) m._progCols = ['progres1','progres2'];
+  if(m._progCols.length >= 8){ showNotif('Maksimal 8 kolom progres.','info'); return; }
+  const n = m._progCols.length + 1;
+  const key = 'progres'+n;
+  m._progCols.push(key);
+  (m.agendas||[]).forEach(ag=>{ if(ag[key]===undefined) ag[key]=''; });
+  setUnsaved(true);
+  renderNotulenPage();
+  showNotif('Kolom Progres '+n+' ditambahkan.','success');
+}
+
+// === HAPUS KOLOM PROGRES TERAKHIR ===
+function delMtgProgresCol(mtgId){
+  if(!window._isAdmin){ showNotif('Hanya admin yang bisa menghapus kolom.','error'); return; }
+  const m = notulenData.find(x=>x.id===mtgId);
+  if(!m) return;
+  if(!m._progCols) m._progCols = ['progres1','progres2'];
+  if(m._progCols.length <= 1){ showNotif('Minimal 1 kolom progres.','info'); return; }
+  if(!confirm('Hapus kolom Progres terakhir? Data di kolom itu akan hilang.')) return;
+  const key = m._progCols.pop();
+  (m.agendas||[]).forEach(ag=>{ delete ag[key]; });
+  setUnsaved(true);
+  renderNotulenPage();
+  showNotif('Kolom '+key+' dihapus.','info');
+}
 // === INLINE EDIT AGENDA CELL ===
 let _mtgEditCell = null;
 function startMtgEdit(td, mtgId, agId, field){
@@ -4033,82 +4094,119 @@ function renderNotulenPage(){
       ${ptcHtml?`<div class="mtg-participants-row">${ptcHtml}</div>`:''}
       ${mtg.catatan?`<div style="padding:8px 18px 4px;font-size:12px;color:#475569;background:#FAFAFA;border-bottom:1px dashed #E2E8F0;"><span style="font-weight:700;color:#6D28D9;">📋 Catatan: </span>${mtg.catatan}</div>`:''}
       <div class="mtg-agenda-section">
-        <div class="mtg-agenda-toolbar">
-          <span class="mtg-agenda-toolbar-title">📌 Daftar Agenda & Tindak Lanjut</span>
-          ${window._canEditNotulen?`<button class="btn-mtg-add-row" onclick="addAgendaRow('${mtg.id}')">+ Tambah Agenda</button>`:''}
-        </div>
-        <div class="mtg-table-wrap">
-          <table class="mtg-table">
-            <thead><tr>
-              <th style="min-width:30px;text-align:center;">No</th>
-              <th style="min-width:240px;">Hasil Meeting / Agenda</th>
-              <th style="min-width:140px;">PIC</th>
-              <th style="min-width:120px;">Deadline</th>
-              <th style="min-width:130px;">Status</th>
-              <th style="min-width:110px;">% Selesai</th>
-              <th style="min-width:200px;">Progres 1</th>
-              <th style="min-width:200px;">Progres 2</th>
-              <th style="min-width:60px;text-align:center;">Aksi</th>
-            </tr></thead>
-            <tbody id="mtg-tbody-${mtg.id}">
-            </tbody>
-          </table>
-        </div>
-        ${total===0?`<div style="padding:20px;text-align:center;color:#94A3B8;font-size:13px;">Belum ada agenda. ${window._canEditNotulen?'Klik "+ Tambah Agenda" untuk menambah.':''}</div>`:''}
-      </div>`;
+        `<div class="mtg-agenda-section">
+  <div class="mtg-agenda-toolbar">
+    <span class="mtg-agenda-toolbar-title">📌 Daftar Agenda & Tindak Lanjut</span>
+    <div style="display:flex;gap:6px;align-items:center;">
+      ${window._isAdmin ? `
+        <button onclick="addMtgProgresCol('${mtg.id}')" 
+          style="background:#EDE9FE;color:#5B21B6;border:1px dashed #A78BFA;
+                 border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;"
+          title="Tambah kolom Progres">+ Kolom</button>
+        <button onclick="delMtgProgresCol('${mtg.id}')" 
+          style="background:#FEE2E2;color:#991B1B;border:1px dashed #FECACA;
+                 border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;"
+          title="Hapus kolom Progres terakhir">− Kolom</button>
+      ` : ''}
+      ${window._canEditNotulen ? `
+        <button class="btn-mtg-add-row" onclick="addAgendaRow('${mtg.id}')">
+          + Tambah Agenda
+        </button>` : ''}
+    </div>
+  </div>
+  <!-- SCROLL BAR ATAS -->
+  <div class="mtg-scroll-top" id="stb-${mtg.id}">
+    <div class="mtg-scroll-top-inner" id="stbi-${mtg.id}"></div>
+  </div>
+  <div class="mtg-table-wrap" id="tw-${mtg.id}">
+    <table class="mtg-table" id="tbl-${mtg.id}">
+      <colgroup>
+        <col class="col-no">
+        <col class="col-hasil">
+        <col class="col-pic">
+        <col class="col-dl">
+        <col class="col-status">
+        <col class="col-pct">
+        ${(mtg._progCols||['progres1','progres2'])
+          .map(()=>'<col class="col-prog">').join('')}
+        <col class="col-aksi">
+      </colgroup>
+      <thead><tr>
+        <th style="text-align:center;">No</th>
+        <th>Hasil Meeting / Agenda</th>
+        <th>PIC</th>
+        <th>Deadline</th>
+        <th>Status</th>
+        <th>% Selesai</th>
+        ${(mtg._progCols||['progres1','progres2'])
+          .map((k,i)=>`<th>Progres ${i+1}</th>`).join('')}
+        <th style="text-align:center;">Aksi</th>
+      </tr></thead>
+      <tbody id="mtg-tbody-${mtg.id}"></tbody>
+    </table>
+  </div>
+  ${total===0 ? `<div style="padding:16px;text-align:center;color:#94A3B8;font-size:12px;">
+    Belum ada agenda. ${window._canEditNotulen?'Klik "+ Tambah Agenda".':''}</div>` : ''}
+</div>`
 
     list.appendChild(card);
-
+setTimeout(()=>initMtgScrollSync(mtg.id), 60);
     // Render agenda rows
     const tbody=document.getElementById('mtg-tbody-'+mtg.id);
     if(!tbody) return;
     agendas.forEach((ag,idx)=>{
-      const tr=document.createElement('tr');
-      const pctColor2=ag.pct>=80?'#22C55E':ag.pct>=40?'#F59E0B':'#EF4444';
-      const statusMap={
-        'ON PROGRESS':  {bg:'#DBEAFE',color:'#1E40AF',border:'#BFDBFE'},
-        'DONE':    {bg:'#D1FAE5',color:'#065F46',border:'#A7F3D0'},
-        'PENDING': {bg:'#FEE2E2',color:'#991B1B',border:'#FECACA'}
-      };
-      const ss=statusMap[ag.status]||statusMap['ON PROGRESS'];
+  const progCols = mtg._progCols || ['progres1','progres2'];
+  const tr = document.createElement('tr');
+  const pctColor2 = ag.pct>=80?'#22C55E':ag.pct>=40?'#F59E0B':'#EF4444';
+  const statusMap={
+    'ON PROGRESS':{bg:'#DBEAFE',color:'#1E40AF',border:'#BFDBFE'},
+    'DONE':       {bg:'#D1FAE5',color:'#065F46',border:'#A7F3D0'},
+    'PENDING':    {bg:'#FEE2E2',color:'#991B1B',border:'#FECACA'}
+  };
+  const ss=statusMap[ag.status]||statusMap['ON PROGRESS'];
+  const canEdit=window._canEditNotulen;
 
-      const makeEditTd=(field,val,w)=>`<td class="mtg-editable" style="min-width:${w}px;max-width:${w}px;${window._canEditNotulen?'':'cursor:default;'}" onclick="${window._canEditNotulen?`startMtgEdit(this,'${mtg.id}','${ag.id}','${field}')`:''}">
-        ${val?`<div class="cell-text">${val.replace(/</g,'&lt;')}</div>`:`<div class="cell-placeholder">${window._canEditNotulen?'Klik untuk edit...':'—'}</div>`}
-      </td>`;
+  const makeEditTd=(field,val)=>
+    `<td class="mtg-editable" style="${!canEdit?'cursor:default;':''}"
+       onclick="${canEdit?`startMtgEdit(this,'${mtg.id}','${ag.id}','${field}')`:''}">
+       ${val?`<div class="cell-text">${val.replace(/</g,'&lt;')}</div>`
+            :`<div class="cell-placeholder">${canEdit?'Klik untuk edit...':'—'}</div>`}
+     </td>`;
 
-      const statusOpts=['ON PROGRESS','DONE','PENDING'].map(s=>
-        `<option value="${s}"${ag.status===s?' selected':''}>${s}</option>`).join('');
+  const statusOpts=['ON PROGRESS','DONE','PENDING'].map(s=>
+    `<option value="${s}"${ag.status===s?' selected':''}>${s}</option>`).join('');
 
-      tr.innerHTML=`
-        <td style="text-align:center;font-weight:700;color:#64748B;">${idx+1}</td>
-        ${makeEditTd('agenda',ag.agenda,240)}
-        ${makeEditTd('pic',ag.pic,140)}
-        <td class="mtg-editable" style="min-width:120px;max-width:120px;${window._canEditNotulen?'':'cursor:default;'}" onclick="${window._canEditNotulen?`startMtgEdit(this,'${mtg.id}','${ag.id}','deadline')`:''}">
-          ${ag.deadline?`<div class="cell-text" style="color:#475569;">📅 ${ag.deadline}</div>`:`<div class="cell-placeholder">${window._canEditNotulen?'Klik...':'—'}</div>`}
-        </td>
-        <td style="min-width:130px;max-width:130px;">
-          <select class="mtg-status-sel" data-mtg-status="${mtg.id}-${ag.id}"
-            style="background:${ss.bg};color:${ss.color};border-color:${ss.border};"
-            onchange="setMtgStatus('${mtg.id}','${ag.id}',this.value)"
-            ${window._canEditNotulen?'':'disabled'}>
-            ${statusOpts}
-          </select>
-        </td>
-        <td style="min-width:110px;max-width:110px;cursor:${window._canEditNotulen?'pointer':'default'};" onclick="${window._canEditNotulen?`openPctMtg('${mtg.id}','${ag.id}')`:''}">
-          <div class="mtg-pct-wrap">
-            <div style="display:flex;align-items:center;gap:5px;">
-              <span class="mtg-pct-num" style="color:${pctColor2}">${ag.pct||0}%</span>
-            </div>
-            <div class="mtg-pct-bar"><div class="mtg-pct-fill" style="width:${ag.pct||0}%;background:${pctColor2}"></div></div>
-          </div>
-        </td>
-        ${makeEditTd('progres1',ag.progres1||ag.progres||'',200)}
-        ${makeEditTd('progres2',ag.progres2||'',200)}
-        <td style="text-align:center;">
-          <button class="btn-mtg-del" onclick="deleteAgendaRow('${mtg.id}','${ag.id}')">🗑️</button>
-        </td>`;
-      tbody.appendChild(tr);
-    });
+  const progTds=progCols.map(k=>makeEditTd(k,ag[k]||'')).join('');
+
+  tr.innerHTML=`
+    <td style="text-align:center;font-weight:700;color:#64748B;">${idx+1}</td>
+    ${makeEditTd('agenda',ag.agenda)}
+    ${makeEditTd('pic',ag.pic)}
+    <td class="mtg-editable" style="${!canEdit?'cursor:default;':''}"
+        onclick="${canEdit?`startMtgEdit(this,'${mtg.id}','${ag.id}','deadline')`:''}">
+      ${ag.deadline
+        ?`<div class="cell-text" style="color:#475569;font-size:11px;">📅 ${ag.deadline}</div>`
+        :`<div class="cell-placeholder">${canEdit?'Klik...':'—'}</div>`}
+    </td>
+    <td>
+      <select class="mtg-status-sel" data-mtg-status="${mtg.id}-${ag.id}"
+        style="background:${ss.bg};color:${ss.color};border-color:${ss.border};"
+        onchange="setMtgStatus('${mtg.id}','${ag.id}',this.value)"
+        ${canEdit?'':'disabled'}>${statusOpts}</select>
+    </td>
+    <td style="cursor:${canEdit?'pointer':'default'};"
+        onclick="${canEdit?`openPctMtg('${mtg.id}','${ag.id}')`:''}">
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <span style="font-weight:800;font-size:13px;color:${pctColor2}">${ag.pct||0}%</span>
+        <div style="height:5px;background:#E2E8F0;border-radius:3px;overflow:hidden;width:70px;">
+          <div style="height:100%;border-radius:3px;background:${pctColor2};width:${ag.pct||0}%;"></div>
+        </div>
+      </div>
+    </td>
+    ${progTds}
+    <td><button class="btn-mtg-del" onclick="deleteAgendaRow('${mtg.id}','${ag.id}')">🗑️</button></td>`;
+  tbody.appendChild(tr);
+});
   });
 }
 
