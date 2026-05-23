@@ -331,7 +331,7 @@ thead tr th{
 .nstat-lbl{font-size:10px;}
 
 /* Meeting Card */
-.mtg-card{background:#fff;border-radius:16px;box-shadow:0 2px 16px rgba(0,0,0,0.08);border:2px solid #E2E8F0;overflow:hidden;transition:box-shadow 0.2s;}
+.mtg-card{background:#fff;border-radius:0;box-shadow:0 2px 16px rgba(0,0,0,0.08);border:none;border-bottom:2px solid #E2E8F0;overflow:hidden;transition:box-shadow 0.2s;width:100%;}
 .mtg-card:hover{box-shadow:0 6px 28px rgba(0,0,0,0.13);}
 .mtg-card-header{padding:14px 18px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;cursor:pointer;user-select:none;}
 .mtg-card-header-left{display:flex;align-items:flex-start;gap:14px;flex:1;}
@@ -353,7 +353,7 @@ thead tr th{
 .mtg-agenda-toolbar-title{font-size:12px;font-weight:800;color:#374151;flex:1;}
 
 /* Agenda Table */
-.mtg-table-wrap{overflow-x:auto;overflow-y:hidden;}
+.mtg-table-wrap{overflow-x:auto;overflow-y:hidden;width:100%;}
 .mtg-table{width:100%;border-collapse:collapse;min-width:900px;table-layout:fixed;}
 
 /* Header sticky + tidak hilang saat scroll */
@@ -734,7 +734,7 @@ body.home-active{overflow:hidden;}
       </div>
       <button onclick="openModalMeeting()" id="btn-add-meeting" style="background:#F59E0B;color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;font-size:13px;display:none;">➕ Tambah Meeting</button>
       <button onclick="saveNotulenOnly();" style="background:rgba(255,255,255,0.18);color:#fff;border:1px solid rgba(255,255,255,0.35);border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:12px;">💾 Simpan</button>
-<button onclick="notulenData=(window.notulenData&&window.notulenData.length>0)?window.notulenData:notulenData;exportNotulenExcel();" style="background:#22C55E;color:#fff;border:none;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px;">📊 Export Excel</button>
+<button onclick="window.notulenData=notulenData;exportNotulenExcel();" style="background:#22C55E;color:#fff;border:none;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px;">📊 Export Excel</button>
     </div>
   </div>
 
@@ -755,8 +755,8 @@ body.home-active{overflow:hidden;}
   </div>
 
   <!-- DAFTAR NOTULEN -->
-  <div style="flex:1;overflow-y:auto;padding:20px 24px 40px;background:#F0F4FF;">
-    <div id="notul-list" style="display:flex;flex-direction:column;gap:16px;max-width:1400px;margin:0 auto;"></div>
+  <div style="flex:1;overflow-y:auto;padding:12px 0 40px;background:#F0F4FF;">
+    <div id="notul-list" style="display:flex;flex-direction:column;gap:16px;padding:0 10px;"></div>
   </div>
 </div>
 
@@ -4093,7 +4093,6 @@ function renderNotulenPage(){
       </div>
       ${ptcHtml?`<div class="mtg-participants-row">${ptcHtml}</div>`:''}
       ${mtg.catatan?`<div style="padding:8px 18px 4px;font-size:12px;color:#475569;background:#FAFAFA;border-bottom:1px dashed #E2E8F0;"><span style="font-weight:700;color:#6D28D9;">📋 Catatan: </span>${mtg.catatan}</div>`:''}
-      <div class="mtg-agenda-section">
         <div class="mtg-agenda-section">
   <div class="mtg-agenda-toolbar">
     <span class="mtg-agenda-toolbar-title">📌 Daftar Agenda & Tindak Lanjut</span>
@@ -4113,7 +4112,6 @@ function renderNotulenPage(){
           + Tambah Agenda
         </button>` : ''}
     </div>
-  </div>
   <!-- SCROLL BAR ATAS -->
   <div class="mtg-scroll-top" id="stb-${mtg.id}">
     <div class="mtg-scroll-top-inner" id="stbi-${mtg.id}"></div>
@@ -4743,7 +4741,7 @@ function deleteFlow(id){
 }
 
 function openFlowViewer(id){
-  const f = flowData.find(x=>x.id===id);
+  const f = [...FLOW_BUILTIN, ...flowData].find(x=>x.id===id);
   if(!f){ showNotif('Data tidak ditemukan.','error'); return; }
   document.getElementById('flow-viewer-title').textContent = f.name;
   const iframe = document.getElementById('flow-iframe');
@@ -4769,13 +4767,15 @@ document.getElementById('modal-flow-viewer').addEventListener('click', function(
 });
 
 function renderFlowGrid(){
+  // Gabungkan built-in + uploaded
+  const allFlow = [...FLOW_BUILTIN, ...flowData];
   const search = (document.getElementById('flow-search').value||'').toLowerCase();
-  const filtered = flowData.filter(f =>
+  const filtered = allFlow.filter(f =>
     !search ||
     f.name.toLowerCase().includes(search) ||
     (f.fileName||'').toLowerCase().includes(search)
   );
-  document.getElementById('flow-stat-total').textContent = flowData.length;
+  document.getElementById('flow-stat-total').textContent = allFlow.length;
   document.getElementById('flow-count-label').textContent = filtered.length + ' flow ditemukan';
 
   const grid = document.getElementById('flow-grid');
@@ -4785,10 +4785,7 @@ function renderFlowGrid(){
     grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#94A3B8;">
       <div style="font-size:64px;margin-bottom:12px;">🔄</div>
       <div style="font-size:18px;font-weight:700;color:#64748B;margin-bottom:6px;">
-        ${flowData.length===0?'Belum ada Flow Bisnis':'Tidak ada hasil pencarian'}
-      </div>
-      <div style="font-size:13px;">
-        ${window._isAdmin&&flowData.length===0?'Login sebagai admin lalu klik tombol Upload untuk menambahkan.':''}
+        ${allFlow.length===0?'Belum ada Flow Bisnis':'Tidak ada hasil pencarian'}
       </div>
     </div>`;
     return;
