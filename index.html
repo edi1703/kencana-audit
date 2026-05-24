@@ -3999,8 +3999,7 @@ function populateMonthFilter(){
 function renderNotulenPage(){
   // GUARD: jangan render jika halaman notulen tidak tampil
   const pgNotul = document.getElementById('page-notulen-full');
-  if(!pgNotul || (pgNotul.style.display !== 'flex' && pgNotul.style.display !== '')) return;
-// Pastikan display sudah flex
+  if(!pgNotul) return;
 if(pgNotul.style.display !== 'flex') pgNotul.style.display = 'flex';
   // Update auth bar di notulen
   const dot = document.getElementById('notulen-auth-dot');
@@ -4265,7 +4264,7 @@ function goToNotulen(){
   if(btnAdd) btnAdd.style.display = window._canEditNotulen ? 'inline-flex' : 'none';
 
   // Render setelah DOM benar-benar siap (delay lebih besar)
-  setTimeout(()=>{ renderNotulenPage(); }, 150);
+  setTimeout(()=>{ renderNotulenPage(); }, 300);
 }
 function closeNotulen(){
   // Sembunyikan halaman notulen
