@@ -4000,7 +4000,9 @@ function populateMonthFilter(){
 function renderNotulenPage(){
   // GUARD: jangan render jika halaman notulen tidak tampil
   const pgNotul = document.getElementById('page-notulen-full');
-  if(!pgNotul || pgNotul.style.display !== 'flex') return;
+  if(!pgNotul || (pgNotul.style.display !== 'flex' && pgNotul.style.display !== '')) return;
+// Pastikan display sudah flex
+if(pgNotul.style.display !== 'flex') pgNotul.style.display = 'flex';
   // Update auth bar di notulen
   const dot = document.getElementById('notulen-auth-dot');
   const txt = document.getElementById('notulen-auth-text');
@@ -4252,16 +4254,19 @@ function goToNotulen(){
   if(pgDash){ pgDash.style.display='none'; }
   document.body.classList.remove('home-active');
 
-  // Tampilkan halaman notulen
+  // Tampilkan halaman notulen DULU sebelum render
   const pgNotul = document.getElementById('page-notulen-full');
-  if(pgNotul){ pgNotul.style.display = 'flex'; }
+  if(pgNotul){
+    pgNotul.style.display = 'flex';
+    pgNotul.style.flexDirection = 'column';
+  }
 
   // Tampilkan/sembunyikan tombol sesuai role
   const btnAdd = document.getElementById('btn-add-meeting');
   if(btnAdd) btnAdd.style.display = window._canEditNotulen ? 'inline-flex' : 'none';
 
-  // Render dengan sedikit delay agar DOM siap
-  setTimeout(()=>{ renderNotulenPage(); }, 80);
+  // Render setelah DOM benar-benar siap (delay lebih besar)
+  setTimeout(()=>{ renderNotulenPage(); }, 150);
 }
 function closeNotulen(){
   // Sembunyikan halaman notulen
