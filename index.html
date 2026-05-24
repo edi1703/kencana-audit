@@ -716,7 +716,7 @@ body.home-active{overflow:hidden;}
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
       <button onclick="closeNotulen()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;font-weight:700;font-size:11px;">← Home</button>
-      <button id="btn-toggle-notulen-header" onclick="window.toggleNotulenHeader()" style="background:#F59E0B;color:#fff;border:none;border-radius:6px;padding:4px 12px;cursor:pointer;font-weight:700;font-size:11px;display:flex;align-items:center;gap:4px;">🙈 Sembunyikan Header</button>
+      
     </div>
   </div>
 
@@ -5153,29 +5153,7 @@ function exportNotulenExcelSafe(){
 }
   
 loadFlowData();
-  // ============================================================
-// TOGGLE NOTULEN HEADER (sembunyikan/tampilkan)
-// ============================================================
-let _notulenHeaderVisible = true;
-function toggleNotulenHeader(){
-  const header = document.getElementById('notulen-main-header');
-  const btn = document.getElementById('btn-toggle-notulen-header');
-  if(!header || !btn) return;
-  _notulenHeaderVisible = !_notulenHeaderVisible;
-  if(_notulenHeaderVisible){
-    header.style.maxHeight = '200px';
-    header.style.opacity = '1';
-    header.style.padding = '0 20px';
-    btn.textContent = '🙈 Sembunyikan Header';
-    btn.style.background = '#F59E0B';
-  } else {
-    header.style.maxHeight = '0';
-    header.style.opacity = '0';
-    header.style.padding = '0';
-    btn.textContent = '👁 Tampilkan Header';
-    btn.style.background = '#22C55E';
-  }
-}
+
 </script>
 <!-- FORM MEETING FULLSCREEN -->
 <div id="modal-meeting" style="display:none;position:fixed;inset:0;z-index:10000;flex-direction:column;background:#F0F4FF;font-family:'Plus Jakarta Sans','Segoe UI',sans-serif;">
