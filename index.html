@@ -702,7 +702,7 @@ body.home-active{overflow:hidden;}
 </head>
 <body>
 <!-- ===== HALAMAN NOTULEN MEETING (STANDALONE FULLSCREEN) ===== -->
-<div id="page-notulen-full" style="display:none;position:fixed;inset:0;z-index:9998;flex-direction:column;background:#F0F4FF;font-family:'Plus Jakarta Sans',sans-serif;">
+<div id="page-notulen-full" style="display:none;position:fixed;inset:0;z-index:9998;flex-direction:column;background:#F0F4FF;font-family:'Plus Jakarta Sans',sans-serif;overflow:hidden;">
 
   <!-- TOP BAR: header ungu dengan tombol hide/show -->
   <!-- Tombol toggle selalu tampil, posisi fixed -->
@@ -744,7 +744,7 @@ body.home-active{overflow:hidden;}
       </div>
       <button onclick="openModalMeeting()" id="btn-add-meeting" style="background:#F59E0B;color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;font-size:13px;display:none;">➕ Tambah Meeting</button>
       <button onclick="saveNotulenOnly();" style="background:rgba(255,255,255,0.18);color:#fff;border:1px solid rgba(255,255,255,0.35);border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:12px;">💾 Simpan</button>
-      <button onclick="if(window.notulenData&&window.notulenData.length>0){notulenData=window.notulenData;}if(typeof exportNotulenExcel==='function'){exportNotulenExcel();}else{alert('Fungsi export belum siap.');}" style="background:#22C55E;color:#fff;border:none;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px;">📊 Export Excel</button>
+      <button onclick="exportNotulenExcelSafe()" style="background:#22C55E;color:#fff;border:none;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px;">📊 Export Excel</button>
     </div>
   </div>
 
@@ -3527,13 +3527,24 @@ updateSopDeptFilter();
 
 <script>
 function goToDashboard(){
-  document.getElementById('page-home').classList.remove('active');
+  // Sembunyikan semua halaman lain
+  const pgHome = document.getElementById('page-home');
+  if(pgHome){ pgHome.classList.remove('active'); pgHome.style.display='none'; }
+  const pgNotul = document.getElementById('page-notulen-full');
+  if(pgNotul){ pgNotul.style.display = 'none'; }
+  // Tampilkan dashboard
   document.getElementById('page-dashboard').style.display='block';
   document.body.classList.remove('home-active');
 }
+}
 function goToHome(){
+  // Sembunyikan semua halaman lain
   document.getElementById('page-dashboard').style.display='none';
-  document.getElementById('page-home').classList.add('active');
+  const pgNotul = document.getElementById('page-notulen-full');
+  if(pgNotul){ pgNotul.style.display = 'none'; }
+  // Tampilkan home
+  const pgHome = document.getElementById('page-home');
+  if(pgHome){ pgHome.classList.add('active'); pgHome.style.display='flex'; }
   document.body.classList.add('home-active');
 }
 const _HARI=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
@@ -4222,28 +4233,39 @@ setTimeout(()=>initMtgScrollSync(mtg.id), 60);
 // (showSoon tetap dipakai untuk modul lain)
 
 function goToNotulen(){
-  // Sync data terbaru
-  notulenData = (window.notulenData && window.notulenData.length > 0) ? window.notulenData : notulenData;
-  // Sembunyikan halaman home
+  // Sync data terbaru dari Firebase
+  if(window.notulenData && Array.isArray(window.notulenData)){
+    notulenData = window.notulenData;
+  }
+
+  // Sembunyikan semua halaman lain
   const pgHome = document.getElementById('page-home');
-  if(pgHome){ pgHome.classList.remove('active'); }
+  if(pgHome){ pgHome.classList.remove('active'); pgHome.style.display='none'; }
+  const pgDash = document.getElementById('page-dashboard');
+  if(pgDash){ pgDash.style.display='none'; }
   document.body.classList.remove('home-active');
-  // Tampilkan halaman notulen standalone (fullscreen)
+
+  // Tampilkan halaman notulen
   const pgNotul = document.getElementById('page-notulen-full');
   if(pgNotul){ pgNotul.style.display = 'flex'; }
-  // Render konten notulen
-  renderNotulenPage();
-  // Tampilkan tombol tambah meeting jika admin
+
+  // Tampilkan/sembunyikan tombol sesuai role
   const btnAdd = document.getElementById('btn-add-meeting');
-  if(btnAdd) btnAdd.style.display = window._isAdmin ? '' : 'none';
+  if(btnAdd) btnAdd.style.display = window._canEditNotulen ? 'inline-flex' : 'none';
+
+  // Render dengan sedikit delay agar DOM siap
+  setTimeout(()=>{ renderNotulenPage(); }, 80);
 }
 function closeNotulen(){
   // Sembunyikan halaman notulen
   const pgNotul = document.getElementById('page-notulen-full');
   if(pgNotul){ pgNotul.style.display = 'none'; }
-  // Tampilkan kembali halaman home
+
+  // Tampilkan kembali halaman home, sembunyikan dashboard
+  const pgDash = document.getElementById('page-dashboard');
+  if(pgDash){ pgDash.style.display = 'none'; }
   const pgHome = document.getElementById('page-home');
-  if(pgHome){ pgHome.classList.add('active'); }
+  if(pgHome){ pgHome.classList.add('active'); pgHome.style.display = 'flex'; }
   document.body.classList.add('home-active');
 }
 function showSoon(name){ document.getElementById('modal-soon-title').textContent='🚀 '+name; document.getElementById('modal-soon').classList.add('open'); }
