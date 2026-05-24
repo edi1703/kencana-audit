@@ -5152,22 +5152,16 @@ function toggleNotulenHeader(){
   if(!header || !btn) return;
   _notulenHeaderVisible = !_notulenHeaderVisible;
   if(_notulenHeaderVisible){
-    // TAMPILKAN HEADER
-    header.style.maxHeight = '300px';
+    header.style.maxHeight = '200px';
     header.style.opacity = '1';
     header.style.padding = '0 20px';
-    header.style.minHeight = '62px';
-    header.style.overflow = 'hidden';
-    btn.innerHTML = '🙈 Sembunyikan Header';
+    btn.textContent = '🙈 Sembunyikan Header';
     btn.style.background = '#F59E0B';
   } else {
-    // SEMBUNYIKAN HEADER
-    header.style.maxHeight = '0px';
+    header.style.maxHeight = '0';
     header.style.opacity = '0';
     header.style.padding = '0';
-    header.style.minHeight = '0';
-    header.style.overflow = 'hidden';
-    btn.innerHTML = '👁 Tampilkan Header';
+    btn.textContent = '👁 Tampilkan Header';
     btn.style.background = '#22C55E';
   }
 }
