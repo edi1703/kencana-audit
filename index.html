@@ -133,7 +133,11 @@
       if(d.notulenData) {
   window.notulenData = d.notulenData;
   notulenData = d.notulenData;
-  if(window.currentPage==='notulen') renderNotulenPage();
+  // HANYA render notulen jika halaman notulen sedang aktif/tampil
+  const pgNotul = document.getElementById('page-notulen-full');
+  if(pgNotul && pgNotul.style.display === 'flex') {
+    renderNotulenPage();
+  }
 }
       // Simpan ke localStorage sebagai cache
       try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(window.appData)); }catch(e){}
@@ -3994,6 +3998,10 @@ function populateMonthFilter(){
 
 // === RENDER NOTULEN PAGE ===
 function renderNotulenPage(){
+  function renderNotulenPage(){
+  // GUARD: jangan render jika halaman notulen tidak tampil
+  const pgNotul = document.getElementById('page-notulen-full');
+  if(!pgNotul || pgNotul.style.display !== 'flex') return;
   // Update auth bar di notulen
   const dot = document.getElementById('notulen-auth-dot');
   const txt = document.getElementById('notulen-auth-text');
