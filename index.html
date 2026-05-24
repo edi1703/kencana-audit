@@ -721,7 +721,7 @@ body.home-active{overflow:hidden;}
   </div>
 
   <!-- HEADER UTAMA yang bisa di-hide -->
-  <div id="notulen-main-header" style="background:linear-gradient(135deg,#4C1D95 0%,#6D28D9 50%,#7C3AED 100%);color:#fff;padding:0 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;flex-shrink:0;box-shadow:0 3px 16px rgba(109,40,217,0.4);min-height:62px;overflow:hidden;transition:max-height 0.4s ease,opacity 0.4s ease,min-height 0.4s ease,padding 0.4s ease;max-height:400px;opacity:1;" data-hidden="0">
+  <div id="notulen-main-header" style="background:linear-gradient(135deg,#4C1D95 0%,#6D28D9 50%,#7C3AED 100%);color:#fff;padding:0 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;flex-shrink:0;box-shadow:0 3px 16px rgba(109,40,217,0.4);min-height:62px;overflow:hidden;transition:max-height 0.35s ease,padding 0.35s ease,opacity 0.35s ease,min-height 0.35s ease;max-height:300px;opacity:1;">
       <div id="notulen-auth-bar" style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.2);border-radius:8px;padding:4px 12px;">
         <span id="notulen-auth-dot" style="width:8px;height:8px;border-radius:50%;background:#64748B;display:inline-block;"></span>
         <span id="notulen-auth-text" style="font-size:11px;color:rgba(255,255,255,0.8);">Memuat...</span>
@@ -5140,31 +5140,6 @@ function exportNotulenExcelSafe(){
   // Panggil fungsi export utama
   exportNotulenExcel();
 }
-  window.toggleNotulenHeader = function(){
-  var h = document.getElementById('notulen-main-header');
-  var b = document.getElementById('btn-toggle-notulen-header');
-  if(!h || !b) return;
-  var hidden = h.getAttribute('data-hidden') === '1';
-  if(hidden){
-    h.style.maxHeight = '400px';
-    h.style.minHeight = '62px';
-    h.style.opacity = '1';
-    h.style.padding = '0 20px';
-    b.innerHTML = '🙈 Sembunyikan Header';
-    b.style.background = '#F59E0B';
-    h.setAttribute('data-hidden','0');
-  } else {
-    h.style.maxHeight = '0px';
-    h.style.minHeight = '0px';
-    h.style.opacity = '0';
-    h.style.padding = '0 20px';
-    b.innerHTML = '👁 Tampilkan Header';
-    b.style.background = '#22C55E';
-    h.setAttribute('data-hidden','1');
-  }
-};
-window.exportNotulenExcel = exportNotulenExcel;
-window.exportNotulenExcelSafe = exportNotulenExcelSafe;
   
 loadFlowData();
   // ============================================================
