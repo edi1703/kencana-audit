@@ -133,11 +133,10 @@
       if(d.notulenData) {
   window.notulenData = d.notulenData;
   notulenData = d.notulenData;
-  // HANYA render notulen jika halaman notulen sedang aktif/tampil
-  const pgNotul = document.getElementById('page-notulen-full');
-  if(pgNotul && pgNotul.style.display === 'flex') {
-    renderNotulenPage();
-  }
+  // HANYA render notulen jika flag aktif
+        if(window._notulenPageActive) {
+          renderNotulenPage();
+        }
 }
       // Simpan ke localStorage sebagai cache
       try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(window.appData)); }catch(e){}
@@ -4011,7 +4010,7 @@ function renderNotulenPage(){
   // GUARD: jangan render jika halaman notulen tidak tampil
   const pgNotul = document.getElementById('page-notulen-full');
   if(!pgNotul) return;
-if(pgNotul.style.display !== 'flex') return;
+    if(!window._notulenPageActive && pgNotul.style.display !== 'flex') return;
   // Update auth bar di notulen
   const dot = document.getElementById('notulen-auth-dot');
   const txt = document.getElementById('notulen-auth-text');
@@ -4255,33 +4254,41 @@ function goToNotulen(){
   if(window.notulenData && Array.isArray(window.notulenData)){
     notulenData = window.notulenData;
   }
-// Sembunyikan semua halaman lain
+
+  // Sembunyikan semua halaman lain
   const pgHome = document.getElementById('page-home');
   if(pgHome){ pgHome.classList.remove('active'); pgHome.style.display='none'; }
+  
   const pgDash = document.getElementById('page-dashboard');
   if(pgDash){ pgDash.style.display='none'; }
+  
+  const pgFlow = document.getElementById('page-flow-bisnis');
+  if(pgFlow){ pgFlow.style.display='none'; pgFlow.classList.remove('active'); }
+  
   document.body.classList.remove('home-active');
 
-  // Tampilkan halaman notulen DULU sebelum render
+  // Tampilkan halaman notulen
   const pgNotul = document.getElementById('page-notulen-full');
   if(pgNotul){
-    pgNotul.style.display = 'flex';
-    pgNotul.style.flexDirection = 'column';
+    pgNotul.style.cssText = 'display:flex !important; flex-direction:column; position:fixed; inset:0; z-index:9998; background:#F0F4FF; visibility:visible; overflow:hidden;';
   }
 
   // Tampilkan/sembunyikan tombol sesuai role
   const btnAdd = document.getElementById('btn-add-meeting');
   if(btnAdd) btnAdd.style.display = window._canEditNotulen ? 'inline-flex' : 'none';
 
-  // Render setelah DOM benar-benar siap (delay lebih besar)
-  setTimeout(()=>{ renderNotulenPage(); }, 300);
+  // Hapus guard sementara, render langsung
+  window._notulenPageActive = true;
+  setTimeout(()=>{ renderNotulenPage(); }, 100);
 }
 function closeNotulen(){
-  // Sembunyikan halaman notulen
+  window._notulenPageActive = false;
   const pgNotul = document.getElementById('page-notulen-full');
-  if(pgNotul){ pgNotul.style.display = 'none'; }
-
-  // Tampilkan kembali halaman home, sembunyikan dashboard
+  if(pgNotul){ 
+    pgNotul.style.display = 'none';
+    pgNotul.style.visibility = 'hidden';
+    pgNotul.style.zIndex = '-1';
+  }
   const pgDash = document.getElementById('page-dashboard');
   if(pgDash){ pgDash.style.display = 'none'; }
   const pgHome = document.getElementById('page-home');
