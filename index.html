@@ -4000,7 +4000,7 @@ function renderNotulenPage(){
   // GUARD: jangan render jika halaman notulen tidak tampil
   const pgNotul = document.getElementById('page-notulen-full');
   if(!pgNotul) return;
-if(pgNotul.style.display !== 'flex') pgNotul.style.display = 'flex';
+if(pgNotul.style.display !== 'flex') return;
   // Update auth bar di notulen
   const dot = document.getElementById('notulen-auth-dot');
   const txt = document.getElementById('notulen-auth-text');
