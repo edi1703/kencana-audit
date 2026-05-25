@@ -4432,396 +4432,115 @@ document.body.classList.add('home-active');
 })();  
 </script>
 </div><!-- end #page-dashboard -->
-<!-- ===== HALAMAN FLOW BISNIS (STANDALONE FULLSCREEN) ===== -->
-<div id="page-flow-bisnis" style="display:none;position:fixed;inset:0;z-index:9998;flex-direction:column;background:#F0F4FF;font-family:'Plus Jakarta Sans','Segoe UI',sans-serif;">
+
+<!-- ===== HALAMAN FLOW BISNIS ===== -->
+<div id="page-flow-bisnis" style="display:none;position:fixed;inset:0;z-index:9998;flex-direction:column;background:#0D1117;font-family:'Plus Jakarta Sans','Segoe UI',sans-serif;">
 
   <!-- TOP BAR -->
-  <div style="background:linear-gradient(135deg,#0C4A6E 0%,#0891B2 50%,#34D399 100%);color:#fff;padding:0 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;flex-shrink:0;box-shadow:0 3px 16px rgba(8,145,178,0.4);min-height:62px;">
-    <div style="display:flex;align-items:center;gap:14px;">
-      <button onclick="closeFlowBisnis()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:8px;padding:6px 14px;cursor:pointer;font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px;">← Home</button>
-
-      <!-- AUTH BAR FLOW -->
-      <div id="flow-auth-bar" style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.2);border-radius:8px;padding:4px 12px;">
-        <span id="flow-auth-dot" style="width:8px;height:8px;border-radius:50%;background:#64748B;display:inline-block;"></span>
-        <span id="flow-auth-text" style="font-size:11px;color:rgba(255,255,255,0.8);">Memuat...</span>
-        <button id="flow-btn-login" onclick="fbLogin()" style="display:none;background:#4285F4;color:#fff;border:none;border-radius:6px;padding:4px 12px;cursor:pointer;font-weight:700;font-size:11px;">🔑 Login</button>
-        <button id="flow-btn-logout" onclick="fbLogout()" style="display:none;background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px;">Logout</button>
-      </div>
-
-      <div style="width:1px;height:32px;background:rgba(255,255,255,0.2);"></div>
-      <div style="font-size:22px;">🔄</div>
+  <div style="background:linear-gradient(135deg,#0C4A6E 0%,#0891B2 60%,#0E7490 100%);color:#fff;padding:0 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;flex-shrink:0;box-shadow:0 4px 20px rgba(8,145,178,0.5);min-height:64px;border-bottom:2px solid rgba(6,182,212,0.3);">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <button onclick="closeFlowBisnis()" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:10px;padding:7px 16px;cursor:pointer;font-weight:700;font-size:13px;transition:background 0.2s;display:flex;align-items:center;gap:6px;" onmouseenter="this.style.background='rgba(255,255,255,0.22)'" onmouseleave="this.style.background='rgba(255,255,255,0.12)'">← Home</button>
+      <div style="width:1px;height:36px;background:rgba(255,255,255,0.2);"></div>
+      <div style="font-size:26px;">🔄</div>
       <div>
-        <div style="font-size:17px;font-weight:800;letter-spacing:0.3px;">Flow Bisnis</div>
-        <div style="font-size:11px;opacity:0.82;margin-top:1px;">Dokumentasi alur proses bisnis & diagram operasional — CV. Kencana Print</div>
+        <div style="font-size:18px;font-weight:800;letter-spacing:0.3px;">Flow Bisnis</div>
+        <div style="font-size:11px;opacity:0.75;margin-top:1px;">Diagram Alur Proses Bisnis — CV. Kencana Print</div>
       </div>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-      <div style="background:rgba(255,255,255,0.15);border-radius:10px;padding:6px 16px;text-align:center;">
+    <!-- AUTH + STATS -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <div id="flow-stat-box" style="background:rgba(255,255,255,0.12);border-radius:10px;padding:6px 16px;text-align:center;border:1px solid rgba(255,255,255,0.15);">
         <div style="font-size:18px;font-weight:800;" id="flow-stat-total">0</div>
-        <div style="font-size:10px;">Flow Tersimpan</div>
+        <div style="font-size:10px;opacity:0.8;">Flow Diagram</div>
       </div>
-      <button onclick="document.getElementById('flow-file-input').click()"
-        id="btn-upload-flow"
-        style="background:#F59E0B;color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;font-size:13px;display:none;align-items:center;gap:6px;">
-        ➕ Upload Flow Baru
-      </button>
-      <button onclick="saveFlowData(true)"
-        style="background:rgba(255,255,255,0.18);color:#fff;border:1px solid rgba(255,255,255,0.35);border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:12px;">
-        💾 Simpan
+      <button id="btn-upload-flow" onclick="document.getElementById('flow-file-input').click()"
+        style="display:none;background:#F59E0B;color:#fff;border:none;border-radius:10px;padding:8px 18px;cursor:pointer;font-weight:700;font-size:13px;align-items:center;gap:8px;">
+        ➕ Upload Flow HTML
       </button>
     </div>
   </div>
 
-  <!-- TOOLBAR FILTER -->
-  <div style="background:#fff;border-bottom:2px solid #E2E8F0;padding:10px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+  <!-- SEARCH BAR -->
+  <div style="background:#111827;border-bottom:2px solid #1e2d45;padding:10px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0;">
     <input id="flow-search" type="text" placeholder="🔍 Cari nama flow bisnis..."
       oninput="renderFlowGrid()"
-      style="border:2px solid #E2E8F0;border-radius:8px;padding:7px 12px;font-size:13px;width:240px;outline:none;font-family:inherit;">
-    <div style="margin-left:auto;font-size:12px;color:#64748B;font-weight:600;" id="flow-count-label">—</div>
+      style="border:2px solid #1e2d45;border-radius:10px;padding:8px 14px;font-size:13px;width:260px;outline:none;font-family:inherit;background:#1a2236;color:#e2e8f0;">
+    <select id="flow-cat-filter" onchange="renderFlowGrid()"
+      style="border:2px solid #1e2d45;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;font-family:inherit;background:#1a2236;color:#e2e8f0;cursor:pointer;">
+      <option value="ALL">Semua Kategori</option>
+      <option value="Produksi">🏭 Produksi</option>
+      <option value="Marketing">📊 Marketing</option>
+      <option value="Gudang">📦 Gudang</option>
+      <option value="Finance">💰 Finance</option>
+      <option value="HRGA">👥 HRGA</option>
+      <option value="IT">💻 IT</option>
+      <option value="Lainnya">📋 Lainnya</option>
+    </select>
+    <div style="margin-left:auto;font-size:12px;color:#64748b;font-weight:600;" id="flow-count-label">—</div>
   </div>
 
-  <!-- KONTEN -->
-  <div style="flex:1;overflow-y:auto;padding:24px 28px 40px;background:#F0F4FF;">
-
+  <!-- GRID KONTEN -->
+  <div style="flex:1;overflow-y:auto;padding:28px;background:#0D1117;">
+    
     <!-- UPLOAD ZONE (admin only) -->
-    <div id="flow-upload-zone-wrap" style="display:none;">
+    <div id="flow-upload-zone-wrap" style="display:none;margin-bottom:28px;">
       <div onclick="document.getElementById('flow-file-input').click()"
-        style="border:2px dashed #67E8F9;border-radius:14px;background:#fff;padding:32px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:24px;max-width:1400px;margin-left:auto;margin-right:auto;"
-        onmouseenter="this.style.borderColor='#0891B2';this.style.background='#F0F9FF'"
-        onmouseleave="this.style.borderColor='#67E8F9';this.style.background='#fff'">
-        <div style="font-size:40px;margin-bottom:10px;">📂</div>
-        <p style="font-size:15px;font-weight:700;color:#0891B2;margin-bottom:6px;">Klik di sini untuk Upload Flow Bisnis</p>
-        <p style="font-size:13px;color:#64748B;">Format: <strong>HTML</strong> (file diagram alur proses bisnis)</p>
-        <p style="font-size:11px;color:#94A3B8;margin-top:6px;">Contoh: alur_produksi_sublim.html, flow_marketing.html</p>
+        style="border:2px dashed #0891B2;border-radius:16px;background:#111827;padding:36px;text-align:center;cursor:pointer;transition:all 0.2s;max-width:1400px;margin:0 auto;"
+        onmouseenter="this.style.borderColor='#22D3EE';this.style.background='#0C1826'"
+        onmouseleave="this.style.borderColor='#0891B2';this.style.background='#111827'">
+        <div style="font-size:48px;margin-bottom:12px;">📂</div>
+        <p style="font-size:16px;font-weight:700;color:#22D3EE;margin-bottom:6px;">Upload Flow Bisnis Baru</p>
+        <p style="font-size:13px;color:#64748b;">Format: <strong style="color:#94a3b8;">HTML</strong> — File diagram interaktif alur proses bisnis</p>
+        <p style="font-size:11px;color:#475569;margin-top:6px;">Contoh: alur_produksi_mmt.html, flow_warehouse.html, proses_marketing.html</p>
       </div>
     </div>
     <input id="flow-file-input" type="file" accept=".html,.htm" multiple style="display:none" onchange="handleFlowUpload(event)">
 
     <!-- GRID CARD -->
-    <div id="flow-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px;max-width:1400px;margin:0 auto;"></div>
+    <div id="flow-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px;max-width:1400px;margin:0 auto;"></div>
   </div>
 </div>
 
-<!-- MODAL VIEWER FLOW BISNIS -->
-<div id="modal-flow-viewer" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:10200;align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:16px;width:min(1200px,96vw);height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.4);overflow:hidden;">
-    <div style="background:linear-gradient(135deg,#0C4A6E,#0891B2);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;">
-      <span style="font-size:20px;">🔄</span>
-      <h3 id="flow-viewer-title" style="font-size:15px;font-weight:800;flex:1;word-break:break-word;margin:0;"></h3>
-      <div style="display:flex;gap:8px;">
-        <button onclick="openFlowNewTab()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:7px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700;">🔗 Tab Baru</button>
-        <button onclick="closeFlowViewer()" style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:8px;padding:6px 14px;cursor:pointer;font-weight:700;font-size:13px;">✕ Tutup</button>
-      </div>
-    </div>
-    <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
-      <iframe id="flow-iframe" title="Flow Bisnis Viewer" sandbox="allow-scripts allow-same-origin allow-forms" style="width:100%;border:none;flex:1;"></iframe>
+<!-- MODAL VIEWER FLOW BISNIS — FULLSCREEN -->
+<div id="modal-flow-viewer" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:10300;flex-direction:column;">
+  <!-- Viewer Header -->
+  <div style="background:linear-gradient(135deg,#0C4A6E,#0891B2);color:#fff;padding:0 20px;display:flex;align-items:center;gap:14px;flex-shrink:0;min-height:56px;box-shadow:0 4px 20px rgba(0,0,0,0.4);">
+    <span style="font-size:20px;">🔄</span>
+    <h3 id="flow-viewer-title" style="font-size:15px;font-weight:800;flex:1;margin:0;word-break:break-word;"></h3>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span id="flow-viewer-cat" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700;"></span>
+      <button onclick="openFlowNewTab()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:12px;font-weight:700;" onmouseenter="this.style.background='rgba(255,255,255,0.25)'" onmouseleave="this.style.background='rgba(255,255,255,0.15)'">🔗 Tab Baru</button>
+      <button onclick="closeFlowViewer()" style="background:rgba(220,38,38,0.7);border:1px solid rgba(255,100,100,0.4);color:#fff;border-radius:8px;padding:6px 14px;cursor:pointer;font-weight:700;font-size:13px;" onmouseenter="this.style.background='rgba(220,38,38,0.9)'" onmouseleave="this.style.background='rgba(220,38,38,0.7)'">✕ Tutup</button>
     </div>
   </div>
+  <!-- iframe fullscreen -->
+  <iframe id="flow-iframe" title="Flow Bisnis Viewer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" style="width:100%;border:none;flex:1;background:#fff;"></iframe>
 </div>
-
 <script>
+
+  // ============================================================
+// FLOW BISNIS — DATA & LOGIC v2 (dengan kategori & Firebase)
 // ============================================================
-// FLOW BISNIS — DATA & LOGIC (dengan Firebase sync)
-// ============================================================
-// ============================================================
-// FLOW BISNIS BUILT-IN — file HTML sudah tertanam di kode
-// Tidak perlu upload, selalu tersedia
-// ============================================================
+const FLOW_STORAGE_KEY = 'flow_bisnis_v2';
+
+// ─── DATA BUILT-IN: embed konten HTML langsung ──────────────
+// Ganti isi htmlContent di bawah dengan copy-paste isi file
+// alur_produksi_sublim__2_.html (seluruh kontennya)
 const FLOW_BUILTIN = [
   {
     id: 'builtin-alur-sublim',
     name: 'Alur Produksi Sublim',
+    category: 'Produksi',
     fileName: 'alur_produksi_sublim.html',
     fileSize: '80 KB',
+    desc: 'Diagram alur lengkap proses produksi sublim mulai dari order customer hingga pengiriman. Mencakup 60 node proses dengan detail PIC dan catatan penting.',
     uploadedAt: 'Built-in',
     uploadedBy: 'System',
-    htmlContent: `<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Alur Produksi Sublim — Kencana Group</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#0b0f1a;--surface:#111827;--surface2:#1a2236;--border:#1e2d45;--accent:#00c8ff;--accent2:#ff6b35;--accent3:#34d399;--accent4:#a78bfa;--accent5:#fbbf24;--text:#e2e8f0;--muted:#64748b;--node-bg:#162035;--node-active:#0d2240;--node-border:#1e3a5f;--node-active-border:#00c8ff;--header-bg-start:#0b0f1a;--header-bg-end:#0d1829;--detail-desc-color:#c8d8ec;}
-html.light{--bg:#f0f4f8;--surface:#ffffff;--surface2:#e8f0f9;--border:#c8d8ea;--accent:#0077cc;--accent2:#e05520;--accent3:#16a34a;--accent4:#7c3aed;--accent5:#d97706;--text:#1a2333;--muted:#64748b;--node-bg:#ddeeff;--node-active:#bbddff;--node-border:#99bbdd;--node-active-border:#0077cc;--header-bg-start:#1e3a5f;--header-bg-end:#0d2d50;--detail-desc-color:#334155;}
-.theme-toggle{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1.5px solid var(--border);border-radius:24px;padding:5px 14px 5px 8px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text);transition:all .25s ease;user-select:none;white-space:nowrap;}
-.theme-toggle:hover{border-color:var(--accent);}
-.toggle-track{width:34px;height:18px;border-radius:9px;background:var(--border);position:relative;transition:background .25s;flex-shrink:0;}
-html.light .toggle-track{background:var(--accent);}
-.toggle-thumb{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#ffffff;transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:0 1px 4px rgba(0,0,0,.3);}
-html.light .toggle-thumb{transform:translateX(16px);}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;font-size:13px;min-height:100vh;overflow-x:hidden;}
-header{background:linear-gradient(135deg,var(--header-bg-start) 0%,var(--header-bg-end) 100%);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
-.logo{display:flex;align-items:center;gap:10px;}
-.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--accent4));border-radius:8px;display:grid;place-items:center;font-size:16px;}
-.logo-text{font-size:15px;font-weight:700;letter-spacing:-.3px;color:#e2e8f0;}
-.logo-sub{font-size:10px;color:#94a3b8;font-family:'IBM Plex Mono',monospace;margin-top:1px;}
-.header-right{display:flex;align-items:center;gap:16px;}
-.badge{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent);}
-.legend-bar{display:flex;align-items:center;gap:20px;padding:10px 28px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap;}
-.legend-item{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);}
-.legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
-.flow-wrapper{padding:20px 20px 12px;overflow-x:auto;background:var(--bg);}
-.flow-canvas{min-width:1400px;position:relative;}
-.phase-label{font-size:9px;font-family:'IBM Plex Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;border-radius:3px;margin-bottom:6px;display:inline-block;}
-.phase-label.pre{background:rgba(0,200,255,.12);color:var(--accent);border:1px solid rgba(0,200,255,.2);}
-.phase-label.sample{background:rgba(52,211,153,.1);color:var(--accent3);border:1px solid rgba(52,211,153,.2);}
-.phase-label.mass{background:rgba(251,191,36,.1);color:var(--accent5);border:1px solid rgba(251,191,36,.2);}
-.phase-label.delivery{background:rgba(255,107,53,.1);color:var(--accent2);border:1px solid rgba(255,107,53,.2);}
-.phase-row{margin-bottom:8px;position:relative;}
-.phase-header{display:flex;align-items:center;gap:10px;margin-bottom:8px;padding-left:4px;}
-.phase-title{font-size:9.5px;font-family:'IBM Plex Mono',monospace;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);}
-.phase-line{flex:1;height:1px;background:var(--border);}
-.nodes-row{display:flex;align-items:center;gap:0;position:relative;}
-.node{flex-shrink:0;cursor:pointer;position:relative;transition:transform .15s;}
-.node:hover{transform:translateY(-2px);}
-.node-inner{background:var(--node-bg);border:1.5px solid var(--node-border);border-radius:8px;padding:9px 11px;width:120px;min-height:58px;display:flex;flex-direction:column;justify-content:center;transition:border-color .2s,background .2s,box-shadow .2s;position:relative;}
-.node.active .node-inner{border-color:var(--node-active-border);background:var(--node-active);box-shadow:0 0 16px rgba(0,200,255,.18);}
-.node.phase-sample .node-inner{border-color:#1a4a35;}
-.node.phase-sample.active .node-inner{border-color:var(--accent3);box-shadow:0 0 16px rgba(52,211,153,.18);}
-.node.phase-mass .node-inner{border-color:#3a3010;}
-.node.phase-mass.active .node-inner{border-color:var(--accent5);box-shadow:0 0 16px rgba(251,191,36,.15);}
-.node.phase-delivery .node-inner{border-color:#3a1e0a;}
-.node.phase-delivery.active .node-inner{border-color:var(--accent2);box-shadow:0 0 16px rgba(255,107,53,.15);}
-html.light .node.phase-sample .node-inner{border-color:#86efac;background:#f0fdf4;}
-html.light .node.phase-mass .node-inner{border-color:#fde68a;background:#fefce8;}
-html.light .node.phase-delivery .node-inner{border-color:#fdba74;background:#fff7ed;}
-html.light .diamond-inner{background:#fef9c3;border-color:#fde68a;}
-.node-num{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-bottom:3px;}
-.node-title{font-size:10.5px;font-weight:600;line-height:1.3;color:var(--text);}
-.node-tag{font-size:8px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:3px;}
-.node.active .node-num{color:var(--accent);}
-.node.phase-sample.active .node-num{color:var(--accent3);}
-.node.phase-mass.active .node-num{color:var(--accent5);}
-.node.phase-delivery.active .node-num{color:var(--accent2);}
-.arrow{flex-shrink:0;display:flex;align-items:center;width:28px;position:relative;}
-.arrow-line{width:100%;height:1.5px;background:var(--border);position:relative;}
-.arrow-line::after{content:'';position:absolute;right:-1px;top:50%;transform:translateY(-50%);border-left:6px solid var(--border);border-top:4px solid transparent;border-bottom:4px solid transparent;}
-.diamond-node{flex-shrink:0;cursor:pointer;position:relative;width:100px;height:62px;display:flex;align-items:center;justify-content:center;}
-.diamond-inner{width:80px;height:80px;background:var(--node-bg);border:1.5px solid #2d3a1a;transform:rotate(45deg);transition:border-color .2s,box-shadow .2s;}
-.diamond-node.active .diamond-inner{border-color:var(--accent5);box-shadow:0 0 14px rgba(251,191,36,.2);}
-.diamond-text{position:absolute;text-align:center;font-size:9px;font-weight:600;line-height:1.25;padding:0 6px;pointer-events:none;color:#d4b44a;}
-.return-label{font-size:8.5px;font-family:'IBM Plex Mono',monospace;color:var(--accent5);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:4px;padding:2px 7px;margin:0 6px;white-space:nowrap;}
-.detail-wrapper{padding:0 20px 20px;}
-.detail-panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;min-height:200px;transition:all .3s ease;}
-.detail-header{display:flex;align-items:center;gap:14px;padding:16px 22px;border-bottom:1px solid var(--border);background:var(--surface2);}
-.detail-num{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:3px 8px;}
-.detail-title{font-size:17px;font-weight:700;flex:1;}
-.detail-body{display:grid;grid-template-columns:1fr 1fr;gap:0;}
-.detail-section{padding:18px 22px;border-right:1px solid var(--border);}
-.detail-section:last-child{border-right:none;}
-.detail-section:nth-child(3),.detail-section:nth-child(4){border-top:1px solid var(--border);}
-.detail-section-title{font-size:9.5px;font-family:'IBM Plex Mono',monospace;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
-.detail-desc{font-size:13px;line-height:1.65;color:var(--detail-desc-color);}
-.detail-notes{list-style:none;padding:0;}
-.detail-notes li{font-size:12px;color:var(--text);padding:5px 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:8px;line-height:1.5;}
-.detail-notes li:last-child{border-bottom:none;}
-.note-icon{flex-shrink:0;width:16px;height:16px;border-radius:50%;background:rgba(0,200,255,.1);border:1px solid rgba(0,200,255,.3);display:grid;place-items:center;font-size:9px;margin-top:1px;}
-.note-icon.warn{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.3);}
-.detail-inputs{display:flex;flex-direction:column;gap:7px;}
-.input-chip{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:11.5px;font-family:'IBM Plex Mono',monospace;}
-.chip-dot{width:7px;height:7px;border-radius:50%;background:var(--accent3);flex-shrink:0;}
-.chip-dot.out{background:var(--accent2);}
-.chip-dot.warn{background:var(--accent5);}
-.detail-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:180px;gap:10px;color:var(--muted);}
-.placeholder-icon{font-size:32px;opacity:.4;}
-.placeholder-text{font-size:12px;opacity:.6;}
-::-webkit-scrollbar{width:6px;height:6px;}
-::-webkit-scrollbar-track{background:var(--bg);}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
-@media(max-width:768px){.detail-body{grid-template-columns:1fr;}.detail-section{border-right:none;border-bottom:1px solid var(--border);}}
-</style>
-</head>
-<body>
-<header>
-  <div class="logo">
-    <div class="logo-icon">🧵</div>
-    <div><div class="logo-text">Kencana Group</div><div class="logo-sub">ALUR PRODUKSI SUBLIM — SOP VISUAL</div></div>
-  </div>
-  <div class="header-right">
-    <div class="badge">REV 1.0</div>
-    <div class="badge" id="clock"></div>
-    <button class="theme-toggle" onclick="toggleTheme()" title="Ganti tema">
-      <div class="toggle-track"><div class="toggle-thumb"></div></div>
-      <span id="themeIcon">🌙</span>
-      <span id="themeLabel">Gelap</span>
-    </button>
-  </div>
-</header>
-<div class="legend-bar">
-  <div class="legend-item"><div class="legend-dot" style="background:#00c8ff"></div>Pre-Produksi / Order</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#34d399"></div>Pembuatan Sampel</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Produksi Massal</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#ff6b35"></div>Finishing & Pengiriman</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>Administrasi / Input Sistem</div>
-  <span style="margin-left:auto;font-size:11px;color:var(--muted)">⬡ Klik node untuk melihat detail</span>
-</div>
-<div class="flow-wrapper"><div class="flow-canvas">
-<div class="phase-row"><div class="phase-header"><span class="phase-label pre">PRE-PRODUKSI</span><div class="phase-line"></div></div>
-<div class="nodes-row">
-<div class="node" onclick="show(1)" id="n1"><div class="node-inner"><div class="node-num">#01</div><div class="node-title">Order Customer</div><div class="node-tag">INPUT</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node" onclick="show(2)" id="n2"><div class="node-inner"><div class="node-num">#02</div><div class="node-title">MAP</div><div class="node-tag">APPROVAL SAMPEL</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node" onclick="show(3)" id="n3"><div class="node-inner"><div class="node-num">#03</div><div class="node-title">Permintaan Bahan</div><div class="node-tag">INPUT SISTEM</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node" onclick="show(4)" id="n4"><div class="node-inner"><div class="node-num">#04</div><div class="node-title">Realisasi Bahan</div><div class="node-tag">GUDANG</div></div></div>
-</div></div>
-<div class="phase-row"><div class="phase-header"><span class="phase-label sample">PEMBUATAN SAMPEL — POLA & DESAIN</span><div class="phase-line"></div></div>
-<div class="nodes-row">
-<div class="node phase-sample" onclick="show(5)" id="n5"><div class="node-inner"><div class="node-num">#05</div><div class="node-title">Pembuatan Pola</div><div class="node-tag">POLA</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-sample" onclick="show(6)" id="n6"><div class="node-inner"><div class="node-num">#06</div><div class="node-title">Layout Pola</div><div class="node-tag">POLA + CUTTING</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-sample" onclick="show(7)" id="n7"><div class="node-inner" style="border-color:#2d1a6a"><div class="node-num">#07</div><div class="node-title">Input LHK Pola</div><div class="node-tag">ADMIN</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-sample" onclick="show(8)" id="n8"><div class="node-inner"><div class="node-num">#08</div><div class="node-title">Serah Terima Pola</div><div class="node-tag">ke TIM DESAIN P5</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-sample" onclick="show(9)" id="n9"><div class="node-inner"><div class="node-num">#09</div><div class="node-title">Desain</div><div class="node-tag">SUBLIM DESAIN</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-sample" onclick="show(10)" id="n10"><div class="node-inner" style="border-color:#2d1a6a"><div class="node-num">#10</div><div class="node-title">Input LHK Desain</div><div class="node-tag">ADMIN</div></div></div>
-</div></div>
-<div class="phase-row"><div class="phase-header"><span class="phase-label sample">PEMBUATAN SAMPEL — CETAK & SUBLIM</span><div class="phase-line"></div></div>
-<div class="nodes-row">
-<div class="node phase-sample" onclick="show(11)" id="n11"><div class="node-inner"><div class="node-num">#11</div><div class="node-title">Paperprint</div><div class="node-tag">CETAK PAPER</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-sample" onclick="show(12)" id="n12"><div class="node-inner" style="border-color:#2d1a6a"><div class="node-num">#12</div><div class="node-title">LHK Paperprint</div><div class="node-tag">ADMIN + BS</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-sample" onclick="show(13)" id="n13"><div class="node-inner" style="border-color:#2d1a6a"><div class="node-num">#13</div><div class="node-title">Mutasi Stock Paper</div><div class="node-tag">→ FLOOR SUBLIM</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-sample" onclick="show(14)" id="n14"><div class="node-inner"><div class="node-num">#14</div><div class="node-title">Proses Sublim</div><div class="node-tag">PRODUKSI</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-sample" onclick="show(15)" id="n15"><div class="node-inner"><div class="node-num">#15</div><div class="node-title">QC Sublim</div><div class="node-tag">OK / NON-OK</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-sample" onclick="show(16)" id="n16"><div class="node-inner" style="border-color:#2d1a6a"><div class="node-num">#16</div><div class="node-title">LHK Sublim</div><div class="node-tag">ADMIN + BS</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-sample" onclick="show(17)" id="n17"><div class="node-inner" style="border-color:#2d1a6a"><div class="node-num">#17</div><div class="node-title">Mutasi → Proof</div><div class="node-tag">FLOOR PROOF</div></div></div>
-</div></div>
-<div class="phase-row"><div class="phase-header"><span class="phase-label sample">PEMBUATAN SAMPEL — PROOF & VALIDASI CUSTOMER</span><div class="phase-line"></div></div>
-<div class="nodes-row">
-<div class="node phase-sample" onclick="show(18)" id="n18"><div class="node-inner"><div class="node-num">#18</div><div class="node-title">Pembuatan Sampel</div><div class="node-tag">POTONG + JAHIT</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-sample" onclick="show(19)" id="n19"><div class="node-inner" style="border-color:#2d1a6a"><div class="node-num">#19</div><div class="node-title">LHK Proof + Trimcard</div><div class="node-tag">ADMIN</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-sample" onclick="show(20)" id="n20"><div class="node-inner" style="border-color:#2d1a6a"><div class="node-num">#20</div><div class="node-title">Mutasi Sampel</div><div class="node-tag">→ MARKETING</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-sample" onclick="show(21)" id="n21"><div class="node-inner"><div class="node-num">#21</div><div class="node-title">Kirim Sampel</div><div class="node-tag">ke CUSTOMER</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-sample" onclick="show(22)" id="n22"><div class="node-inner"><div class="node-num">#22</div><div class="node-title">Terima Sampel</div><div class="node-tag">DARI CUSTOMER</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-sample" onclick="show(23)" id="n23"><div class="node-inner"><div class="node-num">#23</div><div class="node-title">Serah Terima Tervalidasi</div><div class="node-tag">→ PROOF</div></div></div>
-</div></div>
-<div class="phase-row"><div class="phase-header"><span class="phase-label mass">PRODUKSI MASSAL — SETUP & POLA</span><div class="phase-line"></div></div>
-<div class="nodes-row">
-<div class="node phase-mass" onclick="show(24)" id="n24"><div class="node-inner"><div class="node-num">#24</div><div class="node-title">SPK</div><div class="node-tag">SURAT PERINTAH KERJA</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(25)" id="n25"><div class="node-inner"><div class="node-num">#25</div><div class="node-title">Permintaan Bahan</div><div class="node-tag">PRODUKSI MASSAL</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(26)" id="n26"><div class="node-inner"><div class="node-num">#26</div><div class="node-title">Realisasi Bahan</div><div class="node-tag">GUDANG</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(27)" id="n27"><div class="node-inner"><div class="node-num">#27</div><div class="node-title">Pembedahan Sampel</div><div class="node-tag">CEK REVISI</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="diamond-node" onclick="show(28)" id="n28"><div class="diamond-inner"></div><div class="diamond-text">Ada Revisi<br>Pola?</div></div>
-<div style="display:flex;flex-direction:column;align-items:flex-start;padding:0 4px;gap:3px"><div style="display:flex;align-items:center;gap:4px"><span class="return-label">YA → #05</span></div><div style="font-size:8.5px;color:var(--muted);font-family:'IBM Plex Mono',monospace">TIDAK ↓</div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(30)" id="n30"><div class="node-inner"><div class="node-num">#30</div><div class="node-title">Breakdown Size</div><div class="node-tag">SEMUA UKURAN</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(31)" id="n31"><div class="node-inner" style="border-color:#4a3a10"><div class="node-num">#31</div><div class="node-title">LHK Pola Massal</div><div class="node-tag">ADMIN</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(32)" id="n32"><div class="node-inner"><div class="node-num">#32</div><div class="node-title">Serah Terima Pola</div><div class="node-tag">→ DESAIN P5</div></div></div>
-</div></div>
-<div class="phase-row"><div class="phase-header"><span class="phase-label mass">PRODUKSI MASSAL — DESAIN & CETAK</span><div class="phase-line"></div></div>
-<div class="nodes-row">
-<div class="node phase-mass" onclick="show(33)" id="n33"><div class="node-inner"><div class="node-num">#33</div><div class="node-title">Desain Massal</div><div class="node-tag">SUBLIM DESAIN</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(34)" id="n34"><div class="node-inner" style="border-color:#4a3a10"><div class="node-num">#34</div><div class="node-title">LHK Desain Massal</div><div class="node-tag">ADMIN</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(35)" id="n35"><div class="node-inner"><div class="node-num">#35</div><div class="node-title">Paperprint Massal</div><div class="node-tag">CETAK PAPER</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(36)" id="n36"><div class="node-inner" style="border-color:#4a3a10"><div class="node-num">#36</div><div class="node-title">LHK Paperprint</div><div class="node-tag">ADMIN + BS</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(37)" id="n37"><div class="node-inner" style="border-color:#4a3a10"><div class="node-num">#37</div><div class="node-title">Mutasi → Sublim</div><div class="node-tag">FLOOR SUBLIM</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(38)" id="n38"><div class="node-inner"><div class="node-num">#38</div><div class="node-title">Sublim Massal</div><div class="node-tag">PRESS MESIN</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(39)" id="n39"><div class="node-inner"><div class="node-num">#39</div><div class="node-title">QC Sublim</div><div class="node-tag">OK / NON-OK</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(40)" id="n40"><div class="node-inner" style="border-color:#4a3a10"><div class="node-num">#40</div><div class="node-title">LHK Sublim</div><div class="node-tag">ADMIN + BS</div></div></div>
-</div></div>
-<div class="phase-row"><div class="phase-header"><span class="phase-label mass">PRODUKSI MASSAL — CUTTING</span><div class="phase-line"></div></div>
-<div class="nodes-row">
-<div class="node phase-mass" onclick="show(41)" id="n41"><div class="node-inner" style="border-color:#4a3a10"><div class="node-num">#41</div><div class="node-title">Mutasi → Cutting</div><div class="node-tag">FLOOR CUTTING</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(42)" id="n42"><div class="node-inner"><div class="node-num">#42</div><div class="node-title">Cutting</div><div class="node-tag">POTONG KAIN</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(43)" id="n43"><div class="node-inner"><div class="node-num">#43</div><div class="node-title">QC Cutting</div><div class="node-tag">CEK POTONGAN</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(44)" id="n44"><div class="node-inner"><div class="node-num">#44</div><div class="node-title">Numbering</div><div class="node-tag">LABEL PART</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(45)" id="n45"><div class="node-inner" style="border-color:#4a3a10"><div class="node-num">#45</div><div class="node-title">LHK Cutting</div><div class="node-tag">ADMIN + BS</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(46)" id="n46"><div class="node-inner" style="border-color:#4a3a10"><div class="node-num">#46</div><div class="node-title">Mutasi → DC</div><div class="node-tag">DISTRIBUSI CENTER</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(47)" id="n47"><div class="node-inner" style="border-color:#4a3a10"><div class="node-num">#47</div><div class="node-title">DC → Sewing</div><div class="node-tag">PLOT SEWING</div></div></div>
-</div></div>
-<div class="phase-row"><div class="phase-header"><span class="phase-label mass">PRODUKSI MASSAL — SEWING & LIPAT</span><div class="phase-line"></div></div>
-<div class="nodes-row">
-<div class="node phase-mass" onclick="show(48)" id="n48"><div class="node-inner"><div class="node-num">#48</div><div class="node-title">Sewing</div><div class="node-tag">PROSES JAHIT</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(49)" id="n49"><div class="node-inner"><div class="node-num">#49</div><div class="node-title">QC Sewing</div><div class="node-tag">CEK JAHITAN</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(50)" id="n50"><div class="node-inner" style="border-color:#4a3a10"><div class="node-num">#50</div><div class="node-title">LHK Sewing</div><div class="node-tag">ADMIN + BS</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(51)" id="n51"><div class="node-inner" style="border-color:#4a3a10"><div class="node-num">#51</div><div class="node-title">Mutasi → Lipat</div><div class="node-tag">FLOOR LIPAT</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(52)" id="n52"><div class="node-inner"><div class="node-num">#52</div><div class="node-title">Lipat</div><div class="node-tag">FOLDING</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(53)" id="n53"><div class="node-inner" style="border-color:#4a3a10"><div class="node-num">#53</div><div class="node-title">LHK Lipat</div><div class="node-tag">ADMIN</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-mass" onclick="show(54)" id="n54"><div class="node-inner" style="border-color:#4a3a10"><div class="node-num">#54</div><div class="node-title">Mutasi → Koli</div><div class="node-tag">FLOOR KOLI</div></div></div>
-</div></div>
-<div class="phase-row"><div class="phase-header"><span class="phase-label delivery">FINISHING & PENGIRIMAN</span><div class="phase-line"></div></div>
-<div class="nodes-row">
-<div class="node phase-delivery" onclick="show(55)" id="n55"><div class="node-inner"><div class="node-num">#55</div><div class="node-title">Koli / Packing</div><div class="node-tag">PACKING</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-delivery" onclick="show(56)" id="n56"><div class="node-inner" style="border-color:#3a1e0a"><div class="node-num">#56</div><div class="node-title">LHK Koli</div><div class="node-tag">ADMIN</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-delivery" onclick="show(57)" id="n57"><div class="node-inner" style="border-color:#3a1e0a"><div class="node-num">#57</div><div class="node-title">Input STBJ</div><div class="node-tag">→ GBJ</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-delivery" onclick="show(58)" id="n58"><div class="node-inner"><div class="node-num">#58</div><div class="node-title">Jadwal Kirim</div><div class="node-tag">READY KIRIM</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-delivery" onclick="show(59)" id="n59"><div class="node-inner"><div class="node-num">#59</div><div class="node-title">Surat Jalan</div><div class="node-tag">DELIVERY</div></div></div>
-<div class="arrow"><div class="arrow-line"></div></div>
-<div class="node phase-delivery" onclick="show(60)" id="n60"><div class="node-inner"><div class="node-num">#60</div><div class="node-title">Approval Surat Jalan</div><div class="node-tag">SCAN & VALIDASI</div></div></div>
-</div></div>
-</div></div>
-<div class="detail-wrapper">
-  <div class="detail-panel" id="detailPanel">
-    <div class="detail-placeholder" id="placeholder"><div class="placeholder-icon">⬡</div><div class="placeholder-text">Pilih node di atas untuk melihat detail proses</div></div>
-    <div id="detailContent" style="display:none"></div>
-  </div>
-</div>
-<script>
-const data={1:{num:"#01",title:"Order Customer",phase:"Pre-Produksi",phaseColor:"#00c8ff",desc:"Proses penerimaan order dari customer oleh tim Marketing/Sales. Mencakup pengumpulan spesifikasi produk, jumlah, ukuran, desain, dan tenggat waktu pengiriman.",notes:["Verifikasi kelengkapan spesifikasi order","Konfirmasi harga sesuai price list","Catat detail: jenis produk, quantity, ukuran, warna, desain referensi"],inputs:[{label:"Form Order Customer",type:"in"},{label:"Spesifikasi Desain / Referensi",type:"in"}],outputs:[{label:"Order terkonfirmasi → MAP",type:"out"}],pic:"Marketing / Sales"},2:{num:"#02",title:"MAP — Memo Approval Produk",phase:"Pre-Produksi",phaseColor:"#00c8ff",desc:"Pembuatan dokumen MAP yang menjadi acuan resmi pembuatan sampel. MAP memuat seluruh spesifikasi teknis produk.",notes:["Cantumkan seluruh spesifikasi teknis secara detail","Pastikan MAP sudah ditandatangani pihak berwenang","MAP adalah dokumen acuan utama — semua proses produksi harus merujuk ke MAP"],inputs:[{label:"Data Order Customer",type:"in"},{label:"Spesifikasi Produk Lengkap",type:"in"}],outputs:[{label:"Dokumen MAP",type:"out"},{label:"Instruksi ke Tim Produksi",type:"out"}],pic:"Marketing / PPIC"},3:{num:"#03",title:"Input Permintaan Bahan (Sampel)",phase:"Pre-Produksi",phaseColor:"#00c8ff",desc:"Proses input permintaan kebutuhan bahan dan barang ke sistem untuk pembuatan sampel.",notes:["Pastikan request sesuai spesifikasi MAP","Sertakan kode bahan dan satuan yang benar","Input dilakukan sebelum proses produksi dimulai"],inputs:[{label:"Dokumen MAP",type:"in"},{label:"Daftar kebutuhan bahan sampel",type:"in"}],outputs:[{label:"Permintaan Bahan ke Gudang",type:"out"}],pic:"PPIC / Tim Produksi"},4:{num:"#04",title:"Realisasi Permintaan Bahan",phase:"Pre-Produksi",phaseColor:"#00c8ff",desc:"Proses administrasi gudang dalam mengeluarkan bahan/barang yang telah diminta oleh tim produksi.",notes:["Cek ketersediaan stok sebelum realisasi","Catat kuantitas aktual yang dikeluarkan","Update stock sistem setelah pengeluaran bahan"],inputs:[{label:"Form Permintaan Bahan (#03)",type:"in"}],outputs:[{label:"Bahan keluar ke floor produksi",type:"out"},{label:"Update stock gudang",type:"out"}],pic:"Admin Gudang"},5:{num:"#05",title:"Pembuatan Pola",phase:"Pembuatan Sampel",phaseColor:"#34d399",desc:"Pembuatan pola produk sesuai spesifikasi ukuran yang diminta customer berdasarkan MAP.",notes:["⚠️ WAJIB: Tambahkan allowance jahit 3cm untuk semua produk","Berlaku untuk SEMUA produk sublim maupun non-sublim","Cek kesesuaian ukuran dengan spesifikasi MAP","Simpan pola dengan kode referensi yang jelas"],inputs:[{label:"Dokumen MAP + Spesifikasi Ukuran",type:"in"}],outputs:[{label:"Master Pola Siap Layout",type:"out"}],pic:"Tim Pola"},6:{num:"#06",title:"Layout Pola",phase:"Pembuatan Sampel",phaseColor:"#34d399",desc:"Koordinasi antara tim pola dan tim cutting untuk menyusun layout pola yang akan dicetak.",notes:["⚠️ Layout SANGAT PENTING — mempengaruhi efisiensi bahan","Koordinasi tim pola dan cutting wajib dilakukan","Minimalkan waste material saat menentukan susunan pola"],inputs:[{label:"Master Pola dari Tim Pola",type:"in"},{label:"Info lebar material dari gudang",type:"in"}],outputs:[{label:"File Layout Pola Siap Cetak",type:"out"}],pic:"Tim Pola + Tim Cutting"},7:{num:"#07",title:"Input LHK Pola",phase:"Pembuatan Sampel",phaseColor:"#a78bfa",desc:"Input administrasi Laporan Hasil Kerja (LHK) atas kegiatan pembuatan dan layouting pola.",notes:["Catat tanggal selesai pembuatan pola","Catat jumlah pola yang dibuat dan dilayout","Digunakan untuk monitoring progress real-time"],inputs:[{label:"Hasil kerja tim pola + layout",type:"in"}],outputs:[{label:"Data LHK Pola tersimpan di sistem",type:"out"}],pic:"Admin Produksi / Tim Pola"},8:{num:"#08",title:"Serah Terima Hasil Pola",phase:"Pembuatan Sampel",phaseColor:"#34d399",desc:"Administrasi serah terima pola yang telah dilayout kepada tim desain sublim (P5).",notes:["Verifikasi kelengkapan file pola sebelum serah terima","Tandatangani berita acara serah terima","Tim desain P5 konfirmasi penerimaan di sistem"],inputs:[{label:"File Layout Pola Final",type:"in"}],outputs:[{label:"Pola diterima Tim Desain P5",type:"out"}],pic:"Tim Pola → Tim Desain P5"},9:{num:"#09",title:"Desain",phase:"Pembuatan Sampel",phaseColor:"#34d399",desc:"Penempelan/penggabungan desain grafis pada pola yang telah dilayout oleh tim pola.",notes:["Sesuaikan desain dengan spesifikasi warna dan ukuran di MAP","Pastikan posisi desain pada pola sudah akurat","Cek resolusi dan kualitas file desain sebelum proses"],inputs:[{label:"File Layout Pola (dari P5)",type:"in"},{label:"File Desain Grafis Customer",type:"in"}],outputs:[{label:"File Pola + Desain Siap Paperprint",type:"out"}],pic:"Tim Desain Sublim (P5)"},10:{num:"#10",title:"Input LHK Desain",phase:"Pembuatan Sampel",phaseColor:"#a78bfa",desc:"Input administrasi LHK atas hasil penempelan desain pada pola yang telah dilayout.",notes:["Catat jumlah file pola yang telah didesain","Catat waktu penyelesaian","Update status progress MAP di sistem"],inputs:[{label:"Hasil kerja tim desain",type:"in"}],outputs:[{label:"Data LHK Desain tersimpan",type:"out"}],pic:"Admin / Tim Desain P5"},24:{num:"#24",title:"SPK — Surat Perintah Kerja",phase:"Produksi Massal",phaseColor:"#fbbf24",desc:"Pembuatan Surat Perintah Kerja (SPK) berdasarkan sampel yang telah divalidasi customer.",notes:["SPK mencantumkan: kode order, quantity per ukuran, deadline, spesifikasi lengkap","SPK diterbitkan setelah sampel mendapat persetujuan customer","Distribusikan SPK ke semua tim terkait"],inputs:[{label:"Sampel tervalidasi",type:"in"},{label:"Data order customer",type:"in"}],outputs:[{label:"Dokumen SPK resmi",type:"out"}],pic:"PPIC / Marketing"},55:{num:"#55",title:"Koli / Packing",phase:"Finishing & Pengiriman",phaseColor:"#ff6b35",desc:"Proses packing produk ke dalam karton/koli sesuai ketentuan packing yang berlaku.",notes:["Ikuti standar isi per koli","Beri label koli: kode SPK, isi, ukuran, customer","Pastikan koli tertutup rapat"],inputs:[{label:"Produk terlipat dari Floor Lipat",type:"in"}],outputs:[{label:"Koli/karton siap kirim ke GBJ",type:"out"}],pic:"Tim Koli / Floor Koli"},60:{num:"#60",title:"Approval Surat Jalan + Scan Barcode",phase:"Finishing & Pengiriman",phaseColor:"#ff6b35",desc:"Pengangkutan barang dari GBJ ke armada ekspedisi sekaligus validasi pengeluaran barang melalui scan barcode.",notes:["⚠️ Scan barcode 1 per 1 pada setiap koli/karton","Scan sebagai validasi resmi pengeluaran dari GBJ","Approval surat jalan sebelum armada bergerak"],inputs:[{label:"Koli/Karton dari GBJ",type:"in"},{label:"Surat Jalan (#59)",type:"in"},{label:"Scanner Barcode",type:"in"}],outputs:[{label:"Stok GBJ berkurang (per scan)",type:"out"},{label:"Barang dalam perjalanan ke Customer",type:"out"}],pic:"Tim Delivery + Admin GBJ"}};
-function show(id){document.querySelectorAll('.node,.diamond-node').forEach(el=>el.classList.remove('active'));const el=document.getElementById('n'+id);if(el)el.classList.add('active');const d=data[id];if(!d)return;const noteIcons=d.notes.map(n=>'<li><span class="note-icon '+(n.startsWith('⚠️')?'warn':'')+'">▸</span>'+n+'</li>').join('');const inChips=d.inputs.map(i=>'<div class="input-chip"><div class="chip-dot"></div>'+i.label+'</div>').join('');const outChips=d.outputs.map(o=>'<div class="input-chip"><div class="chip-dot out"></div>'+o.label+'</div>').join('');document.getElementById('placeholder').style.display='none';document.getElementById('detailContent').style.display='block';document.getElementById('detailContent').innerHTML='<div class="detail-header"><span class="detail-num">'+d.num+'</span><span class="detail-title">'+d.title+'</span><span style="font-size:11px;background:'+d.phaseColor+'22;color:'+d.phaseColor+';border:1px solid '+d.phaseColor+'44;border-radius:20px;padding:3px 10px;font-family:IBM Plex Mono,monospace;font-size:9.5px;">'+d.phase+'</span><span style="font-size:11px;color:var(--muted);font-family:IBM Plex Mono,monospace;margin-left:8px">PIC: '+d.pic+'</span></div><div class="detail-body"><div class="detail-section"><div class="detail-section-title">Deskripsi Proses</div><div class="detail-desc">'+d.desc+'</div></div><div class="detail-section"><div class="detail-section-title">Catatan Penting</div><ul class="detail-notes">'+noteIcons+'</ul></div><div class="detail-section"><div class="detail-section-title">▲ Input</div><div class="detail-inputs">'+inChips+'</div></div><div class="detail-section"><div class="detail-section-title">▼ Output</div><div class="detail-inputs">'+outChips+'</div></div></div>';document.getElementById('detailPanel').scrollIntoView({behavior:'smooth',block:'nearest'});}
-function toggleTheme(){const h=document.documentElement;const l=h.classList.toggle('light');document.getElementById('themeIcon').textContent=l?'☀️':'🌙';document.getElementById('themeLabel').textContent=l?'Terang':'Gelap';try{localStorage.setItem('theme',l?'light':'dark');}catch(e){}}
-(function(){try{if(localStorage.getItem('theme')==='light'){document.documentElement.classList.add('light');document.addEventListener('DOMContentLoaded',function(){const i=document.getElementById('themeIcon');const l=document.getElementById('themeLabel');if(i)i.textContent='☀️';if(l)l.textContent='Terang';});}}catch(e){}})();
-function updateClock(){const n=new Date();document.getElementById('clock').textContent=n.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});}updateClock();setInterval(updateClock,1000);
-<\/script>
-</body>
-</html>`
+    tags: ['sublim','produksi','P5','SPK','pola'],
+    htmlContent: `PASTE_SELURUH_ISI_FILE_alur_produksi_sublim__2_.html_DI_SINI`
   }
 ];
-    
-<!-- MODAL VIEWER FLOW BISNIS -->
 
-<script>
-// ============================================================
-// FLOW BISNIS — DATA & LOGIC
-// ============================================================
-const FLOW_STORAGE_KEY = 'flow_bisnis_v1';
 let flowData = [];
 let _currentFlowBlobUrl = null;
 
@@ -4832,15 +4551,16 @@ function loadFlowData(){
   } catch(e){ flowData = []; }
 }
 
-async function saveFlowData(){
-  try{ localStorage.setItem(FLOW_STORAGE_KEY, JSON.stringify(flowData)); } catch(e){}
+async function saveFlowData(notify=false){
+  try{ localStorage.setItem(FLOW_STORAGE_KEY, JSON.stringify(flowData)); }catch(e){}
   if(window._isAdmin && window._fbDb){
     try{
       const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-      const ref = doc(window._fbDb, "dashboard", "flowBisnis");
-      await setDoc(ref, { flowData: flowData, savedAt: new Date().toISOString() });
-      showNotif('Flow bisnis tersimpan ke server!','success');
-    } catch(e){ console.warn('Flow Bisnis Firebase save error:', e); }
+      await setDoc(doc(window._fbDb,"dashboard","flowBisnis"), {
+        flowData: flowData, savedAt: new Date().toISOString()
+      });
+      if(notify) showNotif('Flow bisnis tersimpan ke server!','success');
+    }catch(e){ console.warn('Flow save error:',e); }
   }
 }
 
@@ -4848,541 +4568,309 @@ async function startFlowSync(){
   if(!window._fbDb) return;
   try{
     const { doc, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-    const ref = doc(window._fbDb, "dashboard", "flowBisnis");
-    onSnapshot(ref, snap => {
+    onSnapshot(doc(window._fbDb,"dashboard","flowBisnis"), snap=>{
       if(!snap.exists()) return;
-      const d = snap.data();
-      if(d.flowData){
-        flowData = d.flowData;
-        try{ localStorage.setItem(FLOW_STORAGE_KEY, JSON.stringify(flowData)); }catch(e){}
-      }
-      const pg = document.getElementById('page-flow-bisnis');
-      if(pg && pg.classList.contains('active')) renderFlowGrid();
-    }, err => console.warn('Flow Bisnis Firestore sync error:', err));
-  } catch(e){ console.warn('Flow Bisnis sync init error:', e); }
+      const d=snap.data();
+      if(d.flowData){ flowData=d.flowData; try{localStorage.setItem(FLOW_STORAGE_KEY,JSON.stringify(flowData));}catch(e){} }
+      const pg=document.getElementById('page-flow-bisnis');
+      if(pg && (pg.style.display==='flex'||pg.classList.contains('active'))) renderFlowGrid();
+    }, err=>console.warn('Flow sync error:',err));
+  }catch(e){ console.warn('Flow sync init error:',e); }
 }
 
 function goToFlowBisnis(){
-  document.getElementById('page-home').classList.remove('active');
+  // Sembunyikan halaman lain
+  const pgHome=document.getElementById('page-home');
+  if(pgHome){ pgHome.classList.remove('active'); pgHome.style.display='none'; }
   document.body.classList.remove('home-active');
-  const pg = document.getElementById('page-flow-bisnis');
-  pg.style.display = 'flex';
-  pg.classList.add('active');
-  const isAdmin = window._isAdmin;
-  document.getElementById('btn-upload-flow').style.display = isAdmin ? '' : 'none';
-  document.getElementById('flow-upload-zone-wrap').style.display = isAdmin ? '' : 'none';
+  const pgDash=document.getElementById('page-dashboard');
+  if(pgDash) pgDash.style.display='none';
+  const pgNotul=document.getElementById('page-notulen-full');
+  if(pgNotul){ pgNotul.style.display='none'; pgNotul.style.visibility='hidden'; }
+
+  // Tampilkan Flow Bisnis
+  const pg=document.getElementById('page-flow-bisnis');
+  pg.style.display='flex';
+
+  // Tampilkan upload hanya untuk admin
+  const isAdmin=window._isAdmin;
+  const btnUp=document.getElementById('btn-upload-flow');
+  const zoneWrap=document.getElementById('flow-upload-zone-wrap');
+  if(btnUp) btnUp.style.display=isAdmin?'inline-flex':'none';
+  if(zoneWrap) zoneWrap.style.display=isAdmin?'block':'none';
+
   loadFlowData();
   renderFlowGrid();
   if(isAdmin && window._fbDb) startFlowSync();
 }
 
 function closeFlowBisnis(){
-  const pg = document.getElementById('page-flow-bisnis');
-  pg.classList.remove('active');
-  pg.style.display = 'none';
-  document.getElementById('page-home').classList.add('active');
+  const pg=document.getElementById('page-flow-bisnis');
+  pg.style.display='none';
+  const pgHome=document.getElementById('page-home');
+  if(pgHome){ pgHome.classList.add('active'); pgHome.style.display='flex'; }
   document.body.classList.add('home-active');
 }
 
 function handleFlowUpload(ev){
-  if(!window._isAdmin){ showNotif('⛔ Hanya admin yang bisa upload flow bisnis.','error'); return; }
-  const files = Array.from(ev.target.files);
-  if(files.length === 0) return;
-  ev.target.value = '';
-  let loaded = 0;
-  files.forEach(file => {
-    if(!file.name.match(/\.(html|htm)$/i)){
-      showNotif('Hanya file HTML: ' + file.name,'error'); return;
-    }
-    if(file.size > 30 * 1024 * 1024){
-      showNotif('File terlalu besar (max 30MB): ' + file.name,'error'); return;
-    }
-    const reader = new FileReader();
-    reader.onload = function(re){
-      flowData.push({
-        id: 'flow-' + Date.now() + '-' + Math.random().toString(36).substr(2,5),
-        name: file.name.replace(/\.(html|htm)$/i,'').replace(/_/g,' '),
-        fileName: file.name,
-        htmlContent: re.result,
-        fileSize: (file.size / 1024).toFixed(1) + ' KB',
-        uploadedAt: new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}),
-        uploadedBy: window._currentUser ? window._currentUser.email : 'unknown'
+  if(!window._isAdmin){ showNotif('⛔ Hanya admin yang bisa upload flow.','error'); return; }
+  const files=Array.from(ev.target.files);
+  if(files.length===0) return;
+  ev.target.value='';
+
+  // Tampilkan modal meta upload
+  _flowUploadBuffer=[];
+  let loaded=0;
+  files.forEach((file,i)=>{
+    if(!file.name.match(/\.(html|htm)$/i)){ showNotif('Hanya file HTML: '+file.name,'error'); return; }
+    if(file.size>5*1024*1024){ showNotif('Max 5MB: '+file.name,'error'); return; }
+    const reader=new FileReader();
+    reader.onload=function(re){
+      _flowUploadBuffer.push({
+        idx:i, fileName:file.name, fileSize:(file.size/1024).toFixed(1)+' KB', htmlContent:re.result
       });
       loaded++;
-      if(loaded === files.length){
-        saveFlowData();
-        renderFlowGrid();
-        showNotif(loaded + ' flow bisnis berhasil diupload!','success');
-      }
+      if(loaded===files.length){ showFlowUploadMeta(); }
     };
     reader.readAsText(file,'UTF-8');
   });
 }
 
-function deleteFlow(id){
-  if(!window._isAdmin){ showNotif('⛔ Hanya admin yang bisa menghapus.','error'); return; }
-  const f = flowData.find(x=>x.id===id);
-  if(!f) return;
-  if(!confirm('Hapus flow bisnis "' + f.name + '"?')) return;
-  flowData = flowData.filter(x=>x.id!==id);
-  saveFlowData();
+let _flowUploadBuffer=[];
+function showFlowUploadMeta(){
+  // Buat modal meta
+  const existing=document.getElementById('modal-flow-upload');
+  if(existing) existing.remove();
+
+  const CATS=['Produksi','Marketing','Gudang','Finance','HRGA','IT','Lainnya'];
+
+  const overlay=document.createElement('div');
+  overlay.id='modal-flow-upload';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:11000;display:flex;align-items:center;justify-content:center;';
+
+  let fieldsHtml='';
+  _flowUploadBuffer.sort((a,b)=>a.idx-b.idx).forEach((f,i)=>{
+    const baseName=f.fileName.replace(/\.(html|htm)$/i,'').replace(/_/g,' ');
+    const catOpts=CATS.map(c=>`<option value="${c}">${c}</option>`).join('');
+    fieldsHtml+=`
+    <div style="border:1px solid #1e2d45;border-radius:10px;padding:16px;margin-bottom:14px;background:#0D1117;">
+      <div style="font-size:12px;font-weight:700;color:#22D3EE;margin-bottom:10px;">📄 ${f.fileName} (${f.fileSize})</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;">
+        <div><label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">Nama Flow *</label>
+          <input id="fn-${i}" type="text" value="${baseName}" style="width:100%;border:1.5px solid #1e2d45;border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;outline:none;background:#111827;color:#e2e8f0;box-sizing:border-box;"></div>
+        <div><label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">Kategori *</label>
+          <select id="fc-${i}" style="width:100%;border:1.5px solid #1e2d45;border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;outline:none;background:#111827;color:#e2e8f0;cursor:pointer;">${catOpts}</select></div>
+      </div>
+      <div><label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">Deskripsi Singkat</label>
+        <textarea id="fd-${i}" rows="2" placeholder="Jelaskan isi flow ini..." style="width:100%;border:1.5px solid #1e2d45;border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;outline:none;background:#111827;color:#e2e8f0;resize:none;box-sizing:border-box;"></textarea></div>
+    </div>`;
+  });
+
+  overlay.innerHTML=`
+  <div style="background:#111827;border-radius:16px;padding:28px;width:min(640px,95vw);max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:1px solid #1e2d45;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+      <span style="font-size:24px;">📂</span>
+      <div><div style="font-size:16px;font-weight:800;color:#e2e8f0;">Upload Flow Bisnis</div>
+      <div style="font-size:12px;color:#64748b;margin-top:2px;">${_flowUploadBuffer.length} file siap diupload</div></div>
+    </div>
+    ${fieldsHtml}
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;">
+      <button onclick="document.getElementById('modal-flow-upload').remove()" style="background:#1e2d45;color:#e2e8f0;border:none;border-radius:8px;padding:9px 20px;cursor:pointer;font-weight:600;font-size:13px;">Batal</button>
+      <button onclick="confirmFlowUpload()" style="background:linear-gradient(135deg,#0891B2,#06B6D4);color:#fff;border:none;border-radius:8px;padding:9px 22px;cursor:pointer;font-weight:700;font-size:13px;">✅ Simpan Flow</button>
+    </div>
+  </div>`;
+
+  document.body.appendChild(overlay);
+}
+
+function confirmFlowUpload(){
+  _flowUploadBuffer.forEach((f,i)=>{
+    const name=(document.getElementById('fn-'+i)?.value||f.fileName).trim();
+    const cat=document.getElementById('fc-'+i)?.value||'Lainnya';
+    const desc=document.getElementById('fd-'+i)?.value||'';
+    flowData.push({
+      id:'flow-'+Date.now()+'-'+Math.random().toString(36).substr(2,5),
+      name, category:cat, desc,
+      fileName:f.fileName, fileSize:f.fileSize,
+      htmlContent:f.htmlContent,
+      uploadedAt:new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}),
+      uploadedBy:window._currentUser?window._currentUser.email:'admin',
+      tags:[]
+    });
+  });
+  document.getElementById('modal-flow-upload')?.remove();
+  saveFlowData(true);
   renderFlowGrid();
-  showNotif('Flow bisnis "' + f.name + '" dihapus.','info');
+  showNotif(_flowUploadBuffer.length+' flow bisnis berhasil diupload!','success');
+  _flowUploadBuffer=[];
+}
+
+function deleteFlow(id){
+  if(!window._isAdmin){ showNotif('⛔ Hanya admin.','error'); return; }
+  const f=[...FLOW_BUILTIN,...flowData].find(x=>x.id===id);
+  if(!f) return;
+  if(FLOW_BUILTIN.find(x=>x.id===id)){ showNotif('Flow built-in tidak bisa dihapus.','info'); return; }
+  if(!confirm('Hapus flow "'+f.name+'"?')) return;
+  flowData=flowData.filter(x=>x.id!==id);
+  saveFlowData(false);
+  renderFlowGrid();
+  showNotif('Flow "'+f.name+'" dihapus.','info');
 }
 
 function openFlowViewer(id){
-  const f = [...FLOW_BUILTIN, ...flowData].find(x=>x.id===id);
+  const f=[...FLOW_BUILTIN,...flowData].find(x=>x.id===id);
   if(!f){ showNotif('Data tidak ditemukan.','error'); return; }
-  document.getElementById('flow-viewer-title').textContent = f.name;
-  const iframe = document.getElementById('flow-iframe');
-  if(_currentFlowBlobUrl){ URL.revokeObjectURL(_currentFlowBlobUrl); _currentFlowBlobUrl = null; }
-  const blob = new Blob([f.htmlContent], {type:'text/html;charset=utf-8'});
-  _currentFlowBlobUrl = URL.createObjectURL(blob);
-  iframe.src = _currentFlowBlobUrl;
-  document.getElementById('modal-flow-viewer').classList.add('open');
+
+  document.getElementById('flow-viewer-title').textContent=f.name;
+  const catEl=document.getElementById('flow-viewer-cat');
+  if(catEl) catEl.textContent=f.category||'';
+
+  const iframe=document.getElementById('flow-iframe');
+  if(_currentFlowBlobUrl){ URL.revokeObjectURL(_currentFlowBlobUrl); _currentFlowBlobUrl=null; }
+  const blob=new Blob([f.htmlContent],{type:'text/html;charset=utf-8'});
+  _currentFlowBlobUrl=URL.createObjectURL(blob);
+  iframe.src=_currentFlowBlobUrl;
+
+  const viewer=document.getElementById('modal-flow-viewer');
+  viewer.style.display='flex';
 }
 
 function closeFlowViewer(){
-  document.getElementById('modal-flow-viewer').classList.remove('open');
-  document.getElementById('flow-iframe').src = 'about:blank';
+  const viewer=document.getElementById('modal-flow-viewer');
+  viewer.style.display='none';
+  const iframe=document.getElementById('flow-iframe');
+  iframe.src='about:blank';
+  if(_currentFlowBlobUrl){ URL.revokeObjectURL(_currentFlowBlobUrl); _currentFlowBlobUrl=null; }
 }
 
 function openFlowNewTab(){
   if(_currentFlowBlobUrl) window.open(_currentFlowBlobUrl,'_blank');
-  else showNotif('Tidak ada file yang sedang dibuka.','error');
 }
 
-document.getElementById('modal-flow-viewer').addEventListener('click', function(e){
-  if(e.target === this) closeFlowViewer();
+// Tutup viewer jika klik backdrop
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    const v=document.getElementById('modal-flow-viewer');
+    if(v && v.style.display==='flex') closeFlowViewer();
+  }
 });
 
+// ─── KATEGORI CONFIG ─────────────────────────────────────────
+const FLOW_CAT_CONFIG = {
+  'Produksi':  { color:'#EF4444', bg:'rgba(239,68,68,0.15)',   icon:'🏭', gradient:'linear-gradient(135deg,#7F1D1D,#DC2626,#F97316)' },
+  'Marketing': { color:'#8B5CF6', bg:'rgba(139,92,246,0.15)',  icon:'📊', gradient:'linear-gradient(135deg,#2E1065,#7C3AED,#EC4899)' },
+  'Gudang':    { color:'#F59E0B', bg:'rgba(245,158,11,0.15)',  icon:'📦', gradient:'linear-gradient(135deg,#713F12,#D97706,#FCD34D)' },
+  'Finance':   { color:'#10B981', bg:'rgba(16,185,129,0.15)',  icon:'💰', gradient:'linear-gradient(135deg,#064E3B,#059669,#34D399)' },
+  'HRGA':      { color:'#06B6D4', bg:'rgba(6,182,212,0.15)',   icon:'👥', gradient:'linear-gradient(135deg,#0C4A6E,#0891B2,#67E8F9)' },
+  'IT':        { color:'#6366F1', bg:'rgba(99,102,241,0.15)',  icon:'💻', gradient:'linear-gradient(135deg,#1E1B4B,#4338CA,#818CF8)' },
+  'Lainnya':   { color:'#94A3B8', bg:'rgba(148,163,184,0.15)', icon:'📋', gradient:'linear-gradient(135deg,#1E293B,#475569,#94A3B8)' }
+};
+
 function renderFlowGrid(){
-  // Gabungkan built-in + uploaded
-  const allFlow = [...FLOW_BUILTIN, ...flowData];
-  const search = (document.getElementById('flow-search').value||'').toLowerCase();
-  const filtered = allFlow.filter(f =>
-    !search ||
-    f.name.toLowerCase().includes(search) ||
-    (f.fileName||'').toLowerCase().includes(search)
-  );
-  document.getElementById('flow-stat-total').textContent = allFlow.length;
-  document.getElementById('flow-count-label').textContent = filtered.length + ' flow ditemukan';
+  const allFlow=[...FLOW_BUILTIN,...flowData];
+  const search=(document.getElementById('flow-search')?.value||'').toLowerCase();
+  const catF=document.getElementById('flow-cat-filter')?.value||'ALL';
 
-  const grid = document.getElementById('flow-grid');
-  grid.innerHTML = '';
+  const filtered=allFlow.filter(f=>{
+    const mCat=catF==='ALL'||(f.category||'Lainnya')===catF;
+    const mSearch=!search||
+      f.name.toLowerCase().includes(search)||
+      (f.desc||'').toLowerCase().includes(search)||
+      (f.fileName||'').toLowerCase().includes(search)||
+      (f.category||'').toLowerCase().includes(search)||
+      (f.tags||[]).some(t=>t.toLowerCase().includes(search));
+    return mCat && mSearch;
+  });
 
-  if(filtered.length === 0){
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#94A3B8;">
-      <div style="font-size:64px;margin-bottom:12px;">🔄</div>
-      <div style="font-size:18px;font-weight:700;color:#64748B;margin-bottom:6px;">
+  const statEl=document.getElementById('flow-stat-total');
+  if(statEl) statEl.textContent=allFlow.length;
+  const countEl=document.getElementById('flow-count-label');
+  if(countEl) countEl.textContent=filtered.length+' flow ditemukan';
+
+  const grid=document.getElementById('flow-grid');
+  if(!grid) return;
+  grid.innerHTML='';
+
+  if(filtered.length===0){
+    grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:80px 20px;color:#475569;">
+      <div style="font-size:72px;margin-bottom:16px;opacity:0.4;">🔄</div>
+      <div style="font-size:18px;font-weight:700;color:#64748b;margin-bottom:8px;">
         ${allFlow.length===0?'Belum ada Flow Bisnis':'Tidak ada hasil pencarian'}
+      </div>
+      <div style="font-size:13px;color:#475569;">
+        ${window._isAdmin?'Klik "Upload Flow HTML" untuk menambahkan flow baru.':'Hubungi admin untuk menambahkan flow bisnis.'}
       </div>
     </div>`;
     return;
   }
 
-  const colors = ['#0891B2','#7C3AED','#059669','#DC2626','#D97706','#2563EB'];
-  filtered.forEach(f => {
-    const color = colors[f.name.charCodeAt(0) % colors.length];
-    const card = document.createElement('div');
-    card.className = 'flow-card';
-    card.innerHTML = `
-      <div class="flow-card-header" style="background:linear-gradient(135deg,${color}cc,${color});" onclick="openFlowViewer('${f.id}')">
-        <div style="font-size:28px;flex-shrink:0;">🔄</div>
-        <div class="flow-card-title">${f.name}</div>
+  filtered.forEach(f=>{
+    const cat=f.category||'Lainnya';
+    const cfg=FLOW_CAT_CONFIG[cat]||FLOW_CAT_CONFIG['Lainnya'];
+    const isBuiltin=!!FLOW_BUILTIN.find(x=>x.id===f.id);
+    const card=document.createElement('div');
+    card.style.cssText='background:#111827;border-radius:16px;border:1px solid #1e2d45;overflow:hidden;transition:transform 0.25s ease,box-shadow 0.25s ease;cursor:pointer;';
+    card.onmouseenter=function(){ this.style.transform='translateY(-6px)'; this.style.boxShadow='0 20px 60px rgba(0,0,0,0.5),0 0 30px '+cfg.color+'33'; };
+    card.onmouseleave=function(){ this.style.transform=''; this.style.boxShadow=''; };
+    card.onclick=function(){ openFlowViewer(f.id); };
+
+    const tagsHtml=(f.tags||[]).slice(0,4).map(t=>
+      `<span style="background:rgba(255,255,255,0.08);color:#94a3b8;border-radius:5px;padding:2px 8px;font-size:10px;">#${t}</span>`
+    ).join('');
+
+    card.innerHTML=`
+      <!-- Header dengan gradient sesuai kategori -->
+      <div style="background:${cfg.gradient};padding:24px 20px 18px;position:relative;overflow:hidden;">
+        <!-- Dekorasi lingkaran -->
+        <div style="position:absolute;top:-30px;right:-30px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.07);pointer-events:none;"></div>
+        <div style="position:absolute;bottom:-20px;left:-20px;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,0.05);pointer-events:none;"></div>
+        <!-- Icon dan nama kategori -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.2);border-radius:14px;width:54px;height:54px;display:flex;align-items:center;justify-content:center;font-size:26px;backdrop-filter:blur(6px);">${cfg.icon}</div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
+            <span style="background:rgba(0,0,0,0.3);color:#fff;border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700;">${cat}</span>
+            ${isBuiltin?'<span style="background:rgba(34,211,153,0.2);color:#34D399;border:1px solid rgba(34,211,153,0.3);border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;">Built-in</span>':''}
+          </div>
+        </div>
+        <!-- Nama Flow -->
+        <div style="font-size:17px;font-weight:800;color:#fff;line-height:1.3;text-shadow:0 2px 8px rgba(0,0,0,0.4);">${f.name}</div>
       </div>
-      <div class="flow-card-body">
-        <div class="flow-card-meta">📁 ${f.fileName||'-'} &nbsp;·&nbsp; ${f.fileSize||''}</div>
-        <div class="flow-card-meta" style="margin-top:2px;">📅 Upload: ${f.uploadedAt||'-'}${f.uploadedBy?' &nbsp;·&nbsp; 👤 '+f.uploadedBy:''}</div>
-        <div class="flow-card-actions">
-          <button class="btn-flow-view" onclick="openFlowViewer('${f.id}')">👁️ Lihat Flow</button>
-          ${window._isAdmin?`<button class="btn-flow-del" onclick="deleteFlow('${f.id}')">🗑️ Hapus</button>`:''}
+      <!-- Body -->
+      <div style="padding:16px 20px 18px;">
+        <!-- Deskripsi -->
+        <div style="font-size:12px;color:#94a3b8;line-height:1.6;margin-bottom:12px;min-height:38px;">${f.desc||'Klik untuk membuka diagram alur proses bisnis.'}</div>
+        <!-- Tags -->
+        ${tagsHtml?`<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;">${tagsHtml}</div>`:''}
+        <!-- Meta info -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid #1e2d45;">
+          <div style="font-size:11px;color:#475569;">
+            📁 ${f.fileSize||'—'}<br>
+            📅 ${f.uploadedAt||'—'}
+          </div>
+          <!-- Tombol aksi -->
+          <div style="display:flex;gap:6px;" onclick="event.stopPropagation()">
+            <button onclick="openFlowViewer('${f.id}')"
+              style="background:linear-gradient(135deg,${cfg.color}cc,${cfg.color});color:#fff;border:none;border-radius:8px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:700;transition:opacity 0.15s;"
+              onmouseenter="this.style.opacity='0.85'" onmouseleave="this.style.opacity='1'">
+              ▶ Buka
+            </button>
+            ${window._isAdmin && !isBuiltin?`
+            <button onclick="deleteFlow('${f.id}')"
+              style="background:#1e2d45;color:#ef4444;border:1px solid #3f2020;border-radius:8px;padding:7px 10px;cursor:pointer;font-size:12px;font-weight:700;"
+              onmouseenter="this.style.background='#3f2020'" onmouseleave="this.style.background='#1e2d45'">
+              🗑️
+            </button>`:''}
+          </div>
         </div>
       </div>`;
     grid.appendChild(card);
   });
 }
-// ============================================================
-// EXPORT EXCEL NOTULEN MEETING
-// ============================================================
-function exportNotulenExcel(){
-  // Sync dulu sebelum export
-  if(window.notulenData && window.notulenData.length > 0){
-    notulenData = window.notulenData;
-  }
-  const filtered = notulenData;
-  if(!filtered || filtered.length === 0){
-    showNotif('Tidak ada data notulen untuk di-export.','error');
-    return;
-  }
 
-  const HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-  const BULAN_PANJANG = ['Januari','Februari','Maret','April','Mei','Juni',
-    'Juli','Agustus','September','Oktober','November','Desember'];
-
-  function formatTgl(tglStr){
-    if(!tglStr) return '-';
-    const d = new Date(tglStr);
-    if(isNaN(d.getTime())) return tglStr;
-    return HARI[d.getDay()] + ', ' + d.getDate() + ' ' + BULAN_PANJANG[d.getMonth()] + ' ' + d.getFullYear();
-  }
-
-  const now = new Date();
-  const tglExport = now.getDate() + ' ' + BULAN_PANJANG[now.getMonth()] + ' ' + now.getFullYear();
-  const jamExport = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
-
-  // Hitung statistik
-  const allAgendas = filtered.flatMap(m => m.agendas || []);
-  const totalMeeting = filtered.length;
-  const totalAgenda = allAgendas.length;
-  const totalDone = allAgendas.filter(a => a.status === 'DONE').length;
-  const totalProg = allAgendas.filter(a => a.status === 'ON PROGRESS').length;
-  const totalPending = allAgendas.filter(a => a.status === 'PENDING').length;
-
-  // Warna status
-  function statusStyle(status){
-    if(status === 'DONE') return 'background:#D1FAE5;color:#065F46;';
-    if(status === 'ON PROGRESS') return 'background:#DBEAFE;color:#1E40AF;';
-    if(status === 'PENDING') return 'background:#FEE2E2;color:#991B1B;';
-    return '';
-  }
-
-  // Build baris meeting
-  let allRows = '';
-  filtered.forEach((mtg, mtgIdx) => {
-    const d = new Date(mtg.tgl || '');
-    const isValid = !isNaN(d.getTime());
-    const tglLengkap = formatTgl(mtg.tgl);
-    const peserta = (mtg.peserta || []).join(', ') || '-';
-    const agendas = mtg.agendas || [];
-    const done = agendas.filter(a => a.status === 'DONE').length;
-    const totalAg = agendas.length;
-    const pct = totalAg === 0 ? 0 : Math.round(agendas.reduce((s,a) => s+(a.pct||0),0)/totalAg);
-    const pctColor = pct >= 80 ? '#22C55E' : pct >= 40 ? '#F59E0B' : '#EF4444';
-
-    // Header meeting
-    allRows += `
-    <tr>
-      <td colspan="8" style="background:linear-gradient(90deg,#4C1D95,#7C3AED);color:#fff;padding:10px 14px;font-weight:800;font-size:13px;border-radius:0;">
-        📋 MEETING ${mtgIdx + 1}: ${mtg.judul || '(Tanpa Judul)'}
-      </td>
-    </tr>
-    <tr style="background:#F3F0FF;">
-      <td colspan="2" style="padding:6px 12px;font-size:11px;color:#5B21B6;border:1px solid #DDD6FE;">
-        📅 <strong>Tanggal:</strong> ${tglLengkap}
-      </td>
-      <td colspan="2" style="padding:6px 12px;font-size:11px;color:#5B21B6;border:1px solid #DDD6FE;">
-        📍 <strong>Lokasi:</strong> ${mtg.lokasi || '-'}
-      </td>
-      <td colspan="2" style="padding:6px 12px;font-size:11px;color:#5B21B6;border:1px solid #DDD6FE;">
-        👥 <strong>Peserta:</strong> ${peserta}
-      </td>
-      <td colspan="2" style="padding:6px 12px;font-size:11px;color:#5B21B6;border:1px solid #DDD6FE;">
-        ✅ <strong>Progress:</strong> 
-        <span style="color:${pctColor};font-weight:800;">${pct}% (${done}/${totalAg} done)</span>
-      </td>
-    </tr>`;
-
-    if(agendas.length === 0){
-      allRows += `
-      <tr>
-        <td colspan="8" style="text-align:center;padding:10px;color:#94A3B8;font-size:12px;border:1px solid #E2E8F0;font-style:italic;">
-          Belum ada agenda tercatat
-        </td>
-      </tr>`;
-    } else {
-      // Header kolom agenda
-      allRows += `
-      <tr style="background:#EDE9FE;">
-        <th style="padding:8px 10px;font-size:11px;font-weight:800;color:#5B21B6;border:1px solid #C4B5FD;text-align:center;min-width:35px;">No</th>
-        <th style="padding:8px 10px;font-size:11px;font-weight:800;color:#5B21B6;border:1px solid #C4B5FD;min-width:260px;">Hasil Meeting / Agenda</th>
-        <th style="padding:8px 10px;font-size:11px;font-weight:800;color:#5B21B6;border:1px solid #C4B5FD;min-width:130px;">PIC</th>
-        <th style="padding:8px 10px;font-size:11px;font-weight:800;color:#5B21B6;border:1px solid #C4B5FD;min-width:110px;">Deadline</th>
-        <th style="padding:8px 10px;font-size:11px;font-weight:800;color:#5B21B6;border:1px solid #C4B5FD;min-width:110px;text-align:center;">Status</th>
-        <th style="padding:8px 10px;font-size:11px;font-weight:800;color:#5B21B6;border:1px solid #C4B5FD;min-width:70px;text-align:center;">% Selesai</th>
-        <th style="padding:8px 10px;font-size:11px;font-weight:800;color:#5B21B6;border:1px solid #C4B5FD;min-width:180px;">Progres 1</th>
-        <th style="padding:8px 10px;font-size:11px;font-weight:800;color:#5B21B6;border:1px solid #C4B5FD;min-width:180px;">Progres 2</th>
-      </tr>`;
-
-      // Baris agenda
-      agendas.forEach((ag, agIdx) => {
-        const rowBg = agIdx % 2 === 0 ? '#FFFFFF' : '#FAF9FF';
-        const ss = statusStyle(ag.status || 'ON PROGRESS');
-        allRows += `
-        <tr style="background:${rowBg};">
-          <td style="text-align:center;font-weight:700;color:#64748B;padding:7px 10px;border:1px solid #E2E8F0;">${agIdx+1}</td>
-          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-size:12px;line-height:1.5;">${(ag.agenda||'').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</td>
-          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-size:12px;">${ag.pic||'-'}</td>
-          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-size:12px;white-space:nowrap;">${ag.deadline||'-'}</td>
-          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-size:12px;text-align:center;${ss}font-weight:700;">${ag.status||'ON PROGRESS'}</td>
-          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-size:12px;text-align:center;font-weight:800;color:${ag.pct>=80?'#22C55E':ag.pct>=40?'#F59E0B':'#EF4444'};">${ag.pct||0}%</td>
-          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-size:12px;">${(ag.progres1||ag.progres||'').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</td>
-          <td style="padding:7px 10px;border:1px solid #E2E8F0;font-size:12px;">${(ag.progres2||'').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</td>
-        </tr>`;
-      });
-
-      // Sub-total meeting
-      allRows += `
-      <tr style="background:#F3F0FF;font-weight:700;">
-        <td colspan="4" style="padding:7px 12px;border:1px solid #DDD6FE;font-size:11px;color:#5B21B6;text-align:right;">
-          Subtotal Meeting ini:
-        </td>
-        <td colspan="4" style="padding:7px 12px;border:1px solid #DDD6FE;font-size:11px;color:#5B21B6;">
-          ${totalAg} agenda | 
-          DONE: ${done} | 
-          ON PROGRESS: ${agendas.filter(a=>a.status==='ON PROGRESS').length} | 
-          PENDING: ${agendas.filter(a=>a.status==='PENDING').length} | 
-          Progress: ${pct}%
-        </td>
-      </tr>`;
-    }
-
-    // Spacer antar meeting
-    allRows += `<tr><td colspan="8" style="padding:6px;border:none;background:#F8FAFC;"></td></tr>`;
-  });
-
-  // Grand summary
-  allRows += `
-  <tr style="background:#4C1D95;color:#fff;font-weight:800;">
-    <td colspan="8" style="padding:10px 14px;font-size:12px;">
-      📊 REKAPITULASI TOTAL: ${totalMeeting} Meeting | ${totalAgenda} Agenda | 
-      DONE: ${totalDone} | ON PROGRESS: ${totalProg} | PENDING: ${totalPending} | 
-      Diekspor: ${tglExport} ${jamExport} WIB
-    </td>
-  </tr>`;
-
-  // Logo base64 (sama dengan yang ada di header)
-  const logoB64 = `data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEI=`;
-
-  const htmlContent = `
-<html xmlns:o="urn:schemas-microsoft-com:office:office"
-      xmlns:x="urn:schemas-microsoft-com:office:excel"
-      xmlns="http://www.w3.org/TR/REC-html40">
-<head>
-<meta charset="UTF-8">
-<!--[if gte mso 9]>
-<xml>
-  <x:ExcelWorkbook>
-    <x:ExcelWorksheets>
-      <x:ExcelWorksheet>
-        <x:Name>Notulen Meeting</x:Name>
-        <x:WorksheetOptions>
-          <x:DisplayGridlines/>
-        </x:WorksheetOptions>
-      </x:ExcelWorksheet>
-    </x:ExcelWorksheets>
-  </x:ExcelWorkbook>
-</xml>
-<![endif]-->
-<style>
-  body { font-family: Arial, sans-serif; font-size: 11pt; }
-  td, th { vertical-align: top; }
-  table { border-collapse: collapse; width: 100%; }
-</style>
-</head>
-<body>
-<table style="width:100%;border-collapse:collapse;">
-
-  <!-- ===== KOP SURAT ===== -->
-  <tr>
-    <td colspan="8" style="padding:0;">
-      <table style="width:100%;border:2px solid #4C1D95;border-collapse:collapse;">
-        <tr>
-          <td style="width:160px;padding:12px;text-align:center;vertical-align:middle;border-right:2px solid #4C1D95;">
-            <div style="background:linear-gradient(135deg,#4C1D95,#7C3AED);color:#fff;padding:10px 14px;border-radius:8px;display:inline-block;">
-              <div style="font-size:9pt;font-weight:bold;letter-spacing:1px;color:rgba(255,255,255,0.8);">CV.</div>
-              <div style="font-size:18pt;font-weight:900;color:#FCD34D;letter-spacing:2px;">KENCANA</div>
-              <div style="font-size:9pt;font-weight:bold;letter-spacing:3px;color:#fff;">PRINT</div>
-            </div>
-          </td>
-          <td style="padding:12px 20px;vertical-align:middle;">
-            <div style="font-size:18pt;font-weight:900;color:#4C1D95;letter-spacing:1px;">
-              📝 NOTULEN MEETING
-            </div>
-            <div style="font-size:11pt;color:#374151;margin-top:4px;font-weight:600;">
-              CV. Kencana Print — Dokumentasi Hasil Rapat & Tindak Lanjut
-            </div>
-            <div style="font-size:9pt;color:#64748B;margin-top:4px;">
-              Garment &nbsp;·&nbsp; MMT & Spanduk &nbsp;·&nbsp; Kaosan &nbsp;·&nbsp; Digital Printing
-            </div>
-            <div style="font-size:9pt;color:#64748B;margin-top:2px;">
-              Total Meeting: <strong>${totalMeeting}</strong> &nbsp;|&nbsp;
-              Total Agenda: <strong>${totalAgenda}</strong> &nbsp;|&nbsp;
-              Tanggal Export: <strong>${tglExport}, ${jamExport} WIB</strong>
-            </div>
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-
-  <!-- Spacer -->
-  <tr><td colspan="8" style="padding:8px;"></td></tr>
-
-  <!-- ===== RINGKASAN STATISTIK ===== -->
-  <tr>
-    <td colspan="8" style="padding:0;">
-      <table style="width:100%;border-collapse:collapse;border:1px solid #E2E8F0;border-radius:8px;">
-        <tr style="background:#F3F0FF;">
-          <td style="padding:10px 16px;text-align:center;border-right:1px solid #DDD6FE;">
-            <div style="font-size:22pt;font-weight:900;color:#7C3AED;">${totalMeeting}</div>
-            <div style="font-size:9pt;color:#64748B;">Total Meeting</div>
-          </td>
-          <td style="padding:10px 16px;text-align:center;border-right:1px solid #DDD6FE;">
-            <div style="font-size:22pt;font-weight:900;color:#1E293B;">${totalAgenda}</div>
-            <div style="font-size:9pt;color:#64748B;">Total Agenda</div>
-          </td>
-          <td style="padding:10px 16px;text-align:center;border-right:1px solid #DDD6FE;">
-            <div style="font-size:22pt;font-weight:900;color:#065F46;">${totalDone}</div>
-            <div style="font-size:9pt;color:#64748B;">DONE</div>
-          </td>
-          <td style="padding:10px 16px;text-align:center;border-right:1px solid #DDD6FE;">
-            <div style="font-size:22pt;font-weight:900;color:#1E40AF;">${totalProg}</div>
-            <div style="font-size:9pt;color:#64748B;">ON PROGRESS</div>
-          </td>
-          <td style="padding:10px 16px;text-align:center;">
-            <div style="font-size:22pt;font-weight:900;color:#991B1B;">${totalPending}</div>
-            <div style="font-size:9pt;color:#64748B;">PENDING</div>
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-
-  <!-- Spacer -->
-  <tr><td colspan="8" style="padding:8px;"></td></tr>
-
-  <!-- ===== DATA MEETING ===== -->
-  ${allRows}
-
-</table>
-</body>
-</html>`;
-
-  const blob = new Blob([htmlContent], {type: 'application/vnd.ms-excel;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  const fname = 'Notulen_Meeting_Kencana_Print_' +
-    now.getFullYear() +
-    String(now.getMonth()+1).padStart(2,'0') +
-    String(now.getDate()).padStart(2,'0') + '.xls';
-  a.download = fname;
-  a.click();
-  URL.revokeObjectURL(url);
-  showNotif('✅ Export Excel Notulen berhasil! File "' + fname + '" didownload.', 'success');
-}
-// ============================================================
-// WRAPPER SAFE UNTUK EXPORT NOTULEN EXCEL
-// Memastikan data tersync sebelum export
-// ============================================================
-function exportNotulenExcelSafe(){
-  // Sync semua sumber data
-  if(window.notulenData && Array.isArray(window.notulenData) && window.notulenData.length > 0){
-    notulenData = window.notulenData;
-  }
-  if(!notulenData || notulenData.length === 0){
-    showNotif('⚠️ Tidak ada data notulen untuk di-export.','error');
-    return;
-  }
-  // Panggil fungsi export utama
-  exportNotulenExcel();
-}
-  
 loadFlowData();
 
   
 </script>
-<!-- FORM MEETING FULLSCREEN -->
-<div id="modal-meeting" style="display:none;position:fixed;inset:0;z-index:10000;flex-direction:column;background:#F0F4FF;font-family:'Plus Jakarta Sans','Segoe UI',sans-serif;">
-  <!-- TOP BAR -->
-  <div style="background:linear-gradient(135deg,#4C1D95 0%,#6D28D9 50%,#7C3AED 100%);color:#fff;padding:0 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;flex-shrink:0;box-shadow:0 3px 16px rgba(109,40,217,0.4);min-height:62px;">
-    <div style="display:flex;align-items:center;gap:14px;">
-      <button onclick="closeModalMeeting()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:8px;padding:6px 14px;cursor:pointer;font-weight:700;font-size:13px;">&#x2715; Batal</button>
-      <div style="width:1px;height:32px;background:rgba(255,255,255,0.2);"></div>
-      <div style="font-size:22px;">&#x1F4DD;</div>
-      <div>
-        <div style="font-size:17px;font-weight:800;letter-spacing:0.3px;" id="mtg-modal-title">Tambah Meeting Baru</div>
-        <div style="font-size:11px;opacity:0.82;margin-top:1px;">Isi informasi meeting lalu tambahkan agenda di tabel bawah</div>
-      </div>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <div id="mtg-form-row-count" style="background:rgba(255,255,255,0.15);border-radius:8px;padding:5px 14px;font-size:12px;font-weight:700;">0 agenda</div>
-      <button onclick="addMtgFormRow()" style="background:#F59E0B;color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;font-size:13px;">+ Tambah Baris</button>
-      <button onclick="saveMeeting()" style="background:#22C55E;color:#fff;border:none;border-radius:8px;padding:8px 18px;cursor:pointer;font-weight:700;font-size:13px;">&#x1F4BE; Simpan Meeting</button>
-    </div>
-  </div>
-  <!-- INFO MEETING: header fields -->
-  <div style="background:#fff;border-bottom:2px solid #E2E8F0;padding:14px 24px;display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,0.04);">
-    <div style="display:flex;flex-direction:column;gap:4px;">
-      <label style="font-size:11px;font-weight:700;color:#6D28D9;letter-spacing:0.5px;">&#x1F4C5; TANGGAL MEETING *</label>
-      <input id="mtg-tgl" type="date" style="border:2px solid #E2E8F0;border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;outline:none;width:160px;" onfocus="this.style.borderColor='#7C3AED'" onblur="this.style.borderColor='#E2E8F0'">
-    </div>
-    <div style="display:flex;flex-direction:column;gap:4px;flex:2;min-width:220px;">
-      <label style="font-size:11px;font-weight:700;color:#6D28D9;letter-spacing:0.5px;">&#x1F4CC; JUDUL / AGENDA UTAMA *</label>
-      <input id="mtg-judul" type="text" placeholder="Contoh: Rapat Evaluasi Produksi Bulan Mei 2026" style="border:2px solid #E2E8F0;border-radius:8px;padding:7px 12px;font-size:13px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='#7C3AED'" onblur="this.style.borderColor='#E2E8F0'">
-    </div>
-    <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:160px;">
-      <label style="font-size:11px;font-weight:700;color:#6D28D9;letter-spacing:0.5px;">&#x1F4CD; LOKASI / MEDIA</label>
-      <input id="mtg-lokasi" type="text" placeholder="Ruang Rapat / Google Meet" style="border:2px solid #E2E8F0;border-radius:8px;padding:7px 12px;font-size:13px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='#7C3AED'" onblur="this.style.borderColor='#E2E8F0'">
-    </div>
-    <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:200px;">
-      <label style="font-size:11px;font-weight:700;color:#6D28D9;letter-spacing:0.5px;">&#x1F465; PESERTA (Enter untuk tambah)</label>
-      <div class="mtg-participants-input" id="ptc-wrap" onclick="document.getElementById('ptc-input').focus()" style="min-height:36px;padding:4px 8px;">
-        <input id="ptc-input" placeholder="Nama peserta..." onkeydown="handlePtcInput(event)">
-      </div>
-    </div>
-  </div>
-  <!-- TABEL AGENDA -->
-  <div style="flex:1;overflow-y:auto;padding:20px 24px 40px;">
-    <div style="background:#fff;border-radius:14px;border:2px solid #E2E8F0;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.07);">
-      <div style="background:linear-gradient(90deg,#5B21B6,#7C3AED);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;">
-        <div style="color:#fff;font-size:13px;font-weight:800;">&#x1F4CB; Daftar Agenda &amp; Hasil Meeting</div>
-        <div style="color:rgba(255,255,255,0.75);font-size:11px;">Klik sel untuk mengedit langsung</div>
-      </div>
-      <div style="overflow-x:auto;">
-        <table style="width:100%;border-collapse:collapse;min-width:1100px;">
-          <thead>
-            <tr style="background:#EDE9FE;">
-              <th style="padding:10px 12px;text-align:center;font-size:12px;font-weight:800;color:#5B21B6;border-right:1px solid #DDD6FE;min-width:44px;">No</th>
-              <th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:800;color:#5B21B6;border-right:1px solid #DDD6FE;min-width:280px;">Hasil Meeting / Agenda</th>
-              <th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:800;color:#5B21B6;border-right:1px solid #DDD6FE;min-width:150px;">PIC</th>
-              <th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:800;color:#5B21B6;border-right:1px solid #DDD6FE;min-width:140px;">Deadline</th>
-              <th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:800;color:#5B21B6;border-right:1px solid #DDD6FE;min-width:210px;">Progres 1</th>
-              <th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:800;color:#5B21B6;border-right:1px solid #DDD6FE;min-width:210px;">Progres 2</th>
-              <th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:800;color:#5B21B6;border-right:1px solid #DDD6FE;min-width:130px;">Status</th>
-              <th style="padding:10px 12px;text-align:center;font-size:12px;font-weight:800;color:#5B21B6;min-width:60px;">Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="mtg-form-tbody"></tbody>
-        </table>
-      </div>
-      <div id="mtg-form-empty" style="text-align:center;padding:48px 20px;color:#94A3B8;">
-        <div style="font-size:48px;margin-bottom:10px;">&#x1F4CB;</div>
-        <div style="font-size:15px;font-weight:700;color:#64748B;margin-bottom:4px;">Belum ada agenda</div>
-        <div style="font-size:12px;">Klik <strong>"+ Tambah Baris"</strong> untuk menambah agenda meeting</div>
-      </div>
-    </div>
-  </div>
-  <!-- hidden: compat with saveMeeting() -->
-  <textarea id="mtg-catatan" style="display:none;"></textarea>
-</div>
 
-<!-- MODAL PCT NOTULEN -->
-<div id="modal-pct-mtg">
-  <div class="pct-mtg-box">
-    <div style="font-size:14px;font-weight:800;color:#1E293B;margin-bottom:14px;">📊 % Penyelesaian</div>
-    <input id="pct-mtg-range" type="range" min="0" max="100" step="5" value="0"
-      oninput="document.getElementById('pct-mtg-val').textContent=this.value+'%'"
-      style="width:100%;accent-color:#7C3AED;cursor:pointer;">
-    <div style="text-align:center;font-size:28px;font-weight:900;color:#7C3AED;margin:10px 0;" id="pct-mtg-val">0%</div>
-    <div style="display:flex;gap:10px;justify-content:flex-end;">
-      <button onclick="document.getElementById('modal-pct-mtg').classList.remove('open')"
-        style="background:#F1F5F9;color:#374151;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;font-size:13px;">Batal</button>
-      <button onclick="savePctMtg()"
-        style="background:linear-gradient(135deg,#6D28D9,#7C3AED);color:#fff;border:none;border-radius:8px;padding:8px 18px;cursor:pointer;font-weight:700;font-size:13px;">Simpan</button>
-    </div>
-  </div>
-</div>
 
 </body></html>
