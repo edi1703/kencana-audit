@@ -5129,7 +5129,168 @@ function exportNotulenExcelSafe(){
 }
   
 loadFlowData();
+// ============================================================
+// ZOOM TABEL — khusus area tabel, tidak mempengaruhi layout lain
+// ============================================================
+(function initTableZoom(){
+  let zoomLevel = 100; // persen
+  const MIN_ZOOM = 50;
+  const MAX_ZOOM = 200;
+  const STEP = 10;
 
+  function applyZoom(){
+    const tableWrap = document.getElementById('table-wrap');
+    if(!tableWrap) return;
+    const scale = zoomLevel / 100;
+    tableWrap.style.transformOrigin = 'top left';
+    tableWrap.style.transform = `scale(${scale})`;
+    // Sesuaikan tinggi wrapper agar tidak overlap elemen bawah
+    const table = tableWrap.querySelector('table');
+    if(table){
+      const naturalHeight = table.offsetHeight * scale;
+      tableWrap.style.marginBottom = (naturalHeight - tableWrap.offsetHeight * scale) + 'px';
+    }
+    updateZoomLabel();
+  }
+
+  function updateZoomLabel(){
+    const lbl = document.getElementById('zoom-label');
+    if(lbl) lbl.textContent = zoomLevel + '%';
+    const btnOut = document.getElementById('zoom-out-btn');
+    const btnIn  = document.getElementById('zoom-in-btn');
+    if(btnOut) btnOut.disabled = zoomLevel <= MIN_ZOOM;
+    if(btnIn)  btnIn.disabled  = zoomLevel >= MAX_ZOOM;
+  }
+
+  function zoomIn(){  if(zoomLevel < MAX_ZOOM){ zoomLevel += STEP; applyZoom(); } }
+  function zoomOut(){ if(zoomLevel > MIN_ZOOM){ zoomLevel -= STEP; applyZoom(); } }
+  function zoomReset(){ zoomLevel = 100; applyZoom(); }
+
+  // Keyboard shortcut: Ctrl+= zoom in, Ctrl+- zoom out, Ctrl+0 reset
+  // (hanya aktif saat hover/fokus di area tabel)
+  function handleKey(e){
+    if(!e.ctrlKey && !e.metaKey) return;
+    const tableWrap = document.getElementById('table-wrap');
+    if(!tableWrap || !tableWrap.matches(':hover')) return;
+    if(e.key === '=' || e.key === '+'){ e.preventDefault(); zoomIn(); }
+    if(e.key === '-')                { e.preventDefault(); zoomOut(); }
+    if(e.key === '0')                { e.preventDefault(); zoomReset(); }
+  }
+
+  // Scroll wheel + Ctrl di atas tabel
+  function handleWheel(e){
+    if(!e.ctrlKey && !e.metaKey) return;
+    e.preventDefault();
+    if(e.deltaY < 0) zoomIn();
+    else             zoomOut();
+  }
+
+  // Inject toolbar zoom ke dalam #toolbar-right
+  function injectZoomToolbar(){
+    const toolbarRight = document.getElementById('toolbar-right');
+    if(!toolbarRight || document.getElementById('zoom-toolbar')) return;
+
+    const wrap = document.createElement('div');
+    wrap.id = 'zoom-toolbar';
+    wrap.style.cssText = [
+      'display:flex',
+      'align-items:center',
+      'gap:4px',
+      'background:rgba(255,255,255,0.92)',
+      'border:2px solid #E2E8F0',
+      'border-radius:10px',
+      'padding:3px 8px',
+      'box-shadow:0 2px 8px rgba(0,0,0,0.08)',
+      'user-select:none',
+      'flex-shrink:0'
+    ].join(';');
+
+    wrap.innerHTML = `
+      <span style="font-size:11px;color:#64748B;font-weight:700;white-space:nowrap;margin-right:2px;">🔍 Tabel</span>
+      <button id="zoom-out-btn" title="Perkecil tabel (Ctrl+-)"
+        style="background:#F1F5F9;border:1.5px solid #E2E8F0;border-radius:6px;
+               width:26px;height:26px;cursor:pointer;font-size:14px;font-weight:900;
+               color:#374151;display:flex;align-items:center;justify-content:center;
+               transition:all 0.15s;padding:0;line-height:1;">−</button>
+      <span id="zoom-label"
+        style="font-size:12px;font-weight:800;color:#1E293B;min-width:38px;
+               text-align:center;cursor:pointer;padding:0 2px;"
+        title="Klik untuk reset ke 100%"
+        onclick="document.getElementById('zoom-reset-btn').click()">100%</span>
+      <button id="zoom-in-btn" title="Perbesar tabel (Ctrl++)"
+        style="background:#F1F5F9;border:1.5px solid #E2E8F0;border-radius:6px;
+               width:26px;height:26px;cursor:pointer;font-size:14px;font-weight:900;
+               color:#374151;display:flex;align-items:center;justify-content:center;
+               transition:all 0.15s;padding:0;line-height:1;">+</button>
+      <button id="zoom-reset-btn" title="Reset zoom (Ctrl+0)"
+        style="background:#EFF6FF;border:1.5px solid #BFDBFE;border-radius:6px;
+               padding:0 7px;height:26px;cursor:pointer;font-size:10px;font-weight:700;
+               color:#2563EB;white-space:nowrap;transition:all 0.15s;">Reset</button>
+    `;
+
+    toolbarRight.appendChild(wrap);
+
+    // Event listeners tombol
+    document.getElementById('zoom-out-btn').addEventListener('click', zoomOut);
+    document.getElementById('zoom-in-btn').addEventListener('click', zoomIn);
+    document.getElementById('zoom-reset-btn').addEventListener('click', zoomReset);
+
+    // Hover effect
+    ['zoom-out-btn','zoom-in-btn','zoom-reset-btn'].forEach(id=>{
+      const btn = document.getElementById(id);
+      if(!btn) return;
+      btn.addEventListener('mouseenter', function(){
+        this.style.background = id==='zoom-reset-btn' ? '#DBEAFE' : '#E2E8F0';
+        this.style.borderColor = id==='zoom-reset-btn' ? '#93C5FD' : '#94A3B8';
+      });
+      btn.addEventListener('mouseleave', function(){
+        this.style.background = id==='zoom-reset-btn' ? '#EFF6FF' : '#F1F5F9';
+        this.style.borderColor = id==='zoom-reset-btn' ? '#BFDBFE' : '#E2E8F0';
+      });
+    });
+
+    // Wheel zoom pada table-wrap
+    const tableWrap = document.getElementById('table-wrap');
+    if(tableWrap){
+      tableWrap.addEventListener('wheel', handleWheel, { passive: false });
+    }
+
+    // Keyboard shortcut global
+    document.addEventListener('keydown', handleKey);
+
+    updateZoomLabel();
+  }
+
+  // Tunggu DOM siap & toolbar sudah ada, lalu inject
+  function tryInject(){
+    if(document.getElementById('toolbar-right')){
+      injectZoomToolbar();
+    } else {
+      setTimeout(tryInject, 200);
+    }
+  }
+
+  // Juga re-inject setiap kali renderTable() dipanggil
+  // (karena bisa di-reset saat ganti departemen)
+  const origRenderAll = window.renderAll;
+  if(typeof origRenderAll === 'function'){
+    window.renderAll = function(){
+      origRenderAll.apply(this, arguments);
+      setTimeout(()=>{
+        if(!document.getElementById('zoom-toolbar')) injectZoomToolbar();
+        applyZoom(); // pertahankan level zoom saat render ulang
+      }, 80);
+    };
+  }
+
+  // Ekspos fungsi ke window agar bisa dipanggil dari luar jika perlu
+  window.tableZoomIn    = zoomIn;
+  window.tableZoomOut   = zoomOut;
+  window.tableZoomReset = zoomReset;
+
+  setTimeout(tryInject, 400);
+})();
+  
 </script>
 <!-- FORM MEETING FULLSCREEN -->
 <div id="modal-meeting" style="display:none;position:fixed;inset:0;z-index:10000;flex-direction:column;background:#F0F4FF;font-family:'Plus Jakarta Sans','Segoe UI',sans-serif;">
