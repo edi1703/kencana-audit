@@ -3621,6 +3621,94 @@ document.body.classList.add('home-active');
 </script>
 </div><!-- end #page-dashboard -->
 
+<!-- ===== HALAMAN NOTULEN MEETING ===== -->
+<div id="page-notulen" style="display:none;position:fixed;inset:0;z-index:9998;flex-direction:column;background:#F8FAFC;font-family:'Plus Jakarta Sans','Segoe UI',sans-serif;">
+
+  <!-- TOP BAR -->
+  <div style="background:linear-gradient(135deg,#2E1065 0%,#7C3AED 60%,#EC4899 100%);color:#fff;padding:0 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;flex-shrink:0;box-shadow:0 4px 20px rgba(124,58,237,0.4);min-height:64px;">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <button onclick="closeNotulen()" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:10px;padding:7px 16px;cursor:pointer;font-weight:700;font-size:13px;">← Home</button>
+      <div style="width:1px;height:36px;background:rgba(255,255,255,0.2);"></div>
+      <div style="font-size:26px;">📝</div>
+      <div>
+        <div style="font-size:18px;font-weight:800;">Notulen Meeting</div>
+        <div style="font-size:11px;opacity:0.75;margin-top:1px;">Dokumentasi Hasil Rapat — CV. Kencana Print</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <div style="background:rgba(255,255,255,0.12);border-radius:10px;padding:6px 16px;text-align:center;border:1px solid rgba(255,255,255,0.15);">
+        <div style="font-size:18px;font-weight:800;" id="notulen-stat-total">0</div>
+        <div style="font-size:10px;opacity:0.8;">Total Meeting</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.12);border-radius:10px;padding:6px 16px;text-align:center;border:1px solid rgba(255,255,255,0.15);">
+        <div style="font-size:18px;font-weight:800;" id="notulen-stat-open">0</div>
+        <div style="font-size:10px;opacity:0.8;">Open</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.12);border-radius:10px;padding:6px 16px;text-align:center;border:1px solid rgba(255,255,255,0.15);">
+        <div style="font-size:18px;font-weight:800;" id="notulen-stat-close">0</div>
+        <div style="font-size:10px;opacity:0.8;">Close</div>
+      </div>
+      <button id="btn-add-meeting" onclick="openAddMeeting()" style="background:#F59E0B;color:#fff;border:none;border-radius:10px;padding:8px 18px;cursor:pointer;font-weight:700;font-size:13px;">➕ Tambah Meeting</button>
+    </div>
+  </div>
+
+  <!-- SEARCH & FILTER -->
+  <div style="background:#fff;border-bottom:2px solid #E2E8F0;padding:10px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0;">
+    <input id="notulen-search" type="text" placeholder="🔍 Cari judul meeting atau peserta..."
+      oninput="renderNotulenList()"
+      style="border:2px solid #E2E8F0;border-radius:10px;padding:8px 14px;font-size:13px;width:280px;outline:none;font-family:inherit;">
+    <select id="notulen-filter-status" onchange="renderNotulenList()"
+      style="border:2px solid #E2E8F0;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;font-family:inherit;cursor:pointer;">
+      <option value="ALL">Semua Status</option>
+      <option value="OPEN">Ada Tindak Lanjut Open</option>
+      <option value="CLOSE">Semua Close</option>
+    </select>
+    <div style="margin-left:auto;font-size:12px;color:#64748B;font-weight:600;" id="notulen-count-label">—</div>
+  </div>
+
+  <!-- KONTEN UTAMA -->
+  <div style="flex:1;overflow-y:auto;padding:24px;background:#F8FAFC;">
+    <div id="notulen-list" style="display:flex;flex-direction:column;gap:16px;max-width:1200px;margin:0 auto;"></div>
+  </div>
+</div>
+
+<!-- MODAL TAMBAH/EDIT MEETING -->
+<div id="modal-meeting" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:10500;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:28px;width:min(560px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <h3 id="modal-meeting-title" style="font-size:16px;font-weight:800;color:#1E293B;margin-bottom:20px;">➕ Tambah Meeting Baru</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#64748B;display:block;margin-bottom:4px;">Tanggal Meeting *</label>
+        <input id="mtg-tanggal" type="date" style="width:100%;border:2px solid #E2E8F0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit;">
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#64748B;display:block;margin-bottom:4px;">Waktu</label>
+        <input id="mtg-waktu" type="time" style="width:100%;border:2px solid #E2E8F0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit;">
+      </div>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;font-weight:700;color:#64748B;display:block;margin-bottom:4px;">Judul / Agenda Utama Meeting *</label>
+      <input id="mtg-judul" type="text" placeholder="Contoh: Rapat Evaluasi Produksi Bulanan" style="width:100%;border:2px solid #E2E8F0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit;">
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;font-weight:700;color:#64748B;display:block;margin-bottom:4px;">Lokasi / Media</label>
+      <input id="mtg-lokasi" type="text" placeholder="Contoh: Ruang Rapat Lantai 2 / Zoom Meeting" style="width:100%;border:2px solid #E2E8F0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit;">
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;font-weight:700;color:#64748B;display:block;margin-bottom:4px;">Dipimpin Oleh</label>
+      <input id="mtg-pimpinan" type="text" placeholder="Nama pimpinan rapat" style="width:100%;border:2px solid #E2E8F0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit;">
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="font-size:11px;font-weight:700;color:#64748B;display:block;margin-bottom:4px;">Peserta Rapat</label>
+      <textarea id="mtg-peserta" rows="3" placeholder="Satu nama per baris, contoh:&#10;Bp. Andi&#10;Ibu Sari&#10;Bp. Fadli" style="width:100%;border:2px solid #E2E8F0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit;resize:vertical;"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeModalMeeting()" style="background:#F1F5F9;color:#374151;border:none;border-radius:8px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;">Batal</button>
+      <button onclick="saveMeeting()" style="background:#7C3AED;color:#fff;border:none;border-radius:8px;padding:9px 20px;cursor:pointer;font-weight:700;font-size:13px;">💾 Simpan Meeting</button>
+    </div>
+  </div>
+</div>
+  
 <!-- ===== HALAMAN FLOW BISNIS ===== -->
 <div id="page-flow-bisnis" style="display:none;position:fixed;inset:0;z-index:9998;flex-direction:column;background:#0D1117;font-family:'Plus Jakarta Sans','Segoe UI',sans-serif;">
 
