@@ -3441,28 +3441,6 @@ homeTick(); setInterval(homeTick,1000);
 if(!window.notulenData) window.notulenData = [];
 let notulenData = window.notulenData;
 
-// === INLINE EDIT AGENDA CELL ===
-let _mtgEditCell = null;
-function startMtgEdit(td, mtgId, agId, field){
-  if(!window._canEditNotulen) return;
-  if(_mtgEditCell) commitMtgEdit(_mtgEditCell);
-  const m = notulenData.find(x=>x.id===mtgId);
-  if(!m) return;
-  const ag = m.agendas.find(a=>a.id===agId);
-  if(!ag) return;
-  const cur = ag[field]||'';
-  td.innerHTML='';
-  const ta = document.createElement('textarea');
-  ta.className='mtg-cell-editor';
-  ta.value=cur;
-  td.appendChild(ta);
-  ta.focus();
-  _mtgEditCell = {td,mtgId,agId,field};
-  ta.addEventListener('blur',()=>{ commitMtgEdit({td,mtgId,agId,field}); });
-  ta.addEventListener('keydown', e=>{
-    if(e.key==='Tab'||e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); commitMtgEdit({td,mtgId,agId,field}); }
-  });
-}
 function commitMtgEdit({td,mtgId,agId,field}){
   _mtgEditCell=null;
   const ta=td.querySelector('textarea');
