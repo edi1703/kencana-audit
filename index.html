@@ -3442,19 +3442,6 @@ if(!window.notulenData) window.notulenData = [];
 let notulenData = window.notulenData;
 
 
-// === SCROLL SYNC: mirror scroll bar atas ↔ tabel ===
-function initMtgScrollSync(mtgId){
-  const tw  = document.getElementById('tw-'+mtgId);
-  const stb = document.getElementById('stb-'+mtgId);
-  const tbl = document.getElementById('tbl-'+mtgId);
-  const stbi= document.getElementById('stbi-'+mtgId);
-  if(!tw||!stb||!tbl||!stbi) return;
-  stbi.style.width = tbl.scrollWidth+'px';
-  let a=false,b=false;
-  stb.addEventListener('scroll',()=>{ if(b) return; a=true; tw.scrollLeft=stb.scrollLeft; setTimeout(()=>a=false,20); });
-  tw.addEventListener('scroll', ()=>{ if(a) return; b=true; stb.scrollLeft=tw.scrollLeft;  setTimeout(()=>b=false,20); });
-}
-
 // === TAMBAH KOLOM PROGRES ===
 function addMtgProgresCol(mtgId){
   if(!window._isAdmin){ showNotif('Hanya admin yang bisa menambah kolom.','error'); return; }
