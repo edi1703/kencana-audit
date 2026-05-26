@@ -3441,45 +3441,6 @@ homeTick(); setInterval(homeTick,1000);
 if(!window.notulenData) window.notulenData = [];
 let notulenData = window.notulenData;
 
-function generateMtgId(){
-  return 'mtg-' + Date.now() + '-' + Math.random().toString(36).substr(2,6);
-}
-function generateAgendaId(){
-  return 'ag-' + Date.now() + '-' + Math.random().toString(36).substr(2,4);
-}
-
-// === PARTICIPANTS INPUT ===
-let _ptcList = [];
-function handlePtcInput(e){
-  if(e.key==='Enter'||e.key===','){
-    e.preventDefault();
-    const val = document.getElementById('ptc-input').value.trim().replace(/,$/, '');
-    if(val && !_ptcList.includes(val)){
-      _ptcList.push(val);
-      renderPtcTags();
-    }
-    document.getElementById('ptc-input').value='';
-  }
-  if(e.key==='Backspace' && document.getElementById('ptc-input').value==='' && _ptcList.length>0){
-    _ptcList.pop();
-    renderPtcTags();
-  }
-}
-function renderPtcTags(){
-  const wrap = document.getElementById('ptc-wrap');
-  // Remove existing tags
-  wrap.querySelectorAll('.mtg-participant-tag').forEach(t=>t.remove());
-  const inp = document.getElementById('ptc-input');
-  _ptcList.forEach((name,i)=>{
-    const tag = document.createElement('span');
-    tag.className='mtg-participant-tag';
-    tag.innerHTML=`${name} <button onclick="_ptcList.splice(${i},1);renderPtcTags();">×</button>`;
-    wrap.insertBefore(tag, inp);
-  });
-}
-
-// === MODAL OPEN/CLOSE ===
-let _editMtgId = null;
 function openModalMeeting(editId){
   if(!window._canEditNotulen){ showNotif("&#128274; Silakan login untuk menambah meeting.","error"); return; }
   // Edit meeting header hanya untuk admin
@@ -3526,30 +3487,6 @@ function closeModalMeeting(){
 
 // === FORM MEETING: temp rows data ===
 let _mtgFormRows = [];
-
-function updateMtgFormRowCount(){
-  const el = document.getElementById('mtg-form-row-count');
-  if(el) el.textContent = _mtgFormRows.length + ' agenda';
-  const empty = document.getElementById('mtg-form-empty');
-  if(empty) empty.style.display = _mtgFormRows.length === 0 ? '' : 'none';
-}
-
-function addMtgFormRow(){
-  const rowId = 'fr-' + Date.now() + '-' + Math.random().toString(36).substr(2,4);
-  _mtgFormRows.push({ id: rowId, hasil: '', pic: '', deadline: '', progres1: '', progres2: '', status: 'ON PROGRESS' });
-  renderMtgFormRows();
-}
-
-function deleteMtgFormRow(rowId){
-  _mtgFormRows = _mtgFormRows.filter(r => r.id !== rowId);
-  renderMtgFormRows();
-}
-
-function renderMtgFormRows(){
-  const tbody = document.getElementById('mtg-form-tbody');
-  if(!tbody) return;
-  tbody.innerHTML = '';
-  updateMtgFormRowCount();
 
   const statusMap = {
     'ON PROGRESS':{bg:'#DBEAFE',color:'#1E40AF',border:'#BFDBFE'},
