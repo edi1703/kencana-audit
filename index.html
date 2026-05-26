@@ -3441,45 +3441,7 @@ homeTick(); setInterval(homeTick,1000);
 if(!window.notulenData) window.notulenData = [];
 let notulenData = window.notulenData;
 
-function openModalMeeting(editId){
-  if(!window._canEditNotulen){ showNotif("&#128274; Silakan login untuk menambah meeting.","error"); return; }
-  // Edit meeting header hanya untuk admin
-  if(editId && !window._isAdmin){ showNotif("&#128274; Hanya admin yang bisa mengedit meeting.","error"); return; }
-  _editMtgId = editId || null;
-  _ptcList = [];
-  const modal = document.getElementById('modal-meeting');
-  const title = document.getElementById('mtg-modal-title');
 
-  if(editId){
-    const m = notulenData.find(x=>x.id===editId);
-    if(!m) return;
-    title.textContent = '✏️ Edit Meeting';
-    document.getElementById('mtg-tgl').value = m.tgl||'';
-    document.getElementById('mtg-judul').value = m.judul||'';
-    document.getElementById('mtg-lokasi').value = m.lokasi||'';
-    _ptcList = [...(m.peserta||[])];
-    // Load existing agendas into form rows
-    _mtgFormRows = (m.agendas||[]).map(ag => ({
-      id: ag.id,
-      hasil: ag.agenda||'',
-      pic: ag.pic||'',
-      deadline: ag.deadline||'',
-      progres1: ag.progres1||ag.progres||'',
-      progres2: ag.progres2||'',
-      status: ag.status||'ON PROGRESS'
-    }));
-  } else {
-    title.textContent = '➕ Tambah Meeting Baru';
-    document.getElementById('mtg-tgl').value = new Date().toISOString().split('T')[0];
-    document.getElementById('mtg-judul').value='';
-    document.getElementById('mtg-lokasi').value='';
-    _ptcList = [];
-    _mtgFormRows = [];
-  }
-  renderPtcTags();
-  renderMtgFormRows();
-  modal.style.display = 'flex';
-}
 function closeModalMeeting(){
   document.getElementById('modal-meeting').style.display = 'none';
   _mtgFormRows = [];
