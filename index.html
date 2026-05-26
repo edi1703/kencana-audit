@@ -1632,30 +1632,25 @@ function renderDateCell(td, row, colKey, headerColor){
   const val=row[colKey]||'';
   const inputDate=toInputDate(val);
 
-  const wrapper=document.createElement('div');
-  wrapper.style.cssText='display:flex;flex-direction:column;gap:2px;';
-
-  const disp=document.createElement('div');
-  disp.style.cssText='font-size:12px;color:#1E293B;font-weight:600;white-space:nowrap;';
-  disp.textContent=displayDate(val)||(colKey==='tglTemuan'?'Pilih tanggal':'Pilih deadline');
-  if(!displayDate(val)) disp.style.color='#CBD5E1';
-
   const inp=document.createElement('input');
   inp.type='date';
   inp.value=inputDate;
-  inp.style.cssText='border:2px solid '+headerColor+';border-radius:7px;padding:4px 6px;font-size:12px;font-family:inherit;outline:none;cursor:pointer;width:100%;box-sizing:border-box;background:#fff;';
+  inp.title=displayDate(val)||'Pilih tanggal';
+  inp.style.cssText='border:2px solid '+headerColor+';border-radius:7px;padding:5px 7px;font-size:12px;font-family:inherit;outline:none;cursor:pointer;width:100%;box-sizing:border-box;background:#fff;font-weight:600;color:#1E293B;';
 
   inp.onchange=function(){
-    if(!window._isAdmin){ showNotif("&#128274; Mode View: login admin untuk edit","info"); inp.value=inputDate; return; }
+    if(!window._isAdmin){ showNotif("⛔ Mode View: login admin untuk edit","info"); inp.value=inputDate; return; }
     pushUndo();
     const newVal=fromInputDate(inp.value);
     updateRowField(row.id, colKey, newVal);
     row[colKey]=newVal;
-    disp.textContent=displayDate(newVal);
-    if(!displayDate(newVal)) disp.style.color='#CBD5E1';
-    else disp.style.color='#1E293B';
     setUnsaved(true);
   };
+  inp.onfocus=function(){ this.style.borderColor='#3B82F6'; };
+  inp.onblur=function(){ this.style.borderColor=headerColor; };
+
+  td.appendChild(inp);
+}
   inp.onfocus=function(){ this.style.borderColor='#3B82F6'; };
   inp.onblur=function(){ this.style.borderColor=headerColor; };
 
