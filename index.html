@@ -80,7 +80,11 @@
       if(snap.exists()){
         const d = snap.data();
         if(d.appData)  { appData = d.appData;  migrateDocs(); }
-        if(d.COLS)     { window.COLS     = d.COLS; }
+        if(d.COLS && Array.isArray(d.COLS) && d.COLS.length > 0) {
+  COLS.length = 0;
+  d.COLS.forEach(c => COLS.push(c));
+  window.COLS = COLS;
+}
         if(d.notulenData) {
   window.notulenData = d.notulenData;
   notulenData = d.notulenData;
@@ -122,7 +126,11 @@
       // Jangan overwrite kalau sedang edit
       if(window.editingCell) return;
       if(d.appData)     { window.appData     = d.appData;     migrateDocs(); }
-      if(d.COLS)        { window.COLS        = d.COLS; }
+      if(d.COLS && Array.isArray(d.COLS) && d.COLS.length > 0) {
+  COLS.length = 0;
+  d.COLS.forEach(c => COLS.push(c));
+  window.COLS = COLS;
+}
       if(d.DEPARTMENTS && Array.isArray(d.DEPARTMENTS)) {
         DEPARTMENTS.length = 0;
         d.DEPARTMENTS.forEach(dep => DEPARTMENTS.push(dep));
