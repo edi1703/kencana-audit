@@ -3300,24 +3300,15 @@ function renderAuthBar(){
 
 function applyReadOnlyMode(){
   const isAdmin = window._isAdmin;
-  const canEdit = window._canEditNotulen;
-  if(isAdmin){
+    if(isAdmin){
     document.body.classList.remove('readonly-mode');
-    document.body.classList.remove('notulen-edit-mode');
-    // Block editing cells
+        // Block editing cells
     const origStartEdit = window.startEditAtClick;
     window.startEditAtClick = function(td, rowId, colKey, headerColor, clickEvent){
       if(!window._isAdmin){ showNotif("&#128274; Mode View: login admin untuk edit","info"); return; }
       origStartEdit(td, rowId, colKey, headerColor, clickEvent);
     };
-  } else if(canEdit){
-    // Login tapi bukan admin: bisa input notulen, tapi tidak bisa edit temuan audit
-    document.body.classList.add('readonly-mode');
-    document.body.classList.add('notulen-edit-mode');
-    const origStartEdit = window.startEditAtClick;
-    window.startEditAtClick = function(td, rowId, colKey, headerColor, clickEvent){
-      showNotif("&#128274; Mode View: login admin untuk edit temuan audit","info"); return;
-    };
+  
   } else {
     document.body.classList.add('readonly-mode');
     document.body.classList.remove('notulen-edit-mode');
