@@ -3441,50 +3441,6 @@ homeTick(); setInterval(homeTick,1000);
 if(!window.notulenData) window.notulenData = [];
 let notulenData = window.notulenData;
 
-function commitMtgEdit({td,mtgId,agId,field}){
-  _mtgEditCell=null;
-  const ta=td.querySelector('textarea');
-  if(!ta) return;
-  const val=ta.value;
-  const m=notulenData.find(x=>x.id===mtgId);
-  if(!m) return;
-  const ag=m.agendas.find(a=>a.id===agId);
-  if(!ag) return;
-  ag[field]=val;
-  setUnsaved(true);
-  window.notulenData = notulenData;
-  // Re-render just this cell text
-  td.innerHTML=val?`<div class="cell-text">${val.replace(/</g,'&lt;')}</div>`:
-    `<div class="cell-placeholder">Klik untuk edit...</div>`;
-}
-
-// === STATUS CHANGE ===
-function setMtgStatus(mtgId,agId,val){
-  const m=notulenData.find(x=>x.id===mtgId);
-  if(!m) return;
-  const ag=m.agendas.find(a=>a.id===agId);
-  if(!ag) return;
-  ag.status=val;
-  // Auto-set pct
-  if(val==='DONE' && ag.pct<100) ag.pct=100;
-  setUnsaved(true);
-  renderNotulenStats();
-  // Re-render status style
-  const sel = document.querySelector(`[data-mtg-status="${mtgId}-${agId}"]`);
-  if(sel) applyMtgStatusStyle(sel, val);
-  window.notulenData = notulenData;
-  saveNotulenOnly().catch(e => console.error('setMtgStatus save error:', e));
-}
-function applyMtgStatusStyle(sel,val){
-  const map={
-    'ON PROGRESS':  {bg:'#DBEAFE',color:'#1E40AF',border:'#BFDBFE'},
-    'DONE':    {bg:'#D1FAE5',color:'#065F46',border:'#A7F3D0'},
-    'PENDING': {bg:'#FEE2E2',color:'#991B1B',border:'#FECACA'}
-  };
-  const s=map[val]||map['ON PROGRESS'];
-  sel.style.background=s.bg; sel.style.color=s.color; sel.style.borderColor=s.border;
-}
-
 // === PCT MODAL ===
 let _pctMtgTarget = null;
 function openPctMtg(mtgId,agId){
