@@ -1185,7 +1185,7 @@ const STATUS_STYLES = {
 };
 
 const COLS = [
-  {key:"tglTemuan",   label:"Tanggal Temuan",        width:30, type:"date"},
+  {key:"tglTemuan",   label:"Tanggal Temuan",        width:100, type:"date"},
   {key:"temuan",      label:"Daftar Temuan",          width:310, type:"text"},
   {key:"rekomendasi", label:"Rekomendasi Perbaikan",  width:270, type:"text"},
   {key:"pic",         label:"PIC",                    width:100, type:"text"},
@@ -1643,7 +1643,7 @@ function renderDateCell(td, row, colKey, headerColor){
   const inp=document.createElement('input');
   inp.type='date';
   inp.value=inputDate;
-  inp.style.cssText='border:2px solid '+headerColor+';border-radius:7px;padding:4px 6px;font-size:12px;font-family:inherit;outline:none;cursor:pointer;width:100%;box-sizing:border-box;background:#fff;';
+  inp.style.cssText='border:2px solid '+headerColor+';border-radius:7px;padding:4px 6px;font-size:11px;font-family:inherit;outline:none;cursor:pointer;width:100%;max-width:120px;box-sizing:border-box;background:#fff;';
 
   inp.onchange=function(){
     if(!window._isAdmin){ showNotif("&#128274; Mode View: login admin untuk edit","info"); inp.value=inputDate; return; }
