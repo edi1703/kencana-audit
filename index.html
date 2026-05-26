@@ -3295,29 +3295,7 @@ function renderAuthBar(){
     btnLogin.style.display='inline-block';
     btnLogout.style.display='none';
   }
-  // Sync ke notulen auth bar juga
-  const dot2 = document.getElementById('notulen-auth-dot');
-  const txt2 = document.getElementById('notulen-auth-text');
-  const btnLogin2 = document.getElementById('notulen-btn-login');
-  const btnLogout2 = document.getElementById('notulen-btn-logout');
-  if(dot2 && txt2){
-    if(user && isAdmin){
-      dot2.style.background='#22C55E';
-      txt2.textContent='✅ Admin: '+user.email;
-      if(btnLogin2) btnLogin2.style.display='none';
-      if(btnLogout2) btnLogout2.style.display='inline-block';
-    } else if(user){
-      dot2.style.background='#F59E0B';
-      txt2.textContent='👁 '+user.email;
-      if(btnLogin2) btnLogin2.style.display='none';
-      if(btnLogout2) btnLogout2.style.display='inline-block';
-    } else {
-      dot2.style.background='#EF4444';
-      txt2.textContent='Belum login';
-      if(btnLogin2) btnLogin2.style.display='inline-block';
-      if(btnLogout2) btnLogout2.style.display='none';
-    }
-  }
+  
 }
 
 function applyReadOnlyMode(){
