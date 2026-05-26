@@ -3441,53 +3441,6 @@ homeTick(); setInterval(homeTick,1000);
 if(!window.notulenData) window.notulenData = [];
 let notulenData = window.notulenData;
 
-// === SAVE MEETING (header + agendas from form rows) ===
-async function saveMeeting(){
-  const tgl = document.getElementById('mtg-tgl').value.trim();
-  const judul = document.getElementById('mtg-judul').value.trim();
-  if(!tgl){ alert('Tanggal meeting wajib diisi'); return; }
-  if(!judul){ alert('Judul meeting wajib diisi'); return; }
-
-  // Convert form rows to agenda format
-  const agendas = _mtgFormRows.map(row => ({
-    id: row.id || generateAgendaId(),
-    agenda: row.hasil || '',
-    hasilPembahasan: row.hasil || '',
-    pic: row.pic || '',
-    deadline: row.deadline || '',
-    status: row.status || 'ON PROGRESS',
-    pct: row.status==='DONE' ? 100 : row.status==='ON PROGRESS' ? 50 : 0,
-    progres: row.progres1 || '',
-    progres1: row.progres1 || '',
-    progres2: row.progres2 || ''
-  }));
-
-  if(_editMtgId){
-    const m = notulenData.find(x=>x.id===_editMtgId);
-    if(m){
-      m.tgl=tgl; m.judul=judul;
-      m.lokasi=document.getElementById('mtg-lokasi').value.trim();
-      m.peserta=[..._ptcList];
-      m.agendas=agendas;
-    }
-  } else {
-    notulenData.unshift({
-      id: generateMtgId(),
-      tgl: tgl,
-      judul: judul,
-      lokasi: document.getElementById('mtg-lokasi').value.trim(),
-      peserta: [..._ptcList],
-      agendas: agendas,
-      _open: true
-    });
-  }
-  window.notulenData = notulenData;
-  closeModalMeeting();
-  renderNotulenPage();
-  showNotif('Meeting berhasil ' + (_editMtgId?'diupdate':'ditambahkan') + '! (' + agendas.length + ' agenda tersimpan). Menyimpan ke server...', 'success');
-  await saveNotulenOnly();
-  setUnsaved(false);
-}
 
 // === DELETE MEETING ===
 function deleteMeeting(mtgId){
