@@ -3441,46 +3441,7 @@ homeTick(); setInterval(homeTick,1000);
 if(!window.notulenData) window.notulenData = [];
 let notulenData = window.notulenData;
 
-// === TOGGLE MEETING CARD ===
-function toggleMtgCard(mtgId){
-  const m = notulenData.find(x=>x.id===mtgId);
-  if(!m) return;
-  m._open = !m._open;
-  renderNotulenPage();
-}
 
-// === ADD AGENDA ROW ===
-function addAgendaRow(mtgId){
-  if(!window._canEditNotulen){ showNotif("&#128274; Silakan login untuk menambah agenda.","error"); return; }
-  const m = notulenData.find(x=>x.id===mtgId);
-  if(!m) return;
-  if(!m.agendas) m.agendas=[];
-  m.agendas.push({
-    id: generateAgendaId(),
-    agenda: '',
-    hasilPembahasan: '',
-    pic: '',
-    deadline: '',
-    status: 'ON PROGRESS',
-    pct: 0,
-    progres: '',
-    progres1: '',
-    progres2: ''
-  });
-  m._open = true;
-  setUnsaved(true);
-  renderNotulenPage();
-}
-
-// === DELETE AGENDA ROW ===
-function deleteAgendaRow(mtgId, agId){
-  if(!window._isAdmin){ showNotif("&#128274; Hanya admin yang bisa menghapus agenda.","error"); return; }
-  if(!confirm('Hapus agenda ini?')) return;
-  const m = notulenData.find(x=>x.id===mtgId);
-  if(!m) return;
-  const idx = m.agendas.findIndex(a=>a.id===agId);
-  if(idx>=0){ m.agendas.splice(idx,1); setUnsaved(true); renderNotulenPage(); }
-}
 // === SCROLL SYNC: mirror scroll bar atas ↔ tabel ===
 function initMtgScrollSync(mtgId){
   const tw  = document.getElementById('tw-'+mtgId);
