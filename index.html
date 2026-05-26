@@ -3488,56 +3488,6 @@ function closeModalMeeting(){
 // === FORM MEETING: temp rows data ===
 let _mtgFormRows = [];
 
-  const statusMap = {
-    'ON PROGRESS':{bg:'#DBEAFE',color:'#1E40AF',border:'#BFDBFE'},
-    'DONE':       {bg:'#D1FAE5',color:'#065F46',border:'#A7F3D0'},
-    'PENDING':    {bg:'#FEE2E2',color:'#991B1B',border:'#FECACA'}
-  };
-
-  _mtgFormRows.forEach((row, idx) => {
-    const ss = statusMap[row.status] || statusMap['ON PROGRESS'];
-    const tr = document.createElement('tr');
-    tr.style.cssText = idx % 2 === 1 ? 'background:#F8FAFC;' : 'background:#fff;';
-
-    const makeTd = (field, val, minW, type) => {
-      if(type === 'date') {
-        return `<td style="padding:7px 10px;border-right:1px solid #F1F5F9;border-bottom:1px solid #F1F5F9;min-width:${minW}px;vertical-align:top;">
-          <input type="date" value="${val||''}" style="border:1px solid #E2E8F0;border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;outline:none;width:100%;cursor:pointer;"
-            oninput="_mtgFormRows[${idx}].${field}=this.value"
-            onfocus="this.style.borderColor='#7C3AED'" onblur="this.style.borderColor='#E2E8F0'">
-        </td>`;
-      }
-      return `<td style="padding:7px 10px;border-right:1px solid #F1F5F9;border-bottom:1px solid #F1F5F9;min-width:${minW}px;max-width:${minW}px;vertical-align:top;">
-        <textarea rows="2" style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;outline:none;resize:vertical;min-height:38px;box-sizing:border-box;"
-          placeholder="${field==='hasil'?'Hasil / agenda meeting...':field==='pic'?'Nama PIC...':field==='progres1'?'Progres 1...':'Progres 2...'}"
-          oninput="_mtgFormRows[${idx}].${field}=this.value"
-          onfocus="this.style.borderColor='#7C3AED'" onblur="this.style.borderColor='#E2E8F0'">${val||''}</textarea>
-      </td>`;
-    };
-
-    const statusOpts = ['ON PROGRESS','DONE','PENDING'].map(s =>
-      `<option value="${s}"${row.status===s?' selected':''}>${s}</option>`).join('');
-
-    tr.innerHTML = `
-      <td style="text-align:center;font-weight:700;color:#64748B;padding:7px 10px;border-right:1px solid #F1F5F9;border-bottom:1px solid #F1F5F9;">${idx+1}</td>
-      ${makeTd('hasil', row.hasil, 280)}
-      ${makeTd('pic', row.pic, 150)}
-      ${makeTd('deadline', row.deadline, 140, 'date')}
-      ${makeTd('progres1', row.progres1, 210)}
-      ${makeTd('progres2', row.progres2, 210)}
-      <td style="padding:7px 10px;border-right:1px solid #F1F5F9;border-bottom:1px solid #F1F5F9;min-width:130px;vertical-align:top;">
-        <select style="border-radius:8px;padding:5px 8px;font-weight:700;font-size:12px;cursor:pointer;outline:none;border-width:2px;border-style:solid;width:100%;background:${ss.bg};color:${ss.color};border-color:${ss.border};"
-          onchange="_mtgFormRows[${idx}].status=this.value;renderMtgFormRows()">
-          ${statusOpts}
-        </select>
-      </td>
-      <td style="text-align:center;padding:7px 10px;border-bottom:1px solid #F1F5F9;vertical-align:top;">
-        <button onclick="deleteMtgFormRow('${row.id}')" style="background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;border-radius:6px;padding:4px 8px;cursor:pointer;font-weight:700;font-size:12px;">🗑️</button>
-      </td>`;
-    tbody.appendChild(tr);
-  });
-}
-
 // === SAVE MEETING (header + agendas from form rows) ===
 async function saveMeeting(){
   const tgl = document.getElementById('mtg-tgl').value.trim();
