@@ -3438,15 +3438,7 @@ function goToDashboard(){
   // Sembunyikan SEMUA halaman lain dengan paksa
   const pgHome = document.getElementById('page-home');
   if(pgHome){ pgHome.classList.remove('active'); pgHome.style.display='none'; }
-  
-  // Paksa sembunyikan notulen - tambahkan visibility:hidden sebagai double protection
-  const pgNotul = document.getElementById('page-notulen-full');
-  if(pgNotul){ 
-    pgNotul.style.display = 'none'; 
-    pgNotul.style.visibility = 'hidden';
-    pgNotul.style.zIndex = '-1';
-  }
-  
+    
   // Sembunyikan flow bisnis juga
   const pgFlow = document.getElementById('page-flow-bisnis');
   if(pgFlow){ pgFlow.style.display = 'none'; pgFlow.classList.remove('active'); }
@@ -3459,8 +3451,6 @@ function goToDashboard(){
 function goToHome(){
   // Sembunyikan semua halaman lain
   document.getElementById('page-dashboard').style.display='none';
-  const pgNotul = document.getElementById('page-notulen-full');
-  if(pgNotul){ pgNotul.style.display = 'none'; }
   // Tampilkan home
   const pgHome = document.getElementById('page-home');
   if(pgHome){ pgHome.classList.add('active'); pgHome.style.display='flex'; }
