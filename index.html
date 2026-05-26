@@ -3441,37 +3441,6 @@ homeTick(); setInterval(homeTick,1000);
 if(!window.notulenData) window.notulenData = [];
 let notulenData = window.notulenData;
 
-
-// === TAMBAH KOLOM PROGRES ===
-function addMtgProgresCol(mtgId){
-  if(!window._isAdmin){ showNotif('Hanya admin yang bisa menambah kolom.','error'); return; }
-  const m = notulenData.find(x=>x.id===mtgId);
-  if(!m) return;
-  if(!m._progCols) m._progCols = ['progres1','progres2'];
-  if(m._progCols.length >= 8){ showNotif('Maksimal 8 kolom progres.','info'); return; }
-  const n = m._progCols.length + 1;
-  const key = 'progres'+n;
-  m._progCols.push(key);
-  (m.agendas||[]).forEach(ag=>{ if(ag[key]===undefined) ag[key]=''; });
-  setUnsaved(true);
-  renderNotulenPage();
-  showNotif('Kolom Progres '+n+' ditambahkan.','success');
-}
-
-// === HAPUS KOLOM PROGRES TERAKHIR ===
-function delMtgProgresCol(mtgId){
-  if(!window._isAdmin){ showNotif('Hanya admin yang bisa menghapus kolom.','error'); return; }
-  const m = notulenData.find(x=>x.id===mtgId);
-  if(!m) return;
-  if(!m._progCols) m._progCols = ['progres1','progres2'];
-  if(m._progCols.length <= 1){ showNotif('Minimal 1 kolom progres.','info'); return; }
-  if(!confirm('Hapus kolom Progres terakhir? Data di kolom itu akan hilang.')) return;
-  const key = m._progCols.pop();
-  (m.agendas||[]).forEach(ag=>{ delete ag[key]; });
-  setUnsaved(true);
-  renderNotulenPage();
-  showNotif('Kolom '+key+' dihapus.','info');
-}
 // === INLINE EDIT AGENDA CELL ===
 let _mtgEditCell = null;
 function startMtgEdit(td, mtgId, agId, field){
