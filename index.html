@@ -3441,15 +3441,6 @@ homeTick(); setInterval(homeTick,1000);
 if(!window.notulenData) window.notulenData = [];
 let notulenData = window.notulenData;
 
-
-function closeModalMeeting(){
-  document.getElementById('modal-meeting').style.display = 'none';
-  _mtgFormRows = [];
-}
-
-// === FORM MEETING: temp rows data ===
-let _mtgFormRows = [];
-
 // === SAVE MEETING (header + agendas from form rows) ===
 async function saveMeeting(){
   const tgl = document.getElementById('mtg-tgl').value.trim();
