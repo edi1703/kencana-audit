@@ -3441,22 +3441,6 @@ homeTick(); setInterval(homeTick,1000);
 if(!window.notulenData) window.notulenData = [];
 let notulenData = window.notulenData;
 
-
-// === DELETE MEETING ===
-function deleteMeeting(mtgId){
-  if(!window._isAdmin){ showNotif("&#128274; Hanya admin yang bisa menghapus meeting.","error"); return; }
-  if(!confirm('Hapus meeting ini beserta semua agenda di dalamnya?')) return;
-  const idx = notulenData.findIndex(x=>x.id===mtgId);
-  if(idx>=0){ 
-  notulenData.splice(idx,1); 
-  window.notulenData = notulenData;
-  setUnsaved(true); 
-  saveNotulenOnly();
-  renderNotulenPage(); 
-  showNotif('Meeting dihapus.','info'); 
-}
-}
-
 // === TOGGLE MEETING CARD ===
 function toggleMtgCard(mtgId){
   const m = notulenData.find(x=>x.id===mtgId);
