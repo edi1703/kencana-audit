@@ -3441,44 +3441,6 @@ homeTick(); setInterval(homeTick,1000);
 if(!window.notulenData) window.notulenData = [];
 let notulenData = window.notulenData;
 
-// === PCT MODAL ===
-let _pctMtgTarget = null;
-function openPctMtg(mtgId,agId){
-  if(!window._canEditNotulen) return;
-  _pctMtgTarget={mtgId,agId};
-  const m=notulenData.find(x=>x.id===mtgId);
-  if(!m) return;
-  const ag=m.agendas.find(a=>a.id===agId);
-  if(!ag) return;
-  document.getElementById('pct-mtg-range').value=ag.pct||0;
-  document.getElementById('pct-mtg-val').textContent=(ag.pct||0)+'%';
-  document.getElementById('modal-pct-mtg').classList.add('open');
-}
-function savePctMtg(){
-  if(!_pctMtgTarget) return;
-  const {mtgId,agId}=_pctMtgTarget;
-  const val=parseInt(document.getElementById('pct-mtg-range').value)||0;
-  const m=notulenData.find(x=>x.id===mtgId);
-  if(!m) return;
-  const ag=m.agendas.find(a=>a.id===agId);
-  if(!ag) return;
-  ag.pct=val;
-  if(val===100) ag.status='DONE';
-  else if(val>0) ag.status='ON PROGRESS';
-  window.notulenData = notulenData;
-  document.getElementById('modal-pct-mtg').classList.remove('open');
-  renderNotulenPage();
-  saveNotulenOnly().catch(e => console.error('savePctMtg save error:', e));
-}
-
-// === RENDER STATS ===
-function renderNotulenStats(){
-  const allAg = notulenData.flatMap(m=>m.agendas||[]);
-  document.getElementById('nstat-meeting').textContent=notulenData.length;
-  document.getElementById('nstat-prog').textContent=allAg.filter(a=>a.status==='ON PROGRESS').length;
-  document.getElementById('nstat-done').textContent=allAg.filter(a=>a.status==='DONE').length;
-}
-
 // === MONTH FILTER POPULATE ===
 function populateMonthFilter(){
   const sel=document.getElementById('notul-month-filter');
