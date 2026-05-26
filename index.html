@@ -3795,7 +3795,235 @@ document.body.classList.add('home-active');
 <script>
 
 
+// ===== NAVIGASI FLOW BISNIS =====
+function goToFlowBisnis(){
+  const pgHome=document.getElementById('page-home');
+  if(pgHome){ pgHome.classList.remove('active'); pgHome.style.display='none'; }
+  document.getElementById('page-dashboard').style.display='none';
+  const pg=document.getElementById('page-flow-bisnis');
+  if(pg){ pg.style.display='flex'; }
+  document.body.classList.remove('home-active');
+}
+function closeFlowBisnis(){
+  const pg=document.getElementById('page-flow-bisnis');
+  if(pg){ pg.style.display='none'; }
+  const pgHome=document.getElementById('page-home');
+  if(pgHome){ pgHome.classList.add('active'); pgHome.style.display='flex'; }
+  document.body.classList.add('home-active');
+}
 
+// ===== NAVIGASI NOTULEN =====
+function goToNotulen(){
+  const pgHome=document.getElementById('page-home');
+  if(pgHome){ pgHome.classList.remove('active'); pgHome.style.display='none'; }
+  document.getElementById('page-dashboard').style.display='none';
+  const pg=document.getElementById('page-notulen');
+  if(pg){ pg.style.display='flex'; }
+  document.body.classList.remove('home-active');
+  window._notulenPageActive=true;
+  renderNotulenList();
+}
+function closeNotulen(){
+  const pg=document.getElementById('page-notulen');
+  if(pg){ pg.style.display='none'; }
+  window._notulenPageActive=false;
+  const pgHome=document.getElementById('page-home');
+  if(pgHome){ pgHome.classList.add('active'); pgHome.style.display='flex'; }
+  document.body.classList.add('home-active');
+}
+function openAddMeeting(editId){
+  const modal=document.getElementById('modal-meeting');
+  const title=document.getElementById('modal-meeting-title');
+  if(editId){
+    const m=notulenData.find(x=>x.id===editId);
+    if(!m) return;
+    title.textContent='✏️ Edit Meeting';
+    document.getElementById('mtg-tanggal').value=m.tanggal||'';
+    document.getElementById('mtg-waktu').value=m.waktu||'';
+    document.getElementById('mtg-judul').value=m.judul||'';
+    document.getElementById('mtg-lokasi').value=m.lokasi||'';
+    document.getElementById('mtg-pimpinan').value=m.pimpinan||'';
+    document.getElementById('mtg-peserta').value=(m.peserta||[]).join('\n');
+    modal.dataset.editId=editId;
+  } else {
+    title.textContent='➕ Tambah Meeting Baru';
+    document.getElementById('mtg-tanggal').value='';
+    document.getElementById('mtg-waktu').value='';
+    document.getElementById('mtg-judul').value='';
+    document.getElementById('mtg-lokasi').value='';
+    document.getElementById('mtg-pimpinan').value='';
+    document.getElementById('mtg-peserta').value='';
+    delete modal.dataset.editId;
+  }
+  modal.style.display='flex';
+}
+function closeModalMeeting(){
+  document.getElementById('modal-meeting').style.display='none';
+}
+function saveMeeting(){
+  if(!window._isAdmin){ showNotif('⛔ Hanya admin yang bisa menyimpan.','error'); return; }
+  const tanggal=document.getElementById('mtg-tanggal').value;
+  const judul=document.getElementById('mtg-judul').value.trim();
+  if(!tanggal){ showNotif('Tanggal meeting wajib diisi!','error'); return; }
+  if(!judul){ showNotif('Judul meeting wajib diisi!','error'); return; }
+  const waktu=document.getElementById('mtg-waktu').value;
+  const lokasi=document.getElementById('mtg-lokasi').value.trim();
+  const pimpinan=document.getElementById('mtg-pimpinan').value.trim();
+  const peserta=document.getElementById('mtg-peserta').value.split('\n').map(s=>s.trim()).filter(s=>s.length>0);
+  const modal=document.getElementById('modal-meeting');
+  const editId=modal.dataset.editId;
+  if(editId){
+    const m=notulenData.find(x=>x.id===editId);
+    if(m){ m.tanggal=tanggal;m.waktu=waktu;m.judul=judul;m.lokasi=lokasi;m.pimpinan=pimpinan;m.peserta=peserta; }
+  } else {
+    notulenData.push({id:'mtg-'+Date.now(),tanggal,waktu,judul,lokasi,pimpinan,peserta,agendas:[],createdAt:new Date().toISOString()});
+  }
+  window.notulenData=notulenData;
+  closeModalMeeting();
+  saveNotulenData();
+  renderNotulenList();
+  showNotif('✅ Meeting berhasil disimpan!','success');
+}
+function deleteMeeting(id){
+  if(!window._isAdmin){ showNotif('⛔ Hanya admin.','error'); return; }
+  if(!confirm('Hapus meeting ini beserta semua agenda?')) return;
+  const idx=notulenData.findIndex(x=>x.id===id);
+  if(idx>=0){ notulenData.splice(idx,1); window.notulenData=notulenData; }
+  saveNotulenData(); renderNotulenList();
+  showNotif('Meeting dihapus.','info');
+}
+function addAgenda(mtgId){
+  if(!window._isAdmin){ showNotif('⛔ Hanya admin.','error'); return; }
+  const m=notulenData.find(x=>x.id===mtgId);
+  if(!m) return;
+  if(!m.agendas) m.agendas=[];
+  m.agendas.push({id:'ag-'+Date.now(),agenda:'',pic:'',deadline:'',status:'OPEN',catatan:''});
+  window.notulenData=notulenData;
+  saveNotulenData(); renderNotulenList();
+}
+function deleteAgenda(mtgId,agId){
+  if(!window._isAdmin){ showNotif('⛔ Hanya admin.','error'); return; }
+  const m=notulenData.find(x=>x.id===mtgId);
+  if(!m) return;
+  m.agendas=m.agendas.filter(a=>a.id!==agId);
+  window.notulenData=notulenData;
+  saveNotulenData(); renderNotulenList();
+}
+function updateAgendaField(mtgId,agId,field,val){
+  const m=notulenData.find(x=>x.id===mtgId);
+  if(!m) return;
+  const ag=m.agendas.find(a=>a.id===agId);
+  if(!ag) return;
+  ag[field]=val;
+  window.notulenData=notulenData;
+  saveNotulenData(); updateNotulenStats();
+}
+async function saveNotulenData(){
+  if(!window._isAdmin) return;
+  try{
+    await window._fbSetDoc(window._fbDocRef(),{
+      appData:appData,COLS:COLS,DEPARTMENTS:DEPARTMENTS,
+      DEPT_COLORS:DEPT_COLORS,notulenData:notulenData,
+      savedAt:new Date().toISOString(),
+      savedBy:window._currentUser?window._currentUser.email:'notulen-save'
+    });
+  }catch(e){ showNotif('❌ Gagal simpan: '+e.message,'error'); }
+}
+function updateNotulenStats(){
+  const total=notulenData.length;
+  const allAg=notulenData.flatMap(m=>m.agendas||[]);
+  const open=allAg.filter(a=>a.status==='OPEN'||a.status==='IN PROGRESS').length;
+  const close=allAg.filter(a=>a.status==='CLOSE').length;
+  const el1=document.getElementById('notulen-stat-total');
+  const el2=document.getElementById('notulen-stat-open');
+  const el3=document.getElementById('notulen-stat-close');
+  if(el1) el1.textContent=total;
+  if(el2) el2.textContent=open;
+  if(el3) el3.textContent=close;
+  const lbl=document.getElementById('notulen-count-label');
+  if(lbl) lbl.textContent=total+' meeting ditemukan';
+}
+function renderNotulenList(){
+  updateNotulenStats();
+  const search=(document.getElementById('notulen-search')||{}).value||'';
+  const statusF=(document.getElementById('notulen-filter-status')||{}).value||'ALL';
+  const container=document.getElementById('notulen-list');
+  if(!container) return;
+  let list=[...notulenData].sort((a,b)=>b.tanggal>a.tanggal?1:-1);
+  if(search){ const s=search.toLowerCase(); list=list.filter(m=>(m.judul||'').toLowerCase().includes(s)||(m.pimpinan||'').toLowerCase().includes(s)||(m.peserta||[]).some(p=>p.toLowerCase().includes(s))); }
+  if(statusF==='OPEN') list=list.filter(m=>(m.agendas||[]).some(a=>a.status==='OPEN'||a.status==='IN PROGRESS'));
+  else if(statusF==='CLOSE') list=list.filter(m=>(m.agendas||[]).length>0&&(m.agendas||[]).every(a=>a.status==='CLOSE'));
+  if(list.length===0){
+    container.innerHTML='<div style="text-align:center;padding:80px 20px;color:#94A3B8;"><div style="font-size:64px;margin-bottom:16px;">📝</div><div style="font-size:18px;font-weight:700;color:#64748B;margin-bottom:8px;">Belum ada meeting</div><div style="font-size:13px;">Klik "➕ Tambah Meeting" untuk mulai mencatat notulen</div></div>';
+    return;
+  }
+  container.innerHTML='';
+  list.forEach(m=>{
+    const agendas=m.agendas||[];
+    const openCount=agendas.filter(a=>a.status==='OPEN').length;
+    const ipCount=agendas.filter(a=>a.status==='IN PROGRESS').length;
+    const closeCount=agendas.filter(a=>a.status==='CLOSE').length;
+    const tgl=m.tanggal?new Date(m.tanggal):null;
+    const tglStr=tgl?tgl.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'';
+    const card=document.createElement('div');
+    card.style.cssText='background:#fff;border-radius:14px;border:2px solid #E2E8F0;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);';
+    card.innerHTML=`
+      <div style="background:linear-gradient(135deg,#2E1065,#7C3AED);color:#fff;padding:16px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+        <div style="flex:1;">
+          <div style="font-size:15px;font-weight:800;margin-bottom:4px;">${m.judul||'(Tanpa Judul)'}</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:11px;opacity:0.85;">
+            ${tglStr?`<span>📅 ${tglStr}${m.waktu?' · '+m.waktu:''}</span>`:''}
+            ${m.lokasi?`<span>📍 ${m.lokasi}</span>`:''}
+            ${m.pimpinan?`<span>👤 ${m.pimpinan}</span>`:''}
+          </div>
+          ${m.peserta&&m.peserta.length>0?`<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">${m.peserta.map(p=>`<span style="background:rgba(255,255,255,0.18);border-radius:999px;padding:2px 10px;font-size:11px;font-weight:600;">${p}</span>`).join('')}</div>`:''}
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          ${window._isAdmin?`<button onclick="openAddMeeting('${m.id}')" style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:7px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:700;">✏️ Edit</button>
+          <button onclick="deleteMeeting('${m.id}')" style="background:rgba(220,38,38,0.7);border:1px solid rgba(255,100,100,0.3);color:#fff;border-radius:7px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:700;">🗑️</button>`:''}
+        </div>
+      </div>
+      <div style="padding:10px 20px;background:#F8FAFC;border-bottom:1px solid #E2E8F0;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <span style="font-size:12px;font-weight:700;color:#374151;">${agendas.length} Tindak Lanjut</span>
+        ${openCount>0?`<span style="background:#FFF3CD;color:#856404;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;">OPEN: ${openCount}</span>`:''}
+        ${ipCount>0?`<span style="background:#DBEAFE;color:#1E40AF;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;">IN PROGRESS: ${ipCount}</span>`:''}
+        ${closeCount>0?`<span style="background:#D1FAE5;color:#065F46;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;">CLOSE: ${closeCount}</span>`:''}
+        ${window._isAdmin?`<button onclick="addAgenda('${m.id}')" style="margin-left:auto;background:#7C3AED;color:#fff;border:none;border-radius:7px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700;">➕ Tambah Tindak Lanjut</button>`:''}
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;min-width:700px;">
+          <thead><tr style="background:#F1F5F9;">
+            <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:40px;">No</th>
+            <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;">Hasil / Tindak Lanjut</th>
+            <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:130px;">PIC</th>
+            <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:120px;">Deadline</th>
+            <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:140px;">Status</th>
+            ${window._isAdmin?'<th style="padding:8px 12px;text-align:center;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:60px;">Aksi</th>':''}
+          </tr></thead>
+          <tbody id="ag-tbody-${m.id}"></tbody>
+        </table>
+        ${agendas.length===0?`<div style="text-align:center;padding:24px;color:#94A3B8;font-size:13px;">Belum ada tindak lanjut.</div>`:''}
+      </div>`;
+    container.appendChild(card);
+    const tbody=card.querySelector('#ag-tbody-'+m.id);
+    if(tbody&&agendas.length>0){
+      agendas.forEach((ag,i)=>{
+        const SC={'OPEN':'background:#FFF3CD;color:#856404','IN PROGRESS':'background:#DBEAFE;color:#1E40AF','CLOSE':'background:#D1FAE5;color:#065F46','PENDING':'background:#FEE2E2;color:#991B1B'};
+        const sc=SC[ag.status]||SC['OPEN'];
+        const tr=document.createElement('tr');
+        tr.style.cssText='border-bottom:1px solid #F1F5F9;';
+        tr.innerHTML=`
+          <td style="padding:8px 12px;font-size:12px;color:#64748B;font-weight:700;vertical-align:top;">${i+1}</td>
+          <td style="padding:8px 12px;vertical-align:top;">${window._isAdmin?`<textarea style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;resize:vertical;min-height:40px;outline:none;" onchange="updateAgendaField('${m.id}','${ag.id}','agenda',this.value)">${ag.agenda||''}</textarea>`:`<div style="font-size:12px;white-space:pre-wrap;">${ag.agenda||'-'}</div>`}</td>
+          <td style="padding:8px 12px;vertical-align:top;">${window._isAdmin?`<input type="text" value="${ag.pic||''}" style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;outline:none;" onchange="updateAgendaField('${m.id}','${ag.id}','pic',this.value)">`:`<div style="font-size:12px;">${ag.pic||'-'}</div>`}</td>
+          <td style="padding:8px 12px;vertical-align:top;">${window._isAdmin?`<input type="date" value="${ag.deadline||''}" style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:5px 6px;font-size:11px;font-family:inherit;outline:none;" onchange="updateAgendaField('${m.id}','${ag.id}','deadline',this.value)">`:`<div style="font-size:12px;">${ag.deadline||'-'}</div>`}</td>
+          <td style="padding:8px 12px;vertical-align:top;">${window._isAdmin?`<select style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;outline:none;cursor:pointer;" onchange="updateAgendaField('${m.id}','${ag.id}','status',this.value);renderNotulenList()"><option value="OPEN" ${ag.status==='OPEN'?'selected':''}>OPEN</option><option value="IN PROGRESS" ${ag.status==='IN PROGRESS'?'selected':''}>IN PROGRESS</option><option value="CLOSE" ${ag.status==='CLOSE'?'selected':''}>CLOSE</option><option value="PENDING" ${ag.status==='PENDING'?'selected':''}>PENDING</option></select>`:`<span style="border-radius:5px;padding:3px 8px;font-size:11px;font-weight:700;${sc};">${ag.status}</span>`}</td>
+          ${window._isAdmin?`<td style="padding:8px 12px;text-align:center;vertical-align:top;"><button onclick="deleteAgenda('${m.id}','${ag.id}')" style="background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px;font-weight:700;">🗑️</button></td>`:''}`;
+        tbody.appendChild(tr);
+      });
+    }
+  });
+}
 loadFlowData();
 
   
