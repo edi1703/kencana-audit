@@ -4012,15 +4012,38 @@ function renderNotulenList(){
         const sc=SC[ag.status]||SC['OPEN'];
         const tr=document.createElement('tr');
         tr.style.cssText='border-bottom:1px solid #F1F5F9;';
-        tr.innerHTML=`
-          <td style="padding:8px 12px;font-size:12px;color:#64748B;font-weight:700;vertical-align:top;">${i+1}</td>
-          <td style="padding:8px 12px;vertical-align:top;">${window._isAdmin?`<textarea style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;resize:vertical;min-height:40px;outline:none;" onchange="updateAgendaField('${m.id}','${ag.id}','agenda',this.value)">${ag.agenda||''}</textarea>`:`<div style="font-size:12px;white-space:pre-wrap;">${ag.agenda||'-'}</div>`}</td>
-          <td style="padding:8px 12px;vertical-align:top;">${window._isAdmin?`<input type="text" value="${ag.pic||''}" style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;outline:none;" onchange="updateAgendaField('${m.id}','${ag.id}','pic',this.value)">`:`<div style="font-size:12px;">${ag.pic||'-'}</div>`}</td>
-          <td style="padding:8px 12px;vertical-align:top;">${window._isAdmin?`<input type="date" value="${ag.deadline||''}" style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:5px 6px;font-size:11px;font-family:inherit;outline:none;" onchange="updateAgendaField('${m.id}','${ag.id}','deadline',this.value)">`:`<div style="font-size:12px;">${ag.deadline||'-'}</div>`}</td>
-          <td style="padding:8px 12px;vertical-align:top;">${window._isAdmin?`<select style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;outline:none;cursor:pointer;" onchange="updateAgendaField('${m.id}','${ag.id}','status',this.value);renderNotulenList()"><option value="OPEN" ${ag.status==='OPEN'?'selected':''}>OPEN</option><option value="IN PROGRESS" ${ag.status==='IN PROGRESS'?'selected':''}>IN PROGRESS</option><option value="CLOSE" ${ag.status==='CLOSE'?'selected':''}>CLOSE</option><option value="PENDING" ${ag.status==='PENDING'?'selected':''}>PENDING</option></select>`:`<span style="border-radius:5px;padding:3px 8px;font-size:11px;font-weight:700;${sc};">${ag.status}</span>`}</td>
-          ${window._isAdmin?`<td style="padding:8px 12px;text-align:center;vertical-align:top;"><button onclick="deleteAgenda('${m.id}','${ag.id}')" style="background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px;font-weight:700;">🗑️</button></td>`:''}`;
-        tbody.appendChild(tr);
-      });
+        agendas.forEach((ag,i)=>{
+  const SC={'OPEN':'background:#FFF3CD;color:#856404','IN PROGRESS':'background:#DBEAFE;color:#1E40AF','CLOSE':'background:#D1FAE5;color:#065F46','PENDING':'background:#FEE2E2;color:#991B1B'};
+  const sc=SC[ag.status]||SC['OPEN'];
+  const tr=document.createElement('tr');
+  tr.style.cssText='border-bottom:1px solid #F1F5F9;';
+  tr.innerHTML=`
+    <td style="padding:8px 12px;font-size:12px;color:#64748B;font-weight:700;vertical-align:top;width:36px;">${i+1}</td>
+    <td style="padding:8px 12px;vertical-align:top;">${window._isAdmin
+      ?`<textarea style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;resize:none;outline:none;overflow:hidden;line-height:1.6;min-height:44px;" onchange="updateAgendaField('${m.id}','${ag.id}','agenda',this.value)" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'">${ag.agenda||''}</textarea>`
+      :`<div style="font-size:13px;color:#1E293B;white-space:pre-wrap;line-height:1.6;padding:4px 0;">${ag.agenda||'<span style="color:#CBD5E1;font-style:italic;">Belum diisi</span>'}</div>`
+    }</td>
+    <td style="padding:8px 12px;vertical-align:top;width:150px;">${window._isAdmin
+      ?`<input type="text" value="${ag.pic||''}" placeholder="Nama PIC" style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:6px 8px;font-size:12px;font-family:inherit;outline:none;word-break:break-word;" onchange="updateAgendaField('${m.id}','${ag.id}','pic',this.value)">`
+      :`<div style="font-size:12px;color:#1E293B;word-break:break-word;line-height:1.5;">${ag.pic||'-'}</div>`
+    }</td>
+    <td style="padding:8px 12px;vertical-align:top;width:120px;">${window._isAdmin
+      ?`<input type="date" value="${ag.deadline||''}" style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:5px 6px;font-size:11px;font-family:inherit;outline:none;" onchange="updateAgendaField('${m.id}','${ag.id}','deadline',this.value)">`
+      :`<div style="font-size:12px;color:#1E293B;">${ag.deadline||'-'}</div>`
+    }</td>
+    <td style="padding:8px 12px;vertical-align:top;width:150px;">${window._isAdmin
+      ?`<select style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;outline:none;cursor:pointer;" onchange="updateAgendaField('${m.id}','${ag.id}','status',this.value);renderNotulenList()"><option value="OPEN" ${ag.status==='OPEN'?'selected':''}>OPEN</option><option value="IN PROGRESS" ${ag.status==='IN PROGRESS'?'selected':''}>IN PROGRESS</option><option value="CLOSE" ${ag.status==='CLOSE'?'selected':''}>CLOSE</option><option value="PENDING" ${ag.status==='PENDING'?'selected':''}>PENDING</option></select>`
+      :`<span style="border-radius:5px;padding:3px 8px;font-size:11px;font-weight:700;${sc};">${ag.status}</span>`
+    }</td>
+    ${window._isAdmin?`<td style="padding:8px 12px;text-align:center;vertical-align:top;width:52px;"><button onclick="deleteAgenda('${m.id}','${ag.id}')" style="background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px;font-weight:700;">🗑️</button></td>`:''}`;
+  tbody.appendChild(tr);
+});
+        setTimeout(()=>{
+  document.querySelectorAll('#notulen-list textarea').forEach(ta=>{
+    ta.style.height='auto';
+    ta.style.height=ta.scrollHeight+'px';
+  });
+},50);
     }
   });
 }
