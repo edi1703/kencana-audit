@@ -4372,7 +4372,7 @@ function renderNotulenList(){
   tr.innerHTML=`
     <td style="padding:8px 12px;font-size:12px;color:#64748B;font-weight:700;vertical-align:top;width:36px;">${i+1}</td>
     <td style="padding:8px 12px;vertical-align:top;">${window._isAdmin
-      ?`<textarea style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;resize:none;outline:none;overflow:hidden;line-height:1.6;min-height:44px;" onchange="updateAgendaField('${m.id}','${ag.id}','agenda',this.value)" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'">${ag.agenda||''}</textarea>`
+      ?`<textarea style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;resize:none;outline:none;overflow:hidden;line-height:1.6;min-height:60px;" onchange="updateAgendaField('${m.id}','${ag.id}','agenda',this.value)" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'">${ag.agenda||''}</textarea>`
       :`<div style="font-size:13px;color:#1E293B;white-space:pre-wrap;line-height:1.6;padding:4px 0;">${ag.agenda||'<span style="color:#CBD5E1;font-style:italic;">Belum diisi</span>'}</div>`
     }</td>
     <td style="padding:8px 12px;vertical-align:top;width:150px;">${window._isAdmin
