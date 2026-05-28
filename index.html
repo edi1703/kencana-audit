@@ -3859,6 +3859,15 @@ function closeNotulen(){
   const isOpen=detail.style.display!=='none';
   detail.style.display=isOpen?'none':'block';
   if(icon) icon.style.transform=isOpen?'rotate(0deg)':'rotate(90deg)';
+  // Auto-resize textarea setelah dibuka
+  if(!isOpen){
+    setTimeout(()=>{
+      detail.querySelectorAll('textarea').forEach(ta=>{
+        ta.style.height='auto';
+        ta.style.height=ta.scrollHeight+'px';
+      });
+    },30);
+  }
 }
 function openAddMeeting(editId){
   const modal=document.getElementById('modal-meeting');
