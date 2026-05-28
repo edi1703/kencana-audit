@@ -3852,6 +3852,14 @@ function closeNotulen(){
   if(pgHome){ pgHome.classList.add('active'); pgHome.style.display='flex'; }
   document.body.classList.add('home-active');
 }
+  function toggleMtgCard(id){
+  const detail=document.getElementById('mtg-detail-'+id);
+  const icon=document.getElementById('mtg-toggle-icon-'+id);
+  if(!detail) return;
+  const isOpen=detail.style.display!=='none';
+  detail.style.display=isOpen?'none':'block';
+  if(icon) icon.style.transform=isOpen?'rotate(0deg)':'rotate(90deg)';
+}
 function openAddMeeting(editId){
   const modal=document.getElementById('modal-meeting');
   const title=document.getElementById('modal-meeting-title');
@@ -4308,42 +4316,50 @@ function renderNotulenList(){
     const card=document.createElement('div');
     card.style.cssText='background:#fff;border-radius:14px;border:2px solid #E2E8F0;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);';
     card.innerHTML=`
-      <div style="background:linear-gradient(135deg,#2E1065,#7C3AED);color:#fff;padding:16px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
-        <div style="flex:1;">
-          <div style="font-size:15px;font-weight:800;margin-bottom:4px;">${m.judul||'(Tanpa Judul)'}</div>
-          <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:11px;opacity:0.85;">
-            ${tglStr?`<span>📅 ${tglStr}${m.waktu?' · '+m.waktu:''}</span>`:''}
-            ${m.lokasi?`<span>📍 ${m.lokasi}</span>`:''}
-            ${m.pimpinan?`<span>👤 ${m.pimpinan}</span>`:''}
+      <div onclick="toggleMtgCard('${m.id}')" style="background:linear-gradient(135deg,#2E1065,#7C3AED);color:#fff;padding:16px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;cursor:pointer;user-select:none;">
+        <div style="display:flex;align-items:flex-start;gap:12px;flex:1;">
+          <span id="mtg-toggle-icon-${m.id}" style="font-size:14px;transition:transform 0.2s;display:inline-block;margin-top:2px;flex-shrink:0;">▶</span>
+          <div style="flex:1;">
+            <div style="font-size:15px;font-weight:800;margin-bottom:4px;">${m.judul||'(Tanpa Judul)'}</div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:11px;opacity:0.85;">
+              ${tglStr?`<span>📅 ${tglStr}${m.waktu?' · '+m.waktu:''}</span>`:''}
+              ${m.lokasi?`<span>📍 ${m.lokasi}</span>`:''}
+              ${m.pimpinan?`<span>👤 ${m.pimpinan}</span>`:''}
+            </div>
           </div>
-          ${m.peserta&&m.peserta.length>0?`<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">${m.peserta.map(p=>`<span style="background:rgba(255,255,255,0.18);border-radius:999px;padding:2px 10px;font-size:11px;font-weight:600;">${p}</span>`).join('')}</div>`:''}
         </div>
-        <div style="display:flex;gap:6px;flex-shrink:0;">
+        <div style="display:flex;gap:6px;flex-shrink:0;" onclick="event.stopPropagation()">
           ${window._isAdmin?`<button onclick="openAddMeeting('${m.id}')" style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:7px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:700;">✏️ Edit</button>
           <button onclick="deleteMeeting('${m.id}')" style="background:rgba(220,38,38,0.7);border:1px solid rgba(255,100,100,0.3);color:#fff;border-radius:7px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:700;">🗑️</button>`:''}
         </div>
       </div>
-      <div style="padding:10px 20px;background:#F8FAFC;border-bottom:1px solid #E2E8F0;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
-        <span style="font-size:12px;font-weight:700;color:#374151;">${agendas.length} Tindak Lanjut</span>
-        ${openCount>0?`<span style="background:#FFF3CD;color:#856404;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;">OPEN: ${openCount}</span>`:''}
-        ${ipCount>0?`<span style="background:#DBEAFE;color:#1E40AF;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;">IN PROGRESS: ${ipCount}</span>`:''}
-        ${closeCount>0?`<span style="background:#D1FAE5;color:#065F46;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;">CLOSE: ${closeCount}</span>`:''}
-        ${window._isAdmin?`<button onclick="addAgenda('${m.id}')" style="margin-left:auto;background:#7C3AED;color:#fff;border:none;border-radius:7px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700;">➕ Tambah Tindak Lanjut</button>`:''}
-      </div>
-      <div style="overflow-x:auto;">
-        <table style="width:100%;border-collapse:collapse;min-width:700px;table-layout:fixed;">
-          <thead><tr style="background:#F1F5F9;">
-            <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:40px;">No</th>
-            <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;">Hasil / Tindak Lanjut</th>
-            <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:130px;">PIC</th>
-            <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:120px;">Deadline</th>
-            <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:140px;">Status</th>
-            ${NOTULEN_EXTRA_COLS.map(c=>`<th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:180px;max-width:180px;">${c.label}</th>`).join('')}
-            ${window._isAdmin?'<th style="padding:8px 12px;text-align:center;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:60px;">Aksi</th>':''}
-          </tr></thead>
-          <tbody id="ag-tbody-${m.id}"></tbody>
-        </table>
-        ${agendas.length===0?`<div style="text-align:center;padding:24px;color:#94A3B8;font-size:13px;">Belum ada tindak lanjut.</div>`:''}
+      <div id="mtg-detail-${m.id}" style="display:none;">
+        ${m.peserta&&m.peserta.length>0?`<div style="padding:8px 20px;background:#F3E8FF;border-bottom:1px solid #E2E8F0;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+          <span style="font-size:11px;font-weight:700;color:#5B21B6;margin-right:4px;">👥 Peserta:</span>
+          ${m.peserta.map(p=>`<span style="background:rgba(124,58,237,0.12);border-radius:999px;padding:2px 10px;font-size:11px;font-weight:600;color:#5B21B6;">${p}</span>`).join('')}
+        </div>`:''}
+        <div style="padding:10px 20px;background:#F8FAFC;border-bottom:1px solid #E2E8F0;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <span style="font-size:12px;font-weight:700;color:#374151;">${agendas.length} Tindak Lanjut</span>
+          ${openCount>0?`<span style="background:#FFF3CD;color:#856404;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;">OPEN: ${openCount}</span>`:''}
+          ${ipCount>0?`<span style="background:#DBEAFE;color:#1E40AF;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;">IN PROGRESS: ${ipCount}</span>`:''}
+          ${closeCount>0?`<span style="background:#D1FAE5;color:#065F46;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;">CLOSE: ${closeCount}</span>`:''}
+          ${window._isAdmin?`<button onclick="addAgenda('${m.id}')" style="margin-left:auto;background:#7C3AED;color:#fff;border:none;border-radius:7px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700;">➕ Tambah Tindak Lanjut</button>`:''}
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;min-width:700px;table-layout:fixed;">
+            <thead><tr style="background:#F1F5F9;">
+              <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:40px;">No</th>
+              <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;">Hasil / Tindak Lanjut</th>
+              <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:150px;">PIC</th>
+              <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:120px;">Deadline</th>
+              <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:150px;">Status</th>
+              ${NOTULEN_EXTRA_COLS.map(c=>`<th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:180px;max-width:180px;">${c.label}</th>`).join('')}
+              ${window._isAdmin?'<th style="padding:8px 12px;text-align:center;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:60px;">Aksi</th>':''}
+            </tr></thead>
+            <tbody id="ag-tbody-${m.id}"></tbody>
+          </table>
+          ${agendas.length===0?`<div style="text-align:center;padding:24px;color:#94A3B8;font-size:13px;">Belum ada tindak lanjut.</div>`:''}
+        </div>
       </div>`;
     container.appendChild(card);
     const tbody=card.querySelector('#ag-tbody-'+m.id);
