@@ -742,7 +742,7 @@ body.home-active{overflow:hidden;}
         </div>
       </div>
 
-      <div class="h-card c-sop" onclick="showSoon('SOP — Standar Operasional')">
+      <div class="h-card c-sop" onclick="openSOP()">
         <div class="h-card-bg"></div><div class="h-card-stripe"></div>
         <div class="h-card-deco h-card-deco1"></div><div class="h-card-deco h-card-deco2"></div><div class="h-card-deco h-card-deco3"></div>
         <div class="h-card-arrow">↗</div><div class="h-badge-soon">Segera</div>
@@ -3198,7 +3198,7 @@ body.home-active{overflow:hidden;}
         </div>
       </div>
 
-      <div class="h-card c-sop" onclick="showSoon('SOP — Standar Operasional')">
+      <div class="h-card c-sop" onclick="openSOP()">
         <div class="h-card-bg"></div><div class="h-card-stripe"></div>
         <div class="h-card-deco h-card-deco1"></div><div class="h-card-deco h-card-deco2"></div><div class="h-card-deco h-card-deco3"></div>
         <div class="h-card-arrow">↗</div><div class="h-badge-soon">Segera</div>
@@ -4429,6 +4429,471 @@ function renderNotulenList(){
 }
 loadFlowData();
 
+  // ============================================================
+// MODUL SOP — STANDAR OPERASIONAL PROSEDUR
+// Paste SELURUH kode ini di dalam <script> ... </script>
+// di index.html, sebelum baris loadFlowData();
+// ============================================================
+
+// ---------- STATE ----------
+window._sopData      = [];   // semua SOP dari Firestore
+window._sopEditId    = null; // ID SOP yang sedang diedit
+window._sopMode      = 'list'; // 'list' | 'flow'
+window._sopFlowTab   = null;
+
+// ============================================================
+// NAVIGASI — buka / tutup halaman SOP
+// ============================================================
+function openSOP() {
+  const el = document.getElementById('page-sop');
+  if (!el) return;
+  el.style.display = 'flex';
+  // tampilkan tombol Tambah hanya untuk admin
+  const btnAdd = document.getElementById('btn-add-sop');
+  if (btnAdd) btnAdd.style.display = window._isAdmin ? 'block' : 'none';
+  loadSOPData();
+}
+
+function closeSOP() {
+  const el = document.getElementById('page-sop');
+  if (el) el.style.display = 'none';
+}
+
+// ============================================================
+// FIRESTORE — load data SOP
+// ============================================================
+function loadSOPData() {
+  if (!window._db) return;
+  window._db.collection('sop_documents')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snapshot => {
+      window._sopData = [];
+      snapshot.forEach(doc => {
+        window._sopData.push({ id: doc.id, ...doc.data() });
+      });
+      updateSOPStats();
+      renderSOPList();
+      renderSOPFlowTabs();
+    }, err => {
+      console.error('loadSOPData error:', err);
+    });
+}
+
+// ============================================================
+// STATS — update angka di top bar
+// ============================================================
+function updateSOPStats() {
+  const data = window._sopData || [];
+  const total  = data.length;
+  const aktif  = data.filter(s => s.status === 'AKTIF').length;
+  const draft  = data.filter(s => s.status === 'DRAFT').length;
+  const revisi = data.filter(s => s.status === 'REVISI').length;
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('sop-stat-total',  total);
+  set('sop-stat-aktif',  aktif);
+  set('sop-stat-draft',  draft);
+  set('sop-stat-revisi', revisi);
+}
+
+// ============================================================
+// MODE SWITCH — Daftar / Flow
+// ============================================================
+function setSopMode(mode) {
+  window._sopMode = mode;
+  const viewList = document.getElementById('sop-view-list');
+  const viewFlow = document.getElementById('sop-view-flow');
+  const btnList  = document.getElementById('sop-mode-list');
+  const btnFlow  = document.getElementById('sop-mode-flow');
+
+  if (mode === 'list') {
+    if (viewList) viewList.style.display = 'block';
+    if (viewFlow) viewFlow.style.display = 'none';
+    if (btnList)  { btnList.style.background = '#1976D2'; btnList.style.color = '#fff'; }
+    if (btnFlow)  { btnFlow.style.background = 'transparent'; btnFlow.style.color = '#64748B'; }
+    renderSOPList();
+  } else {
+    if (viewList) viewList.style.display = 'none';
+    if (viewFlow) viewFlow.style.display = 'block';
+    if (btnList)  { btnList.style.background = 'transparent'; btnList.style.color = '#64748B'; }
+    if (btnFlow)  { btnFlow.style.background = '#1976D2'; btnFlow.style.color = '#fff'; }
+    renderSOPFlowTabs();
+  }
+}
+
+// ============================================================
+// RENDER — MODE DAFTAR
+// ============================================================
+function renderSOPList() {
+  const container = document.getElementById('sop-list');
+  if (!container) return;
+
+  const search   = (document.getElementById('sop-search')        || {}).value || '';
+  const divisiF  = (document.getElementById('sop-filter-divisi') || {}).value || 'ALL';
+  const statusF  = (document.getElementById('sop-filter-status') || {}).value || 'ALL';
+
+  // Update dropdown divisi
+  _updateDivisiDropdown();
+
+  let list = [...(window._sopData || [])];
+
+  // Filter
+  if (search.trim()) {
+    const q = search.toLowerCase();
+    list = list.filter(s =>
+      (s.judul  || '').toLowerCase().includes(q) ||
+      (s.nomor  || '').toLowerCase().includes(q) ||
+      (s.divisi || '').toLowerCase().includes(q)
+    );
+  }
+  if (divisiF !== 'ALL') list = list.filter(s => s.divisi === divisiF);
+  if (statusF !== 'ALL') list = list.filter(s => s.status === statusF);
+
+  if (list.length === 0) {
+    container.innerHTML =
+      '<div style="text-align:center;padding:60px 20px;color:#94A3B8;">' +
+      '<div style="font-size:48px;margin-bottom:12px;">📋</div>' +
+      '<div style="font-size:16px;font-weight:700;color:#64748B;">Belum ada SOP</div>' +
+      '<div style="font-size:13px;margin-top:6px;">Tambahkan SOP pertama untuk memulai</div>' +
+      '</div>';
+    return;
+  }
+
+  // Group by divisi
+  const groups = {};
+  list.forEach(s => {
+    const d = s.divisi || 'Umum';
+    if (!groups[d]) groups[d] = [];
+    groups[d].push(s);
+  });
+
+  let html = '';
+  Object.keys(groups).sort().forEach(divisi => {
+    html += '<div style="margin-bottom:20px;">' +
+      '<div style="font-size:13px;font-weight:800;color:#1976D2;text-transform:uppercase;' +
+      'letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">' +
+      '<span style="width:4px;height:18px;background:#1976D2;border-radius:2px;display:inline-block;"></span>' +
+      divisi + ' <span style="font-size:11px;color:#94A3B8;font-weight:500;">(' + groups[divisi].length + ' SOP)</span>' +
+      '</div>' +
+      '<div style="display:grid;gap:10px;">';
+
+    groups[divisi].forEach(sop => {
+      const statusColor = sop.status === 'AKTIF' ? '#10B981' : sop.status === 'DRAFT' ? '#F59E0B' : '#EF4444';
+      const statusBg    = sop.status === 'AKTIF' ? '#ECFDF5' : sop.status === 'DRAFT' ? '#FFFBEB' : '#FEF2F2';
+
+      html +=
+        '<div style="background:#fff;border-radius:12px;border:2px solid #E2E8F0;padding:14px 18px;' +
+        'display:flex;align-items:center;gap:14px;transition:border-color 0.2s;"' +
+        ' onmouseover="this.style.borderColor=\'#1976D2\'" onmouseout="this.style.borderColor=\'#E2E8F0\'">' +
+        // Nomor
+        '<div style="min-width:110px;">' +
+        '<div style="font-size:11px;font-weight:800;color:#1976D2;font-family:monospace;">' + (sop.nomor || '-') + '</div>' +
+        '<div style="font-size:10px;color:#94A3B8;margin-top:2px;">' + (sop.versi || 'v1.0') + '</div>' +
+        '</div>' +
+        // Judul
+        '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:14px;font-weight:700;color:#1E293B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (sop.judul || '-') + '</div>' +
+        '<div style="font-size:11px;color:#64748B;margin-top:3px;">' + (sop.tanggal ? '📅 ' + sop.tanggal : '') + '</div>' +
+        '</div>' +
+        // Status
+        '<div style="padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;' +
+        'background:' + statusBg + ';color:' + statusColor + ';white-space:nowrap;">' + (sop.status || 'DRAFT') + '</div>' +
+        // Aksi
+        '<div style="display:flex;gap:6px;flex-shrink:0;">' +
+        (sop.link ? '<a href="' + sop.link + '" target="_blank" style="background:#EFF6FF;color:#1976D2;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:700;font-size:12px;text-decoration:none;">📄 Lihat</a>' : '') +
+        (window._isAdmin ?
+          '<button onclick="openEditSOP(\'' + sop.id + '\')" style="background:#F0FDF4;color:#10B981;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:700;font-size:12px;">✏️</button>' +
+          '<button onclick="confirmDeleteSOP(\'' + sop.id + '\',\'' + (sop.judul || '').replace(/'/g, "\\'") + '\')" style="background:#FEF2F2;color:#EF4444;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:700;font-size:12px;">🗑️</button>'
+          : '') +
+        '<button onclick="viewSOPDetail(\'' + sop.id + '\')" style="background:#F8FAFC;color:#374151;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:700;font-size:12px;">👁️ Detail</button>' +
+        '</div>' +
+        '</div>';
+    });
+
+    html += '</div></div>';
+  });
+
+  container.innerHTML = html;
+}
+
+// Update dropdown divisi dari data yang ada
+function _updateDivisiDropdown() {
+  const sel = document.getElementById('sop-filter-divisi');
+  if (!sel) return;
+  const divisiList = [...new Set((window._sopData || []).map(s => s.divisi).filter(Boolean))].sort();
+  const current = sel.value;
+  sel.innerHTML = '<option value="ALL">Semua Divisi</option>';
+  divisiList.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d; opt.textContent = d;
+    if (d === current) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+// ============================================================
+// RENDER — MODE FLOW (diagram sederhana per divisi)
+// ============================================================
+function renderSOPFlowTabs() {
+  const tabsEl   = document.getElementById('sop-flow-tabs');
+  const contentEl = document.getElementById('sop-flow-content');
+  if (!tabsEl || !contentEl) return;
+
+  const divisiList = [...new Set((window._sopData || []).map(s => s.divisi).filter(Boolean))].sort();
+
+  if (divisiList.length === 0) {
+    tabsEl.innerHTML = '';
+    contentEl.innerHTML = '<div style="text-align:center;padding:40px;color:#94A3B8;">Belum ada data SOP.</div>';
+    return;
+  }
+
+  if (!window._sopFlowTab || !divisiList.includes(window._sopFlowTab)) {
+    window._sopFlowTab = divisiList[0];
+  }
+
+  // Tabs
+  tabsEl.innerHTML = divisiList.map(d =>
+    '<button onclick="setSopFlowTab(\'' + d + '\')" style="padding:8px 18px;border-radius:10px;border:2px solid ' +
+    (d === window._sopFlowTab ? '#1976D2' : '#E2E8F0') + ';background:' +
+    (d === window._sopFlowTab ? '#1976D2' : '#fff') + ';color:' +
+    (d === window._sopFlowTab ? '#fff' : '#374151') + ';cursor:pointer;font-weight:700;font-size:13px;">' + d + '</button>'
+  ).join('');
+
+  // Konten flow — tampilkan SOP dari divisi terpilih sebagai flow steps
+  const sopList = (window._sopData || []).filter(s => s.divisi === window._sopFlowTab);
+
+  if (sopList.length === 0) {
+    contentEl.innerHTML = '<div style="text-align:center;padding:40px;color:#94A3B8;">Belum ada SOP untuk divisi ini.</div>';
+    return;
+  }
+
+  let flowHtml = '<div style="display:flex;flex-direction:column;gap:0;align-items:flex-start;max-width:600px;">';
+  sopList.forEach((sop, i) => {
+    const statusColor = sop.status === 'AKTIF' ? '#10B981' : sop.status === 'DRAFT' ? '#F59E0B' : '#EF4444';
+    flowHtml +=
+      '<div style="display:flex;align-items:flex-start;gap:16px;">' +
+      // Garis kiri
+      '<div style="display:flex;flex-direction:column;align-items:center;">' +
+      '<div style="width:36px;height:36px;border-radius:50%;background:#1976D2;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;">' + (i + 1) + '</div>' +
+      (i < sopList.length - 1 ? '<div style="width:2px;flex:1;min-height:24px;background:#CBD5E1;margin:4px 0;"></div>' : '') +
+      '</div>' +
+      // Card
+      '<div style="background:#F8FAFC;border:2px solid #E2E8F0;border-radius:10px;padding:12px 16px;margin-bottom:' + (i < sopList.length - 1 ? '0' : '0') + 'px;flex:1;margin-bottom:8px;">' +
+      '<div style="font-size:11px;font-weight:800;color:#1976D2;font-family:monospace;">' + (sop.nomor || '-') + ' &nbsp;·&nbsp; ' + (sop.versi || 'v1.0') + '</div>' +
+      '<div style="font-size:14px;font-weight:700;color:#1E293B;margin-top:4px;">' + (sop.judul || '-') + '</div>' +
+      (sop.isi ? '<div style="font-size:12px;color:#64748B;margin-top:6px;white-space:pre-line;line-height:1.6;">' + sop.isi.substring(0, 200) + (sop.isi.length > 200 ? '...' : '') + '</div>' : '') +
+      '<div style="margin-top:8px;display:flex;align-items:center;gap:8px;">' +
+      '<span style="font-size:11px;font-weight:700;color:' + statusColor + ';">' + (sop.status || 'DRAFT') + '</span>' +
+      (sop.link ? '&nbsp;·&nbsp;<a href="' + sop.link + '" target="_blank" style="font-size:11px;color:#1976D2;font-weight:600;">📄 Buka File</a>' : '') +
+      '</div>' +
+      '</div>' +
+      '</div>';
+  });
+  flowHtml += '</div>';
+  contentEl.innerHTML = flowHtml;
+}
+
+function setSopFlowTab(divisi) {
+  window._sopFlowTab = divisi;
+  renderSOPFlowTabs();
+}
+
+// ============================================================
+// DETAIL MODAL — lihat isi SOP
+// ============================================================
+function viewSOPDetail(id) {
+  const sop = (window._sopData || []).find(s => s.id === id);
+  if (!sop) return;
+
+  const statusColor = sop.status === 'AKTIF' ? '#10B981' : sop.status === 'DRAFT' ? '#F59E0B' : '#EF4444';
+
+  const overlay = document.createElement('div');
+  overlay.id = 'sop-detail-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:10600;display:flex;align-items:center;justify-content:center;';
+
+  overlay.innerHTML =
+    '<div style="background:#fff;border-radius:16px;padding:28px;width:min(640px,95vw);max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">' +
+    '<div>' +
+    '<div style="font-size:12px;font-weight:800;color:#1976D2;font-family:monospace;margin-bottom:4px;">' + (sop.nomor || '-') + ' &nbsp;|&nbsp; ' + (sop.versi || 'v1.0') + '</div>' +
+    '<div style="font-size:18px;font-weight:800;color:#1E293B;">' + (sop.judul || '-') + '</div>' +
+    '<div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">' +
+    '<span style="font-size:11px;font-weight:700;color:' + statusColor + ';background:' + (sop.status === 'AKTIF' ? '#ECFDF5' : sop.status === 'DRAFT' ? '#FFFBEB' : '#FEF2F2') + ';padding:3px 10px;border-radius:20px;">' + (sop.status || '-') + '</span>' +
+    '<span style="font-size:11px;color:#64748B;">📁 ' + (sop.divisi || '-') + '</span>' +
+    (sop.tanggal ? '<span style="font-size:11px;color:#64748B;">📅 ' + sop.tanggal + '</span>' : '') +
+    '</div>' +
+    '</div>' +
+    '<button onclick="document.getElementById(\'sop-detail-overlay\').remove()" style="background:#F1F5F9;border:none;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:13px;color:#374151;">✕ Tutup</button>' +
+    '</div>' +
+    (sop.isi ?
+      '<div style="background:#F8FAFC;border-radius:10px;padding:16px;margin-bottom:16px;">' +
+      '<div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px;">📝 Langkah-langkah SOP:</div>' +
+      '<div style="font-size:13px;color:#374151;white-space:pre-line;line-height:1.8;">' + sop.isi + '</div>' +
+      '</div>'
+      : '') +
+    (sop.link ?
+      '<a href="' + sop.link + '" target="_blank" style="display:inline-block;background:#1976D2;color:#fff;text-decoration:none;border-radius:8px;padding:9px 20px;font-weight:700;font-size:13px;">📄 Buka File / Dokumen</a>'
+      : '') +
+    // Riwayat versi (jika ada)
+    _renderVersionHistory(sop) +
+    '</div>';
+
+  document.body.appendChild(overlay);
+}
+
+// ============================================================
+// RIWAYAT VERSI
+// ============================================================
+function _renderVersionHistory(sop) {
+  if (!sop.versiHistory || sop.versiHistory.length === 0) return '';
+  let html = '<div style="margin-top:20px;border-top:2px solid #E2E8F0;padding-top:16px;">' +
+    '<div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:10px;">🕐 Riwayat Versi:</div>' +
+    '<div style="display:flex;flex-direction:column;gap:6px;">';
+  sop.versiHistory.forEach(v => {
+    html += '<div style="display:flex;gap:10px;align-items:center;font-size:12px;">' +
+      '<span style="font-family:monospace;font-weight:700;color:#1976D2;min-width:40px;">' + v.versi + '</span>' +
+      '<span style="color:#64748B;">' + (v.tanggal || '') + '</span>' +
+      '<span style="color:#374151;">' + (v.catatan || '') + '</span>' +
+      '</div>';
+  });
+  html += '</div></div>';
+  return html;
+}
+
+// ============================================================
+// MODAL TAMBAH / EDIT SOP
+// ============================================================
+function openAddSOP() {
+  window._sopEditId = null;
+  const title = document.getElementById('modal-sop-title');
+  if (title) title.textContent = '➕ Tambah SOP Baru';
+
+  // Reset form
+  ['sop-nomor','sop-versi','sop-judul','sop-divisi','sop-tanggal','sop-link','sop-isi'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const statusEl = document.getElementById('sop-status');
+  if (statusEl) statusEl.value = 'DRAFT';
+
+  // Set tanggal hari ini
+  const tglEl = document.getElementById('sop-tanggal');
+  if (tglEl) tglEl.value = new Date().toISOString().split('T')[0];
+
+  const modal = document.getElementById('modal-sop');
+  if (modal) modal.style.display = 'flex';
+}
+
+function openEditSOP(id) {
+  const sop = (window._sopData || []).find(s => s.id === id);
+  if (!sop) return;
+  window._sopEditId = id;
+
+  const title = document.getElementById('modal-sop-title');
+  if (title) title.textContent = '✏️ Edit SOP';
+
+  const set = (elId, val) => { const el = document.getElementById(elId); if (el) el.value = val || ''; };
+  set('sop-nomor',   sop.nomor);
+  set('sop-versi',   sop.versi);
+  set('sop-judul',   sop.judul);
+  set('sop-divisi',  sop.divisi);
+  set('sop-tanggal', sop.tanggal);
+  set('sop-status',  sop.status || 'AKTIF');
+  set('sop-link',    sop.link);
+  set('sop-isi',     sop.isi);
+
+  const modal = document.getElementById('modal-sop');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeSOPModal() {
+  const modal = document.getElementById('modal-sop');
+  if (modal) modal.style.display = 'none';
+  window._sopEditId = null;
+}
+
+// ============================================================
+// SIMPAN SOP — Tambah / Update
+// ============================================================
+function saveSOPData() {
+  const get = id => (document.getElementById(id) || {}).value || '';
+
+  const nomor  = get('sop-nomor').trim();
+  const versi  = get('sop-versi').trim();
+  const judul  = get('sop-judul').trim();
+  const divisi = get('sop-divisi').trim();
+
+  if (!nomor || !judul || !divisi) {
+    alert('⚠️ Nomor SOP, Judul, dan Divisi wajib diisi!');
+    return;
+  }
+
+  const payload = {
+    nomor,
+    versi:   versi  || 'v1.0',
+    judul,
+    divisi,
+    tanggal: get('sop-tanggal'),
+    status:  get('sop-status') || 'DRAFT',
+    link:    get('sop-link'),
+    isi:     get('sop-isi'),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  if (!window._sopEditId) {
+    // Tambah baru
+    payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    payload.versiHistory = [{ versi: payload.versi, tanggal: payload.tanggal, catatan: 'Versi awal' }];
+
+    window._db.collection('sop_documents').add(payload)
+      .then(() => {
+        closeSOPModal();
+        if (typeof showNotif === 'function') showNotif('✅ SOP berhasil ditambahkan!', 'success');
+      })
+      .catch(err => {
+        console.error('saveSOPData add error:', err);
+        alert('Gagal menyimpan SOP: ' + err.message);
+      });
+  } else {
+    // Update — tambah ke riwayat versi jika versi berubah
+    const existing = (window._sopData || []).find(s => s.id === window._sopEditId);
+    if (existing && existing.versi !== payload.versi) {
+      payload.versiHistory = [
+        ...(existing.versiHistory || [{ versi: existing.versi, tanggal: existing.tanggal, catatan: '' }]),
+        { versi: payload.versi, tanggal: payload.tanggal, catatan: 'Diperbarui' }
+      ];
+    }
+
+    window._db.collection('sop_documents').doc(window._sopEditId).update(payload)
+      .then(() => {
+        closeSOPModal();
+        if (typeof showNotif === 'function') showNotif('✅ SOP berhasil diperbarui!', 'success');
+      })
+      .catch(err => {
+        console.error('saveSOPData update error:', err);
+        alert('Gagal memperbarui SOP: ' + err.message);
+      });
+  }
+}
+
+// ============================================================
+// HAPUS SOP
+// ============================================================
+function confirmDeleteSOP(id, judul) {
+  if (!confirm('🗑️ Hapus SOP "' + judul + '"?\nTindakan ini tidak dapat dibatalkan.')) return;
+  window._db.collection('sop_documents').doc(id).delete()
+    .then(() => {
+      if (typeof showNotif === 'function') showNotif('🗑️ SOP berhasil dihapus.', 'success');
+    })
+    .catch(err => {
+      console.error('confirmDeleteSOP error:', err);
+      alert('Gagal menghapus SOP: ' + err.message);
+    });
+}
+
+// ============================================================
+// END MODUL SOP
+// ============================================================
   
 </script>
 
