@@ -5528,6 +5528,755 @@ function renderNotulenList(){
 loadFlowData();
 
   
+// ============================================================
+// SOP HUB NAVIGATION
+// ============================================================
+let _sopHubInitialized = false;
+
+function goToSopHub(){
+  // Hide all other pages
+  const pgHome = document.getElementById('page-home');
+  if(pgHome){ pgHome.classList.remove('active'); pgHome.style.display='none'; }
+  document.getElementById('page-dashboard').style.display='none';
+  const pgNotulen = document.getElementById('page-notulen');
+  if(pgNotulen) pgNotulen.style.display='none';
+  const pgFlow = document.getElementById('page-flow-bisnis');
+  if(pgFlow){ pgFlow.style.display='none'; pgFlow.classList.remove('active'); }
+  
+  // Show SOP Hub
+  const pg = document.getElementById('page-sop-hub');
+  if(pg){ pg.style.display='flex'; }
+  document.body.classList.remove('home-active');
+  
+  // Initialize once
+  if(!_sopHubInitialized){
+    _sopHubInitialized = true;
+    sopHubInit();
+  }
+  
+  // Apply admin UI
+  const btnUpload = document.getElementById('btn-sop-upload-top');
+  if(btnUpload) btnUpload.style.display = window._isAdmin ? 'inline-flex' : 'none';
+  const btnUploadToolbar = document.getElementById('btn-upload-toolbar');
+  if(btnUploadToolbar) btnUploadToolbar.style.display = window._isAdmin ? 'inline-flex' : 'none';
+}
+
+function closeSopHub(){
+  const pg = document.getElementById('page-sop-hub');
+  if(pg){ pg.style.display='none'; }
+  const pgHome = document.getElementById('page-home');
+  if(pgHome){ pgHome.classList.add('active'); pgHome.style.display='flex'; }
+  document.body.classList.add('home-active');
+}
+
+// Clock for SOP Hub header
+(function sopHubClockStart(){
+  const H=['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+  const B=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+  function tick(){
+    const n=new Date();
+    const el=document.getElementById('sop-hub-clock');
+    if(!el) return;
+    el.textContent=H[n.getDay()]+' '+n.getDate()+' '+B[n.getMonth()]+' '+n.getFullYear()+'  '+
+      String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');
+  }
+  tick(); setInterval(tick,1000);
+})();
+
+
+
+// ============================================================
+// DATA STORE
+// ============================================================
+const DEPTS = [
+  {name:'Marketing',       icon:'📊', color:'#FF6B35'},
+  {name:'Purchasing',      icon:'🛒', color:'#C8860A'},
+  {name:'Finance & Accounting', icon:'💰', color:'#00B4D8'},
+  {name:'HRGA',            icon:'👥', color:'#7B2FBE'},
+  {name:'Warehouse',       icon:'📦', color:'#2D9A67'},
+  {name:'Produksi P1',     icon:'🏭', color:'#E53E3E'},
+  {name:'Produksi P2',     icon:'🏭', color:'#DD6B20'},
+  {name:'Produksi P4',     icon:'🏭', color:'#3182CE'},
+  {name:'Produksi P5',     icon:'🏭', color:'#38A169'},
+  {name:'IT',              icon:'💻', color:'#805AD5'},
+  {name:'Umum',            icon:'🌐', color:'#64748B'},
+];
+const DOC_TYPES = ['SOP','IK','Memo','BA','Lain'];
+const DOC_TYPE_LABELS = {SOP:'SOP',IK:'Instruksi Kerja',Memo:'Memo Internal',BA:'Berita Acara',Lain:'Lainnya'};
+const STATUS_LIST = ['Aktif','Draft','Revisi','Obsolete'];
+
+// ── SAMPLE DATA (60 dokumen) ──────────────────────────────
+const SAMPLE_DOCS = [
+  // MARKETING
+  {id:'s1',nama:'SOP Penanganan Order dan Pembuatan SPK',nodoc:'SOP-MKT-001',tipe:'SOP',dept:'Marketing',status:'Aktif',tgl:'2025-01-15',versi:'v2.0',pic:'Bp. Widi',desc:'Alur dari penerimaan order hingga penerbitan SPK ke produksi.',sosial:1,compliance:90,dataUrl:null,fileType:null,fileName:null},
+  {id:'s2',nama:'SOP Pembuatan dan Pengelolaan MAP',nodoc:'SOP-MKT-002',tipe:'SOP',dept:'Marketing',status:'Aktif',tgl:'2025-01-15',versi:'v1.5',pic:'Bp. Darul',desc:'Prosedur Memo Approval Produk termasuk review sampel oleh customer.',sosial:1,compliance:85,dataUrl:null,fileType:null,fileName:null},
+  {id:'s3',nama:'IK Closing SPK Outstanding',nodoc:'IK-MKT-001',tipe:'IK',dept:'Marketing',status:'Aktif',tgl:'2025-02-10',versi:'v1.0',pic:'Bp. Widi',desc:'Instruksi teknis menutup SPK yang melampaui batas waktu.',sosial:1,compliance:80,dataUrl:null,fileType:null,fileName:null},
+  {id:'s4',nama:'SOP Pengelolaan Penawaran Harga',nodoc:'SOP-MKT-003',tipe:'SOP',dept:'Marketing',status:'Draft',tgl:'2025-03-01',versi:'v1.0',pic:'Bp. Darul',desc:'Prosedur pembuatan, pengiriman, dan follow-up penawaran harga kepada customer.',sosial:0,compliance:40,dataUrl:null,fileType:null,fileName:null},
+  {id:'s5',nama:'Memo Internal Pengelolaan Sampel Garmen',nodoc:'MI-MKT-001',tipe:'Memo',dept:'Marketing',status:'Aktif',tgl:'2025-03-05',versi:'v1.0',pic:'Bp. Widi',desc:'Kebijakan penanganan sampel garmen dan MMT & Spanduk.',sosial:1,compliance:75,dataUrl:null,fileType:null,fileName:null},
+  {id:'s6',nama:'SOP Pembatalan SPK',nodoc:'SOP-MKT-004',tipe:'SOP',dept:'Marketing',status:'Aktif',tgl:'2025-02-15',versi:'v1.0',pic:'Bp. Widi',desc:'Alur pembatalan SPK beserta berita acara dan persetujuan direksi.',sosial:1,compliance:88,dataUrl:null,fileType:null,fileName:null},
+  // PURCHASING
+  {id:'s7',nama:'SOP Proses Pembelian dengan PO',nodoc:'SOP-PUR-001',tipe:'SOP',dept:'Purchasing',status:'Aktif',tgl:'2025-01-20',versi:'v2.0',pic:'Bp. Darul',desc:'Alur pembelian barang menggunakan Purchase Order dari request hingga penerimaan.',sosial:1,compliance:82,dataUrl:null,fileType:null,fileName:null},
+  {id:'s8',nama:'IK Verifikasi Spesifikasi Barang',nodoc:'IK-PUR-001',tipe:'IK',dept:'Purchasing',status:'Aktif',tgl:'2025-02-01',versi:'v1.0',pic:'Bp. Darul',desc:'Instruksi verifikasi kesesuaian barang dengan spesifikasi permintaan.',sosial:1,compliance:78,dataUrl:null,fileType:null,fileName:null},
+  {id:'s9',nama:'SOP Pengadaan ATK dan RTK',nodoc:'SOP-PUR-002',tipe:'SOP',dept:'Purchasing',status:'Revisi',tgl:'2025-03-10',versi:'v1.1',pic:'Mbk. Nanda',desc:'Prosedur pengadaan alat tulis kantor dan rumah tangga kantor melalui gudang ATK.',sosial:0,compliance:60,dataUrl:null,fileType:null,fileName:null},
+  // FINANCE
+  {id:'s10',nama:'SOP Stock Opname Persediaan',nodoc:'SOP-FIN-001',tipe:'SOP',dept:'Finance & Accounting',status:'Aktif',tgl:'2025-01-10',versi:'v1.0',pic:'Bp. Darul',desc:'Prosedur stock opname mingguan dan bulanan untuk semua jenis persediaan.',sosial:1,compliance:55,dataUrl:null,fileType:null,fileName:null},
+  {id:'s11',nama:'SOP Monitoring Aset Perusahaan',nodoc:'SOP-FIN-002',tipe:'SOP',dept:'Finance & Accounting',status:'Draft',tgl:'2025-04-01',versi:'v0.5',pic:'Bp. Darul',desc:'Sistem pencatatan, penyusutan, dan monitoring aset terintegrasi.',sosial:0,compliance:10,dataUrl:null,fileType:null,fileName:null},
+  {id:'s12',nama:'IK Pencatatan Tinta Produksi di Sistem',nodoc:'IK-FIN-001',tipe:'IK',dept:'Finance & Accounting',status:'Aktif',tgl:'2025-03-15',versi:'v1.0',pic:'Mbk. Nanda',desc:'Instruksi pencatatan stok tinta masuk, keluar, dan saldo di sistem.',sosial:1,compliance:72,dataUrl:null,fileType:null,fileName:null},
+  {id:'s13',nama:'SOP Pengelolaan Stok ATK dan RTK',nodoc:'SOP-FIN-003',tipe:'SOP',dept:'Finance & Accounting',status:'Aktif',tgl:'2025-03-20',versi:'v1.0',pic:'Mas Catur',desc:'Prosedur pengelolaan, pencatatan, dan pengeluaran stok ATK & RTK dari gudang.',sosial:1,compliance:80,dataUrl:null,fileType:null,fileName:null},
+  // HRGA
+  {id:'s14',nama:'SOP Rekrutmen dan Onboarding Karyawan',nodoc:'SOP-HRG-001',tipe:'SOP',dept:'HRGA',status:'Aktif',tgl:'2025-01-05',versi:'v2.0',pic:'Bp. Andi',desc:'Proses rekrutmen lengkap mulai dari seleksi hingga induction karyawan baru.',sosial:1,compliance:70,dataUrl:null,fileType:null,fileName:null},
+  {id:'s15',nama:'SOP Offboarding dan Penonaktifan Akses',nodoc:'SOP-HRG-002',tipe:'SOP',dept:'HRGA',status:'Aktif',tgl:'2025-03-01',versi:'v1.0',pic:'Bp. Andi',desc:'Alur penanganan karyawan keluar termasuk serah terima dan non-aktif user sistem.',sosial:1,compliance:95,dataUrl:null,fileType:null,fileName:null},
+  {id:'s16',nama:'SOP Implementasi K3 & 5R',nodoc:'SOP-HRG-003',tipe:'SOP',dept:'HRGA',status:'Draft',tgl:'2025-04-01',versi:'v0.9',pic:'Bp. Andi',desc:'Struktur, jobdesk, dan prosedur pelaksanaan K3 dan 5R di seluruh area.',sosial:0,compliance:30,dataUrl:null,fileType:null,fileName:null},
+  {id:'s17',nama:'IK Penyusunan Jobdesk Karyawan',nodoc:'IK-HRG-001',tipe:'IK',dept:'HRGA',status:'Aktif',tgl:'2025-02-15',versi:'v1.0',pic:'Bp. Andi',desc:'Instruksi penyusunan dan pembaruan job description setiap posisi.',sosial:1,compliance:65,dataUrl:null,fileType:null,fileName:null},
+  {id:'s18',nama:'Memo Internal Pengelolaan Sampah Unit P2',nodoc:'MI-HRG-001',tipe:'Memo',dept:'HRGA',status:'Aktif',tgl:'2025-02-05',versi:'v1.0',pic:'Bp. Andi',desc:'Kebijakan pengelolaan sampah dan kerja sama dengan TPA Putri Cempo Solo.',sosial:1,compliance:60,dataUrl:null,fileType:null,fileName:null},
+  {id:'s19',nama:'Berita Acara Disposal Sparepart GA',nodoc:'BA-HRG-001',tipe:'BA',dept:'HRGA',status:'Aktif',tgl:'2025-04-10',versi:'v1.0',pic:'Bp. Andi',desc:'Berita acara pendataan dan persetujuan disposal sparepart tidak layak pakai.',sosial:0,compliance:100,dataUrl:null,fileType:null,fileName:null},
+  // WAREHOUSE
+  {id:'s20',nama:'SOP Penerimaan Barang Masuk',nodoc:'SOP-WH-001',tipe:'SOP',dept:'Warehouse',status:'Aktif',tgl:'2025-01-10',versi:'v2.0',pic:'Bp. Fadli',desc:'Prosedur penerimaan, pemeriksaan, dan pencatatan barang masuk ke gudang.',sosial:1,compliance:85,dataUrl:null,fileType:null,fileName:null},
+  {id:'s21',nama:'SOP Pengeluaran Barang Jadi',nodoc:'SOP-WH-002',tipe:'SOP',dept:'Warehouse',status:'Aktif',tgl:'2025-02-01',versi:'v1.5',pic:'Bp. Fadli',desc:'Alur pengeluaran barang jadi dengan surat jalan dari sistem dan checkpoint satpam.',sosial:1,compliance:92,dataUrl:null,fileType:null,fileName:null},
+  {id:'s22',nama:'SOP Return Pembelian ke Supplier',nodoc:'SOP-WH-003',tipe:'SOP',dept:'Warehouse',status:'Aktif',tgl:'2025-03-05',versi:'v1.0',pic:'Bp. Fadli',desc:'Prosedur retur barang ke supplier beserta administrasi dan pencatatan sistem.',sosial:1,compliance:88,dataUrl:null,fileType:null,fileName:null},
+  {id:'s23',nama:'SOP Pengelolaan Dead Stock',nodoc:'SOP-WH-004',tipe:'SOP',dept:'Warehouse',status:'Revisi',tgl:'2025-03-10',versi:'v1.1',pic:'Bp. Fadli',desc:'Identifikasi, pelaporan, dan tindak lanjut atas bahan baku dead stock.',sosial:0,compliance:45,dataUrl:null,fileType:null,fileName:null},
+  {id:'s24',nama:'SOP Return Penjualan dari Customer',nodoc:'SOP-WH-005',tipe:'SOP',dept:'Warehouse',status:'Draft',tgl:'2025-04-01',versi:'v0.5',pic:'Ibu Caca',desc:'Alur penerimaan, pencatatan, dan tindak lanjut barang return dari customer.',sosial:0,compliance:20,dataUrl:null,fileType:null,fileName:null},
+  {id:'s25',nama:'IK Penataan Stok Fast Moving dan Slow Moving',nodoc:'IK-WH-001',tipe:'IK',dept:'Warehouse',status:'Aktif',tgl:'2025-03-20',versi:'v1.0',pic:'Bp. Fadli',desc:'Instruksi pemisahan area fast moving dan slow moving di gudang bahan baku.',sosial:1,compliance:68,dataUrl:null,fileType:null,fileName:null},
+  // PRODUKSI P1
+  {id:'s26',nama:'SOP Kerja Sama Mitra Jahit dan Finishing',nodoc:'SOP-P1-001',tipe:'SOP',dept:'Produksi P1',status:'Aktif',tgl:'2025-04-15',versi:'v1.0',pic:'Bp. Sumardi',desc:'Alur kerja sama mitra P1 meliputi kontrak, kapasitas, dan evaluasi.',sosial:1,compliance:85,dataUrl:null,fileType:null,fileName:null},
+  {id:'s27',nama:'SOP Pengelolaan Stok Tinta DTF',nodoc:'SOP-P1-002',tipe:'SOP',dept:'Produksi P1',status:'Draft',tgl:'2025-05-01',versi:'v0.5',pic:'',desc:'Prosedur pencatatan, stock opname, dan monitoring tinta DTF di sistem.',sosial:0,compliance:20,dataUrl:null,fileType:null,fileName:null},
+  {id:'s28',nama:'IK Proses Cutting dan Numbering',nodoc:'IK-P1-001',tipe:'IK',dept:'Produksi P1',status:'Aktif',tgl:'2025-02-20',versi:'v1.0',pic:'Bp. Oki',desc:'Instruksi kerja proses cutting kain dan sistem numbering terstandarisasi.',sosial:1,compliance:78,dataUrl:null,fileType:null,fileName:null},
+  // PRODUKSI P2
+  {id:'s29',nama:'SOP Administrasi Gudang Produksi P2',nodoc:'SOP-P2-001',tipe:'SOP',dept:'Produksi P2',status:'Draft',tgl:'2025-01-23',versi:'v0.5',pic:'Bp. Zainal',desc:'Prosedur administrasi berbasis web-based terintegrasi untuk gudang P2.',sosial:0,compliance:20,dataUrl:null,fileType:null,fileName:null},
+  {id:'s30',nama:'SOP Penyimpanan Bahan di Atas Palet',nodoc:'SOP-P2-002',tipe:'SOP',dept:'Produksi P2',status:'Aktif',tgl:'2025-01-23',versi:'v1.0',pic:'Bp. Fadli',desc:'Standar penyimpanan bahan baku menggunakan palet untuk mencegah kontaminasi.',sosial:1,compliance:100,dataUrl:null,fileType:null,fileName:null},
+  {id:'s31',nama:'IK Penanganan Bahan Slow Moving',nodoc:'IK-P2-001',tipe:'IK',dept:'Produksi P2',status:'Draft',tgl:'2025-01-23',versi:'v0.5',pic:'Bp. Fadli',desc:'Instruksi identifikasi dan tindak lanjut bahan baku kategori slow moving.',sosial:0,compliance:20,dataUrl:null,fileType:null,fileName:null},
+  // PRODUKSI P4
+  {id:'s32',nama:'SOP Numbering Cutting P4',nodoc:'SOP-P4-001',tipe:'SOP',dept:'Produksi P4',status:'Aktif',tgl:'2025-02-21',versi:'v1.0',pic:'Bu Indah',desc:'Sistem numbering terstandarisasi dan terkontrol di area cutting P4.',sosial:1,compliance:100,dataUrl:null,fileType:null,fileName:null},
+  {id:'s33',nama:'SOP K3 Operator Cutting',nodoc:'SOP-P4-002',tipe:'SOP',dept:'Produksi P4',status:'Draft',tgl:'2025-03-01',versi:'v0.8',pic:'Bp. Andi',desc:'Prosedur K3 operator cutting termasuk kewajiban menggunakan APD.',sosial:0,compliance:30,dataUrl:null,fileType:null,fileName:null},
+  {id:'s34',nama:'SOP Implementasi 5R Area Produksi P4',nodoc:'SOP-P4-003',tipe:'SOP',dept:'Produksi P4',status:'Draft',tgl:'2025-03-01',versi:'v0.8',pic:'Bu Indah',desc:'Checklist dan prosedur 5R harian per shift untuk area P4.',sosial:0,compliance:40,dataUrl:null,fileType:null,fileName:null},
+  // PRODUKSI P5
+  {id:'s35',nama:'SOP Pengelolaan Barang Jadi MMT',nodoc:'SOP-P5-001',tipe:'SOP',dept:'Produksi P5',status:'Revisi',tgl:'2025-02-05',versi:'v1.1',pic:'Bp. Fadli',desc:'Prosedur penanganan, labeling, dan treatment barang jadi MMT.',sosial:0,compliance:50,dataUrl:null,fileType:null,fileName:null},
+  {id:'s36',nama:'IK Pengelolaan Afval Produksi',nodoc:'IK-P5-001',tipe:'IK',dept:'Produksi P5',status:'Draft',tgl:'2025-02-05',versi:'v0.5',pic:'Bp. Fadli',desc:'Instruksi pemilahan, penempatan, dan penjualan afval produksi P5.',sosial:0,compliance:30,dataUrl:null,fileType:null,fileName:null},
+  // IT
+  {id:'s37',nama:'SOP Pengembangan dan Update Sistem',nodoc:'SOP-IT-001',tipe:'SOP',dept:'IT',status:'Aktif',tgl:'2025-04-11',versi:'v1.0',pic:'Bp. Zainal',desc:'Alur pengembangan modul baru, testing, dan deployment ke production.',sosial:1,compliance:70,dataUrl:null,fileType:null,fileName:null},
+  {id:'s38',nama:'SOP Manajemen User dan Akses Sistem',nodoc:'SOP-IT-002',tipe:'SOP',dept:'IT',status:'Aktif',tgl:'2025-03-01',versi:'v1.0',pic:'Bp. Zainal',desc:'Prosedur pembuatan, pengelolaan, dan penonaktifan user sistem MANKSI.',sosial:1,compliance:80,dataUrl:null,fileType:null,fileName:null},
+  {id:'s39',nama:'IK Backup dan Recovery Data',nodoc:'IK-IT-001',tipe:'IK',dept:'IT',status:'Draft',tgl:'2025-05-01',versi:'v0.5',pic:'Bp. Zainal',desc:'Instruksi backup data harian, mingguan, dan prosedur recovery jika terjadi insiden.',sosial:0,compliance:15,dataUrl:null,fileType:null,fileName:null},
+  // UMUM
+  {id:'s40',nama:'SOP Keamanan dan Pengendalian Akses Area',nodoc:'SOP-UMM-001',tipe:'SOP',dept:'Umum',status:'Aktif',tgl:'2025-01-01',versi:'v1.0',pic:'Bp. Andi',desc:'Prosedur keamanan area perusahaan, checkpoint satpam, dan pengendalian akses tamu.',sosial:1,compliance:88,dataUrl:null,fileType:null,fileName:null},
+  {id:'s41',nama:'SOP Penggunaan Fasilitas Kantor',nodoc:'SOP-UMM-002',tipe:'SOP',dept:'Umum',status:'Aktif',tgl:'2025-01-01',versi:'v1.0',pic:'Bp. Andi',desc:'Ketentuan penggunaan ruang rapat, parkir, dan fasilitas bersama perusahaan.',sosial:1,compliance:75,dataUrl:null,fileType:null,fileName:null},
+  {id:'s42',nama:'Memo Internal Tata Tertib Perusahaan',nodoc:'MI-UMM-001',tipe:'Memo',dept:'Umum',status:'Aktif',tgl:'2025-01-15',versi:'v2.0',pic:'Direksi',desc:'Tata tertib dan kebijakan umum yang berlaku untuk seluruh karyawan.',sosial:1,compliance:92,dataUrl:null,fileType:null,fileName:null},
+];
+
+// State
+let sopDocs = [...SAMPLE_DOCS];
+let activeFilter = {dept:'ALL', type:'ALL', status:'ALL', search:''};
+let currentView = 'grid';
+let pendingFile = null;
+let currentModalId = null;
+
+// ============================================================
+// INIT
+// ============================================================
+function sopHubInit(){
+  renderDeptTree();
+  renderTypeFilter();
+  renderStats();
+  renderContent();
+  renderMonitorPanel();
+  sopStartClock();
+  setTimeout(animateDonut, 400);
+}
+
+// ============================================================
+// CLOCK
+// ============================================================
+function sopStartClock(){
+  const H=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  function tick(){
+    const n=new Date();
+    const el=document.getElementById('header-clock');
+    if(el) el.textContent=
+      H[n.getDay()]+', '+n.getDate()+' '+
+      ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'][n.getMonth()]+' '+n.getFullYear()+
+      '  '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');
+  }
+  tick(); setInterval(tick,1000);
+}
+
+// ============================================================
+// DEPT TREE SIDEBAR
+// ============================================================
+function renderDeptTree(){
+  const tree = document.getElementById('dept-tree');
+  tree.innerHTML = '';
+  DEPTS.forEach(dept=>{
+    const count = sopDocs.filter(d=>d.dept===dept.name).length;
+    const item = document.createElement('div');
+    item.className='dept-tree-item';
+    item.dataset.dept=dept.name;
+    // subtypes for this dept
+    const types = DOC_TYPES.filter(t=>sopDocs.some(d=>d.dept===dept.name&&d.tipe===t));
+    item.innerHTML=`
+      <div class="dept-tree-head" onclick="toggleDeptTree(this.parentElement,'${dept.name}')">
+        <div class="dept-tree-dot" style="background:${dept.color};"></div>
+        <div class="dept-tree-name">${dept.icon} ${dept.name}</div>
+        <div class="dept-tree-count">${count}</div>
+        ${types.length>0?'<div class="dept-tree-chevron">▶</div>':''}
+      </div>
+      ${types.length>0?`<div class="dept-subtypes">
+        ${types.map(t=>`<div class="subtype-item" data-dept="${dept.name}" data-type="${t}" onclick="filterByDeptType('${dept.name}','${t}')">
+          <div class="subtype-dot"></div>
+          ${DOC_TYPE_LABELS[t]||t}
+          <div class="subtype-count">${sopDocs.filter(d=>d.dept===dept.name&&d.tipe===t).length}</div>
+        </div>`).join('')}
+      </div>`:''}`;
+    tree.appendChild(item);
+  });
+  // ALL button at top
+  const allItem = document.createElement('div');
+  allItem.innerHTML=`<div class="dept-tree-head" style="cursor:pointer;" onclick="filterByDept('ALL')">
+    <div class="dept-tree-dot" style="background:var(--gold-500);"></div>
+    <div class="dept-tree-name">🗂️ Semua Departemen</div>
+    <div class="dept-tree-count">${sopDocs.length}</div>
+  </div>`;
+  allItem.style.borderLeft='3px solid transparent';
+  tree.insertBefore(allItem, tree.firstChild);
+}
+
+function toggleDeptTree(el, deptName){
+  el.classList.toggle('open');
+  filterByDept(deptName);
+}
+
+function renderTypeFilter(){
+  const list = document.getElementById('type-filter-list');
+  list.innerHTML='';
+  ['ALL',...DOC_TYPES].forEach(t=>{
+    const count = t==='ALL' ? sopDocs.length : sopDocs.filter(d=>d.tipe===t).length;
+    const div = document.createElement('div');
+    div.className='subtype-item'+(activeFilter.type===t?' active':'');
+    div.dataset.type=t;
+    div.onclick=()=>filterByType(t);
+    div.innerHTML=`<div class="subtype-dot"></div>${t==='ALL'?'Semua Tipe':DOC_TYPE_LABELS[t]||t}<div class="subtype-count">${count}</div>`;
+    list.appendChild(div);
+  });
+}
+
+// ============================================================
+// FILTERS
+// ============================================================
+function filterByDept(dept){
+  activeFilter.dept=dept;
+  activeFilter.type='ALL';
+  document.getElementById('breadcrumb-label').textContent = dept==='ALL'?'Semua Dokumen':dept;
+  // dept section banner
+  const banner = document.getElementById('dept-section-banner');
+  if(dept!=='ALL'){
+    const d=DEPTS.find(x=>x.name===dept)||{icon:'📄',color:'#64748B',name:dept};
+    const rows=sopDocs.filter(x=>x.dept===dept);
+    const avg=rows.length>0?Math.round(rows.reduce((s,r)=>s+(r.compliance||0),0)/rows.length):0;
+    document.getElementById('dsb-icon').textContent=d.icon;
+    document.getElementById('dsb-icon').style.background=d.color+'22';
+    document.getElementById('dsb-name').textContent=d.name;
+    document.getElementById('dsb-sub').textContent=rows.length+' dokumen · '+rows.filter(x=>x.status==='Aktif').length+' aktif';
+    document.getElementById('dsb-comp-fill').style.width=avg+'%';
+    document.getElementById('dsb-comp-fill').style.background=avg>=75?'var(--emerald)':avg>=40?'var(--gold-500)':'var(--red-500)';
+    document.getElementById('dsb-comp-pct').textContent=avg+'% kepatuhan';
+    banner.style.display='flex';
+  } else {
+    banner.style.display='none';
+  }
+  renderContent();
+  // highlight sidebar
+  document.querySelectorAll('.dept-tree-item').forEach(el=>{
+    el.classList.toggle('active',el.dataset.dept===dept);
+  });
+}
+
+function filterByDeptType(dept, type){
+  activeFilter.dept=dept; activeFilter.type=type;
+  document.getElementById('breadcrumb-label').textContent=dept+' › '+(DOC_TYPE_LABELS[type]||type);
+  renderContent();
+  document.querySelectorAll('.subtype-item').forEach(el=>{
+    el.classList.toggle('active',el.dataset.dept===dept&&el.dataset.type===type);
+  });
+}
+
+function filterByType(type){
+  activeFilter.type=type;
+  renderContent();
+  renderTypeFilter();
+}
+
+function filterByStatus(el, status){
+  activeFilter.status=status;
+  document.querySelectorAll('.stat-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  renderContent();
+}
+
+// ============================================================
+// RENDER CONTENT
+// ============================================================
+function getFilteredDocs(){
+  const search = (document.getElementById('sop-hub-search')||{}).value||'';
+  const sort = (document.getElementById('sop-sort-select')||{}).value||'tgl-desc';
+  let docs = [...sopDocs];
+  if(activeFilter.dept!=='ALL') docs=docs.filter(d=>d.dept===activeFilter.dept);
+  if(activeFilter.type!=='ALL') docs=docs.filter(d=>d.tipe===activeFilter.type);
+  if(activeFilter.status==='belum_sosial') docs=docs.filter(d=>!d.sosial);
+  else if(activeFilter.status!=='ALL') docs=docs.filter(d=>d.status===activeFilter.status);
+  if(search){
+    const s=search.toLowerCase();
+    docs=docs.filter(d=>(d.nama||'').toLowerCase().includes(s)||(d.nodoc||'').toLowerCase().includes(s)||(d.desc||'').toLowerCase().includes(s)||(d.dept||'').toLowerCase().includes(s));
+  }
+  // sort
+  if(sort==='tgl-desc') docs.sort((a,b)=>b.tgl>a.tgl?1:-1);
+  else if(sort==='tgl-asc') docs.sort((a,b)=>a.tgl>b.tgl?1:-1);
+  else if(sort==='az') docs.sort((a,b)=>a.nama.localeCompare(b.nama));
+  else if(sort==='za') docs.sort((a,b)=>b.nama.localeCompare(a.nama));
+  else if(sort==='comp-desc') docs.sort((a,b)=>(b.compliance||0)-(a.compliance||0));
+  return docs;
+}
+
+function renderContent(){
+  const docs = getFilteredDocs();
+  const grid = document.getElementById('sop-grid');
+  document.getElementById('result-count').textContent = docs.length+' dokumen';
+  grid.innerHTML='';
+  if(docs.length===0){
+    grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1;">
+      <div class="empty-icon">📭</div>
+      <div class="empty-title">Tidak ada dokumen</div>
+      <div class="empty-sub">Coba ubah filter atau kata kunci pencarian</div>
+    </div>`;
+    return;
+  }
+  docs.forEach((doc,i)=>{
+    const dept=DEPTS.find(d=>d.name===doc.dept)||{color:'#64748B'};
+    const typeKey=doc.tipe||'Lain';
+    const tglFmt=doc.tgl?new Date(doc.tgl).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}):'-';
+    const comp=doc.compliance||0;
+    const compColor=comp>=75?'#10b981':comp>=40?'#f59e0b':'#ef4444';
+    const card=document.createElement('div');
+    card.className='sop-card card-anim';
+    card.style.animationDelay=(i*0.04)+'s';
+    card.onclick=()=>openDetailModal(doc.id);
+    card.innerHTML=`
+      <div class="sop-card-top">
+        <div class="doc-type-badge type-${typeKey}">${typeKey}</div>
+        <div class="sop-card-meta">
+          <div class="sop-card-title">${doc.nama}</div>
+          <div class="sop-card-nodoc">${doc.nodoc||'—'} · ${doc.versi||'v1.0'}</div>
+        </div>
+      </div>
+      <div class="sop-card-status-row">
+        <span class="status-chip s-${doc.status.toLowerCase()}">${doc.status}</span>
+        <span class="sosial-chip ${doc.sosial?'done':''}">${doc.sosial?'✓ Tersosialisasi':'⏳ Belum Sosial'}</span>
+      </div>
+      <div class="sop-card-footer">
+        <div class="card-dept-tag"><span style="width:6px;height:6px;border-radius:50%;background:${dept.color};display:inline-block;"></span>${doc.dept}</div>
+        <div class="card-compliance-mini">
+          <div class="comp-mini-bar"><div class="comp-mini-fill" style="width:${comp}%;background:${compColor};"></div></div>
+          <div class="comp-mini-pct">${comp}%</div>
+        </div>
+        <div class="card-date">${tglFmt}</div>
+      </div>`;
+    grid.appendChild(card);
+  });
+  // apply current view
+  grid.className='sop-grid'+(currentView==='list'?' view-list':'');
+}
+
+// ============================================================
+// VIEW TOGGLE
+// ============================================================
+function setView(v){
+  currentView=v;
+  document.getElementById('sop-view-grid-btn').classList.toggle('active',v==='grid');
+  document.getElementById('sop-view-list-btn').classList.toggle('active',v==='list');
+  renderContent();
+}
+
+// ============================================================
+// STATS
+// ============================================================
+function renderStats(){
+  const tot=sopDocs.length;
+  const aktif=sopDocs.filter(d=>d.status==='Aktif').length;
+  const draft=sopDocs.filter(d=>d.status==='Draft').length;
+  const revisi=sopDocs.filter(d=>d.status==='Revisi').length;
+  const obs=sopDocs.filter(d=>d.status==='Obsolete').length;
+  const unsosial=sopDocs.filter(d=>!d.sosial).length;
+  const avgComp=tot>0?Math.round(sopDocs.reduce((s,d)=>s+(d.compliance||0),0)/tot):0;
+  document.getElementById('s-total').textContent=tot;
+  document.getElementById('s-aktif').textContent=aktif;
+  document.getElementById('s-draft').textContent=draft;
+  document.getElementById('s-revisi').textContent=revisi;
+  document.getElementById('s-obsolete').textContent=obs;
+  document.getElementById('s-unsosial').textContent=unsosial;
+  document.getElementById('s-compliance').textContent=avgComp+'%';
+}
+
+// ============================================================
+// MONITOR PANEL
+// ============================================================
+function renderMonitorPanel(){
+  renderDonut();
+  renderDeptCompBars();
+  renderSosialTimeline();
+  renderRecentActivity();
+}
+
+function renderDonut(){
+  const tot=sopDocs.length||1;
+  const aktif=sopDocs.filter(d=>d.status==='Aktif').length;
+  const draft=sopDocs.filter(d=>d.status==='Draft').length;
+  const revisi=sopDocs.filter(d=>d.status==='Revisi').length;
+  const obs=sopDocs.filter(d=>d.status==='Obsolete').length;
+  document.getElementById('donut-center-text').textContent=sopDocs.length;
+  const legend=document.getElementById('donut-legend');
+  legend.innerHTML=[
+    {lbl:'Aktif',val:aktif,color:'#10b981'},
+    {lbl:'Draft',val:draft,color:'#0ea5e9'},
+    {lbl:'Revisi',val:revisi,color:'#f97316'},
+    {lbl:'Obsolete',val:obs,color:'#ef4444'},
+  ].map(x=>`<div class="legend-item"><div class="legend-dot" style="background:${x.color};"></div><div class="legend-lbl">${x.lbl}</div><div class="legend-val">${x.val}</div></div>`).join('');
+}
+
+function animateDonut(){
+  const C=2*Math.PI*32; // circumference ≈ 201
+  const tot=sopDocs.length||1;
+  const aktif=sopDocs.filter(d=>d.status==='Aktif').length;
+  const draft=sopDocs.filter(d=>d.status==='Draft').length;
+  const revisi=sopDocs.filter(d=>d.status==='Revisi').length;
+  const obs=sopDocs.filter(d=>d.status==='Obsolete').length;
+  function seg(pct){ return (pct/tot)*C; }
+  let offset=0;
+  [
+    {id:'donut-aktif',n:aktif},
+    {id:'donut-draft',n:draft},
+    {id:'donut-revisi',n:revisi},
+    {id:'donut-obsolete',n:obs},
+  ].forEach(({id,n})=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    const s=seg(n);
+    el.style.strokeDasharray=s+' '+(C-s);
+    el.style.strokeDashoffset=-offset;
+    el.setAttribute('transform',`rotate(${(offset/C)*360-90} 44 44)`);
+    offset+=s;
+  });
+}
+
+function renderDeptCompBars(){
+  const el=document.getElementById('dept-comp-bars');
+  el.innerHTML='';
+  DEPTS.filter(d=>d.name!=='Umum').forEach(dept=>{
+    const rows=sopDocs.filter(d=>d.dept===dept.name);
+    if(rows.length===0) return;
+    const avg=Math.round(rows.reduce((s,r)=>s+(r.compliance||0),0)/rows.length);
+    const color=avg>=75?'#10b981':avg>=40?'#f59e0b':'#ef4444';
+    el.innerHTML+=`<div class="dept-comp-item">
+      <div class="dept-comp-head">
+        <span class="dept-comp-name">${dept.icon} ${dept.name.replace('Produksi ','P').replace('Finance & Accounting','Finance')}</span>
+        <span class="dept-comp-pct">${avg}%</span>
+      </div>
+      <div class="dept-comp-bar"><div class="dept-comp-fill" style="width:${avg}%;background:${color};"></div></div>
+    </div>`;
+  });
+}
+
+function renderSosialTimeline(){
+  const el=document.getElementById('sosial-timeline');
+  const recent=sopDocs.filter(d=>d.sosial).sort((a,b)=>b.tgl>a.tgl?1:-1).slice(0,6);
+  el.innerHTML=recent.map((d,i)=>{
+    const dept=DEPTS.find(x=>x.name===d.dept)||{color:'#64748B'};
+    const isLast=i===recent.length-1;
+    return `<div class="sosial-item">
+      <div class="sosial-dot-col">
+        <div class="sosial-dot" style="background:${dept.color};"></div>
+        ${!isLast?'<div class="sosial-line"></div>':''}
+      </div>
+      <div class="sosial-body">
+        <div class="sosial-title">${d.nama}</div>
+        <div class="sosial-meta">${d.dept} · ${d.tgl||'—'}</div>
+        <span class="sosial-chip-mini s-${d.status.toLowerCase()}" style="color:inherit;border-color:rgba(255,255,255,.1);">${d.tipe} · ${d.status}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderRecentActivity(){
+  const el=document.getElementById('recent-activity');
+  const activities=[
+    {icon:'✅',title:'SOP Penyimpanan Bahan di Atas Palet — CLOSE',meta:'Produksi P2 · 31 Mar 2026'},
+    {icon:'📝',title:'Draft SOP Administrasi P2 ditambahkan',meta:'Produksi P2 · 23 Jan 2026'},
+    {icon:'🔄',title:'SOP Pengelolaan Dead Stock masuk revisi',meta:'Warehouse · 10 Mar 2026'},
+    {icon:'📤',title:'Sosialisasi SOP Offboarding selesai',meta:'HRGA · 1 Mar 2026'},
+    {icon:'⬆️',title:'SOP Kerja Sama Mitra P1 diupload',meta:'Produksi P1 · 15 Apr 2026'},
+  ];
+  el.innerHTML=activities.map(a=>`<div class="activity-item">
+    <div class="activity-icon">${a.icon}</div>
+    <div class="activity-body">
+      <div class="activity-title">${a.title}</div>
+      <div class="activity-meta">${a.meta}</div>
+    </div>
+  </div>`).join('');
+}
+
+// ============================================================
+// DETAIL MODAL
+// ============================================================
+function openDetailModal(id){
+  const doc=sopDocs.find(d=>d.id===id);
+  if(!doc) return;
+  currentModalId=id;
+  const dept=DEPTS.find(d=>d.name===doc.dept)||{color:'#64748B',icon:'📄'};
+  const typeKey=doc.tipe||'Lain';
+  const modal=document.getElementById('modal-overlay');
+  // Icon
+  const icon=document.getElementById('modal-icon');
+  icon.textContent={SOP:'📋',IK:'🔧',Memo:'📨',BA:'📜',Lain:'📄'}[typeKey]||'📄';
+  icon.style.background=`rgba(${hexToRgb(dept.color)},0.15)`;
+  icon.style.border=`1px solid rgba(${hexToRgb(dept.color)},0.3)`;
+  // Title & tags
+  document.getElementById('modal-title').textContent=doc.nama;
+  document.getElementById('modal-tags').innerHTML=`
+    <span class="status-chip s-${doc.status.toLowerCase()}">${doc.status}</span>
+    <span class="sosial-chip ${doc.sosial?'done':''}">${doc.sosial?'✓ Tersosialisasi':'⏳ Belum Sosial'}</span>
+    <span class="status-chip" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:var(--slate-300);">${DOC_TYPE_LABELS[typeKey]||typeKey}</span>`;
+  // Body
+  const tglFmt=doc.tgl?new Date(doc.tgl).toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'-';
+  const comp=doc.compliance||0;
+  const compColor=comp>=75?'#10b981':comp>=40?'#f59e0b':'#ef4444';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="modal-grid">
+      <div class="detail-field"><label>No. Dokumen</label><div class="val" style="font-family:var(--font-mono);color:var(--gold-300);">${doc.nodoc||'—'}</div></div>
+      <div class="detail-field"><label>Versi</label><div class="val">${doc.versi||'v1.0'}</div></div>
+      <div class="detail-field"><label>Departemen</label><div class="val">${dept.icon} ${doc.dept}</div></div>
+      <div class="detail-field"><label>Tipe Dokumen</label><div class="val">${DOC_TYPE_LABELS[typeKey]||typeKey}</div></div>
+      <div class="detail-field"><label>Tanggal Terbit</label><div class="val">${tglFmt}</div></div>
+      <div class="detail-field"><label>PIC / Author</label><div class="val">${doc.pic||'—'}</div></div>
+      <div class="detail-field full"><label>Deskripsi</label><div class="val">${doc.desc||'—'}</div></div>
+    </div>
+    <!-- Compliance -->
+    <div class="compliance-input-wrap">
+      <label>% Kepatuhan Implementasi</label>
+      <div class="comp-input-row">
+        <input type="range" min="0" max="100" value="${comp}" id="comp-slider" oninput="updateCompDisplay(this.value)">
+        <div class="comp-pct-display" id="comp-pct-display">${comp}%</div>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,.08);border-radius:3px;margin-top:10px;overflow:hidden;">
+        <div id="comp-bar-modal" style="height:100%;border-radius:3px;background:${compColor};width:${comp}%;transition:width .3s,background .3s;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;">
+        <span style="font-size:10px;color:var(--slate-600);font-family:var(--font-mono);">0%</span>
+        <span style="font-size:10px;color:var(--slate-600);font-family:var(--font-mono);">50%</span>
+        <span style="font-size:10px;color:var(--slate-600);font-family:var(--font-mono);">100%</span>
+      </div>
+    </div>
+    <!-- Sosial toggle -->
+    <div class="sosial-toggle-row">
+      <div>
+        <div class="sosial-toggle-label">Sudah Disosialisasikan ke Tim?</div>
+        <div style="font-size:11px;color:var(--slate-500);margin-top:2px;">${doc.sosial?'Dokumen telah disosialisasikan':'Dokumen belum disosialisasikan ke semua pihak terkait'}</div>
+      </div>
+      <button class="toggle-switch ${doc.sosial?'on':''}" id="sosial-toggle" onclick="toggleSosial('${doc.id}',this)"></button>
+    </div>
+    ${doc.dataUrl?`<div class="preview-embed" id="preview-embed">
+      ${doc.fileType&&doc.fileType.startsWith('image/')?
+        `<img src="${doc.dataUrl}" style="width:100%;height:100%;object-fit:contain;">`:
+        `<iframe src="${doc.dataUrl}" style="width:100%;height:100%;border:none;"></iframe>`}
+    </div>`:'<div style="background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.1);border-radius:var(--radius-md);padding:28px;text-align:center;color:var(--slate-500);font-size:13px;">📎 Belum ada file yang diupload untuk dokumen ini</div>'}`;
+  // Footer
+  document.getElementById('modal-footer').innerHTML=`
+    <button class="btn-modal btn-modal-danger" onclick="deleteSopDoc('${doc.id}')">🗑️ Hapus</button>
+    <button class="btn-modal btn-modal-sec" onclick="closeDetailModal()">Tutup</button>
+    ${doc.dataUrl?`<a href="${doc.dataUrl}" download="${doc.fileName||doc.nama}" class="btn-modal btn-modal-sec">⬇️ Download</a>`:''}
+    <button class="btn-modal btn-modal-primary" onclick="saveModalChanges('${doc.id}')">💾 Simpan Perubahan</button>`;
+  modal.classList.add('open');
+}
+
+function updateCompDisplay(val){
+  document.getElementById('comp-pct-display').textContent=val+'%';
+  const color=val>=75?'#10b981':val>=40?'#f59e0b':'#ef4444';
+  const bar=document.getElementById('comp-bar-modal');
+  if(bar){bar.style.width=val+'%;'; bar.style.background=color;}
+}
+
+function toggleSosial(id, btn){
+  btn.classList.toggle('on');
+  const doc=sopDocs.find(d=>d.id===id);
+  if(doc) doc.sosial=btn.classList.contains('on')?1:0;
+}
+
+function saveModalChanges(id){
+  const doc=sopDocs.find(d=>d.id===id);
+  if(!doc){ showNotif('Dokumen tidak ditemukan','err'); return; }
+  const slider=document.getElementById('comp-slider');
+  const toggle=document.getElementById('sosial-toggle');
+  if(slider) doc.compliance=parseInt(slider.value);
+  if(toggle) doc.sosial=toggle.classList.contains('on')?1:0;
+  renderStats(); renderContent(); renderMonitorPanel();
+  closeDetailModal();
+  showNotif('✅ Perubahan berhasil disimpan!','ok');
+}
+
+function closeDetailModal(e){
+  if(e&&e.target!==document.getElementById('modal-overlay')) return;
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function deleteSopDoc(id){
+  if(!confirm('Hapus dokumen ini?')) return;
+  sopDocs=sopDocs.filter(d=>d.id!==id);
+  closeDetailModal();
+  renderStats(); renderDeptTree(); renderTypeFilter(); renderContent(); renderMonitorPanel();
+  showNotif('Dokumen dihapus.','info');
+}
+
+// ============================================================
+// UPLOAD MODAL
+// ============================================================
+function openUploadModal(){
+  document.getElementById('upload-modal-overlay').classList.add('open');
+  document.getElementById('up-tgl').value=new Date().toISOString().split('T')[0];
+  pendingFile=null;
+}
+function closeUploadModal(e){
+  if(e&&e.target!==document.getElementById('upload-modal-overlay')) return;
+  document.getElementById('upload-modal-overlay').classList.remove('open');
+  document.getElementById('selected-file-info').style.display='none';
+  pendingFile=null;
+}
+function handleFileSelect(ev){
+  const f=ev.target.files[0];
+  if(!f) return;
+  if(f.size>20*1024*1024){ showNotif('File terlalu besar (max 20MB)','err'); return; }
+  const reader=new FileReader();
+  reader.onload=e=>{
+    pendingFile={dataUrl:e.target.result,fileType:f.type,fileName:f.name};
+    const info=document.getElementById('selected-file-info');
+    info.style.display='block';
+    info.textContent='📎 '+f.name+' ('+Math.round(f.size/1024)+'KB)';
+    // auto-fill name if empty
+    const nameInp=document.getElementById('up-nama');
+    if(!nameInp.value) nameInp.value=f.name.replace(/\.[^.]+$/,'').replace(/[_-]/g,' ');
+  };
+  reader.readAsDataURL(f);
+}
+function handleDrop(e){
+  e.preventDefault();
+  const dt=e.dataTransfer;
+  if(dt.files.length>0){
+    const inp=document.getElementById('file-input-hidden');
+    // simulate
+    handleFileSelect({target:{files:dt.files}});
+  }
+}
+function submitUpload(){
+  const nama=document.getElementById('up-nama').value.trim();
+  const tipe=document.getElementById('up-tipe').value;
+  const dept=document.getElementById('up-dept').value;
+  if(!nama){ showNotif('Nama dokumen wajib diisi!','err'); return; }
+  const newDoc={
+    id:'doc-'+Date.now(),
+    nama,
+    nodoc:document.getElementById('up-nodoc').value.trim()||'—',
+    tipe,dept,
+    status:document.getElementById('up-status').value,
+    tgl:document.getElementById('up-tgl').value,
+    versi:document.getElementById('up-versi').value||'v1.0',
+    pic:document.getElementById('up-pic').value.trim(),
+    desc:document.getElementById('up-desc').value.trim(),
+    sosial:parseInt(document.getElementById('up-sosial').value),
+    compliance:parseInt(document.getElementById('up-comp').value)||0,
+    dataUrl:pendingFile?pendingFile.dataUrl:null,
+    fileType:pendingFile?pendingFile.fileType:null,
+    fileName:pendingFile?pendingFile.fileName:null,
+  };
+  sopDocs.unshift(newDoc);
+  closeUploadModal();
+  renderStats(); renderDeptTree(); renderTypeFilter(); renderContent(); renderMonitorPanel();
+  showNotif('✅ Dokumen "'+nama+'" berhasil ditambahkan!','ok');
+  // Reset form
+  ['up-nama','up-nodoc','up-versi','up-pic','up-desc'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('up-comp').value=0;
+  document.getElementById('up-sosial').value=0;
+}
+
+// ============================================================
+// EXPORT EXCEL
+// ============================================================
+function exportSopExcel(){
+  const docs=getFilteredDocs();
+  if(docs.length===0){ showNotif('Tidak ada data untuk di-export','err'); return; }
+  const rows=docs.map((d,i)=>`<tr style="${i%2===0?'':'background:#F8FAFC'}">
+    <td style="border:1px solid #E2E8F0;padding:6px 10px;text-align:center;font-weight:700;">${i+1}</td>
+    <td style="border:1px solid #E2E8F0;padding:6px 10px;font-weight:600;">${d.nama}</td>
+    <td style="border:1px solid #E2E8F0;padding:6px 10px;font-family:monospace;">${d.nodoc||'—'}</td>
+    <td style="border:1px solid #E2E8F0;padding:6px 10px;">${d.tipe} · ${DOC_TYPE_LABELS[d.tipe]||d.tipe}</td>
+    <td style="border:1px solid #E2E8F0;padding:6px 10px;">${d.dept}</td>
+    <td style="border:1px solid #E2E8F0;padding:6px 10px;text-align:center;font-weight:700;${d.status==='Aktif'?'background:#D1FAE5;color:#065F46':d.status==='Draft'?'background:#DBEAFE;color:#1E40AF':d.status==='Revisi'?'background:#FFF3CD;color:#856404':'background:#FEE2E2;color:#991B1B'}">${d.status}</td>
+    <td style="border:1px solid #E2E8F0;padding:6px 10px;">${d.versi||'v1.0'}</td>
+    <td style="border:1px solid #E2E8F0;padding:6px 10px;">${d.tgl||'—'}</td>
+    <td style="border:1px solid #E2E8F0;padding:6px 10px;">${d.pic||'—'}</td>
+    <td style="border:1px solid #E2E8F0;padding:6px 10px;text-align:center;font-weight:700;${d.sosial?'color:#065F46':'color:#991B1B'}">${d.sosial?'✓ Ya':'✗ Belum'}</td>
+    <td style="border:1px solid #E2E8F0;padding:6px 10px;text-align:center;font-weight:700;">${d.compliance||0}%</td>
+  </tr>`).join('');
+  const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8">
+<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>SOP Hub</x:Name></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+<style>body{font-family:Arial,sans-serif;font-size:10pt;}td,th{vertical-align:top;}</style></head><body>
+<table style="width:100%;border-collapse:collapse;">
+<tr><td colspan="11" style="background:#0a1628;color:#f59e0b;font-family:Arial;font-size:16pt;font-weight:900;padding:14px 18px;letter-spacing:1px;">📖 SOP HUB — CV. KENCANA PRINT</td></tr>
+<tr><td colspan="11" style="background:#0f2044;color:#94a3b8;font-size:10pt;padding:6px 18px;">Dicetak: ${new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})} &nbsp;|&nbsp; Total: ${docs.length} dokumen</td></tr>
+<tr style="background:#1e3a8a;color:#fff;"><th style="border:1px solid #1d4ed8;padding:8px 10px;">No</th><th style="border:1px solid #1d4ed8;padding:8px 10px;min-width:280px;">Nama Dokumen</th><th style="border:1px solid #1d4ed8;padding:8px 10px;">No. Dok</th><th style="border:1px solid #1d4ed8;padding:8px 10px;">Tipe</th><th style="border:1px solid #1d4ed8;padding:8px 10px;">Departemen</th><th style="border:1px solid #1d4ed8;padding:8px 10px;">Status</th><th style="border:1px solid #1d4ed8;padding:8px 10px;">Versi</th><th style="border:1px solid #1d4ed8;padding:8px 10px;">Tgl Terbit</th><th style="border:1px solid #1d4ed8;padding:8px 10px;">PIC</th><th style="border:1px solid #1d4ed8;padding:8px 10px;">Tersosialisasi</th><th style="border:1px solid #1d4ed8;padding:8px 10px;">% Kepatuhan</th></tr>
+${rows}
+</table></body></html>`;
+  const blob=new Blob([html],{type:'application/vnd.ms-excel;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url;
+  a.download='SOP_Hub_Kencana_'+new Date().toLocaleDateString('id-ID').replace(/\//g,'-')+'.xls';
+  a.click(); URL.revokeObjectURL(url);
+  showNotif('📤 Export berhasil didownload!','ok');
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function hexToRgb(hex){
+  hex=hex.replace('#','');
+  const r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);
+  return r+','+g+','+b;
+}
+let notifTimer=null;
+function showNotif(msg,type='ok'){
+  const el=document.getElementById('sop-hub-notif');
+  el.textContent=msg; el.className='notif-'+type; el.style.display='block';
+  if(notifTimer) clearTimeout(notifTimer);
+  notifTimer=setTimeout(()=>el.style.display='none',3000);
+}
+
+// ============================================================
+// KEYBOARD
+// ============================================================
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    document.getElementById('modal-overlay').classList.remove('open');
+    document.getElementById('upload-modal-overlay').classList.remove('open');
+  }
+  if((e.ctrlKey||e.metaKey)&&e.key==='k'){
+    e.preventDefault();
+    document.getElementById('sop-hub-search').focus();
+  }
+});
+
+// ── START
+// sopHubInit called from goToSopHub()
+
+// Override sopStartClock to use sop-hub-clock
+function sopStartClock(){
+  // clock already handled by sopHubClockStart above
+}
+
+
+  
 </script>
 
   
