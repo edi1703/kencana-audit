@@ -4603,7 +4603,9 @@ loadFlowData();
 // ============================================================
 // SOP FULLSCREEN — DATA & LOGIC
 // ============================================================
-var sopFullData = [];
+if(typeof sopFullData === 'undefined') var sopFullData = [];
+window.sopFullData = window.sopFullData || [];
+sopFullData = window.sopFullData;
 
 function loadSOPFullData(){
   try{
@@ -4752,7 +4754,9 @@ function saveSOPCRUD(){
   } else {
     payload.id = 'sop-'+Date.now()+'-'+Math.random().toString(36).slice(2,5);
     payload.createdAt = new Date().toISOString();
-    sopFullData.push(payload);
+    window.sopFullData = window.sopFullData || [];
+sopFullData = window.sopFullData;
+sopFullData.push(payload);
     showNotif('✅ Dokumen berhasil ditambahkan!','success');
   }
 
@@ -4834,7 +4838,8 @@ function renderSOPGrid(){
   const btnT = document.getElementById('btn-tambah-sop');
   if(btnT) btnT.style.display = window._isAdmin ? 'inline-block' : 'none';
 
-  let list = sopFullData.filter(s=>{
+  sopFullData = window.sopFullData || [];
+var list = sopFullData.filter(s=>{
     const mDiv  = divisiF==='ALL' || s.divisi===divisiF;
     const mTipe = tipeF==='ALL'   || s.tipe===tipeF;
     const mStat = statusF==='ALL' || s.status===statusF;
