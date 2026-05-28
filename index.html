@@ -4599,7 +4599,337 @@ function renderNotulenList(){
 }
   
 loadFlowData();
+  
+// ============================================================
+// SOP FULLSCREEN — DATA & LOGIC
+// ============================================================
+let sopFullData = [];
 
+function loadSOPFullData(){
+  try{
+    const r = localStorage.getItem('sop_full_v1');
+    if(r) sopFullData = JSON.parse(r);
+  }catch(e){ sopFullData=[]; }
+  // Firebase akan override via onSnapshot
+  if(window._fbDb){
+    const { doc, onSnapshot } = window._fbOnSnap
+      ? { doc: (db,col,id)=>window._fbDocRef(), onSnapshot: window._fbOnSnap }
+      : { doc: null, onSnapshot: null };
+    try{
+      window._fbOnSnap(window._fbSopRef(), snap=>{
+        if(snap.exists() && snap.data().sopFullData){
+          sopFullData = snap.data().sopFullData;
+          if(document.getElementById('page-sop-full').style.display!=='none') renderSOPGrid();
+        }
+      });
+    }catch(e){}
+  }
+}
+
+function goToSOP(){
+  document.getElementById('page-home').classList.remove('active');
+  document.getElementById('page-home').style.display='none';
+  document.getElementById('page-dashboard').style.display='none';
+  const pg = document.getElementById('page-sop-full');
+  pg.style.display='flex';
+  document.body.classList.remove('home-active');
+  // Tampilkan tombol tambah jika admin
+  document.getElementById('btn-tambah-sop').style.display = window._isAdmin ? 'inline-block' : 'none';
+  renderSOPGrid();
+}
+
+function closeSOPPage(){
+  document.getElementById('page-sop-full').style.display='none';
+  const pgHome = document.getElementById('page-home');
+  pgHome.classList.add('active');
+  pgHome.style.display='flex';
+  document.body.classList.add('home-active');
+}
+
+async function saveSOPToFirebase(){
+  if(!window._isAdmin) return;
+  try{
+    await window._fbSetDoc(window._fbSopRef(),{
+      sopFullData: sopFullData,
+      savedAt: new Date().toISOString(),
+      savedBy: window._currentUser ? window._currentUser.email : 'sop-save'
+    },{merge:true});
+    localStorage.setItem('sop_full_v1', JSON.stringify(sopFullData));
+  }catch(e){ showNotif('❌ Gagal simpan SOP: '+e.message,'error'); }
+}
+
+// ---- MODAL CRUD ----
+let _sopEditId = null;
+let _sopFileBuffer = null;
+
+function openModalSOP(editId){
+  _sopEditId = editId || null;
+  _sopFileBuffer = null;
+  const title = document.getElementById('modal-sop-crud-title');
+  const lbl = document.getElementById('sop-crud-file-label');
+
+  if(editId){
+    const s = sopFullData.find(x=>x.id===editId);
+    if(!s) return;
+    title.textContent = '✏️ Edit Dokumen SOP';
+    document.getElementById('sop-crud-nama').value = s.nama||'';
+    document.getElementById('sop-crud-nodok').value = s.noDok||'';
+    document.getElementById('sop-crud-tipe').value = s.tipe||'SOP';
+    document.getElementById('sop-crud-divisi').value = s.divisi||'Marketing';
+    document.getElementById('sop-crud-versi').value = s.versi||'';
+    document.getElementById('sop-crud-tgl').value = s.tglTerbit||'';
+    document.getElementById('sop-crud-status').value = s.status||'Aktif';
+    document.getElementById('sop-crud-pic').value = s.pic||'';
+    document.getElementById('sop-crud-desc').value = s.deskripsi||'';
+    lbl.textContent = s.fileName ? '📎 '+s.fileName+' (sudah ada — upload baru untuk ganti)' : 'Klik untuk pilih file';
+  } else {
+    title.textContent = '➕ Tambah Dokumen SOP';
+    ['sop-crud-nama','sop-crud-nodok','sop-crud-versi','sop-crud-pic','sop-crud-desc'].forEach(id=>{ document.getElementById(id).value=''; });
+    document.getElementById('sop-crud-tipe').value='SOP';
+    document.getElementById('sop-crud-divisi').value='Marketing';
+    document.getElementById('sop-crud-status').value='Aktif';
+    document.getElementById('sop-crud-tgl').value='';
+    lbl.textContent='Klik untuk pilih file';
+  }
+  document.getElementById('modal-sop-crud').style.display='flex';
+}
+
+function closeModalSOP(){
+  document.getElementById('modal-sop-crud').style.display='none';
+  _sopEditId=null; _sopFileBuffer=null;
+}
+
+function handleSOPFileSelect(ev){
+  const file = ev.target.files[0];
+  if(!file) return;
+  if(file.size > 5*1024*1024){ showNotif('File terlalu besar! Maks 5MB.','error'); return; }
+  const reader = new FileReader();
+  reader.onload = function(re){
+    _sopFileBuffer = { dataUrl: re.result, name: file.name, type: file.type };
+    document.getElementById('sop-crud-file-label').textContent = '✅ '+file.name;
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveSOPCRUD(){
+  if(!window._isAdmin){ showNotif('⛔ Hanya admin yang bisa menyimpan.','error'); return; }
+  const nama = document.getElementById('sop-crud-nama').value.trim();
+  if(!nama){ showNotif('Nama dokumen wajib diisi!','error'); return; }
+
+  const payload = {
+    nama,
+    noDok:     document.getElementById('sop-crud-nodok').value.trim(),
+    tipe:      document.getElementById('sop-crud-tipe').value,
+    divisi:    document.getElementById('sop-crud-divisi').value,
+    versi:     document.getElementById('sop-crud-versi').value.trim(),
+    tglTerbit: document.getElementById('sop-crud-tgl').value,
+    status:    document.getElementById('sop-crud-status').value,
+    pic:       document.getElementById('sop-crud-pic').value.trim(),
+    deskripsi: document.getElementById('sop-crud-desc').value.trim(),
+  };
+
+  if(_sopFileBuffer){
+    payload.fileDataUrl = _sopFileBuffer.dataUrl;
+    payload.fileName    = _sopFileBuffer.name;
+    payload.fileType    = _sopFileBuffer.type;
+  }
+
+  if(_sopEditId){
+    const idx = sopFullData.findIndex(x=>x.id===_sopEditId);
+    if(idx>=0){
+      // Pertahankan file lama jika tidak ada upload baru
+      if(!_sopFileBuffer){
+        payload.fileDataUrl = sopFullData[idx].fileDataUrl;
+        payload.fileName    = sopFullData[idx].fileName;
+        payload.fileType    = sopFullData[idx].fileType;
+      }
+      payload.id = _sopEditId;
+      payload.createdAt = sopFullData[idx].createdAt;
+      payload.updatedAt = new Date().toISOString();
+      sopFullData[idx] = payload;
+      showNotif('✅ Dokumen berhasil diperbarui!','success');
+    }
+  } else {
+    payload.id = 'sop-'+Date.now()+'-'+Math.random().toString(36).slice(2,5);
+    payload.createdAt = new Date().toISOString();
+    sopFullData.push(payload);
+    showNotif('✅ Dokumen berhasil ditambahkan!','success');
+  }
+
+  saveSOPToFirebase();
+  closeModalSOP();
+  renderSOPGrid();
+}
+
+function deleteSOPFull(id){
+  if(!window._isAdmin){ showNotif('⛔ Hanya admin.','error'); return; }
+  if(!confirm('Hapus dokumen ini? Tindakan tidak bisa dibatalkan.')) return;
+  sopFullData = sopFullData.filter(s=>s.id!==id);
+  saveSOPToFirebase();
+  renderSOPGrid();
+  showNotif('Dokumen dihapus.','info');
+}
+
+function previewSOPFull(id){
+  const s = sopFullData.find(x=>x.id===id);
+  if(!s||!s.fileDataUrl){ showNotif('File tidak tersedia untuk dokumen ini.','info'); return; }
+
+  const isImg = s.fileType&&s.fileType.startsWith('image/');
+  const isPdf = s.fileType&&s.fileType.includes('pdf');
+
+  // Buka di modal sederhana
+  const existing = document.getElementById('modal-sop-viewer-full');
+  if(existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'modal-sop-viewer-full';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:11000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;';
+
+  let content = '';
+  let bUrl = '';
+  try{ bUrl = toBlobUrl(s.fileDataUrl); }catch(e){ bUrl = s.fileDataUrl; }
+
+  if(isImg){
+    content = `<img src="${bUrl}" style="max-width:90vw;max-height:80vh;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,0.5);" alt="${s.nama}">`;
+  } else if(isPdf){
+    content = `<iframe src="${bUrl}" style="width:min(900px,94vw);height:82vh;border:none;border-radius:10px;background:#fff;" title="${s.nama}"></iframe>`;
+  } else {
+    content = `<div style="background:#fff;border-radius:14px;padding:40px;text-align:center;color:#374151;min-width:300px;">
+      <div style="font-size:52px;margin-bottom:12px;">📄</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:10px;">${s.nama}</div>
+      <div style="font-size:12px;color:#94A3B8;margin-bottom:16px;">${s.fileName||''}</div>
+      <a href="${bUrl}" download="${s.fileName||s.nama}" style="background:#D97706;color:#fff;border-radius:8px;padding:9px 20px;text-decoration:none;font-weight:700;font-size:13px;">⬇️ Download File</a>
+    </div>`;
+  }
+
+  overlay.innerHTML = `
+    <div style="display:flex;gap:10px;align-items:center;">
+      <span style="color:#FCD34D;font-size:14px;font-weight:700;">${s.nama}</span>
+      <a href="${bUrl}" target="_blank" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:7px;padding:5px 12px;text-decoration:none;font-size:12px;font-weight:700;">🔗 Tab Baru</a>
+      ${bUrl?`<a href="${bUrl}" download="${s.fileName||s.nama}" style="background:rgba(34,197,94,0.8);color:#fff;border:none;border-radius:7px;padding:5px 12px;text-decoration:none;font-size:12px;font-weight:700;">⬇️ Download</a>`:''}
+      <button onclick="document.getElementById('modal-sop-viewer-full').remove()" style="background:rgba(220,38,38,0.8);border:none;color:#fff;border-radius:7px;padding:5px 14px;cursor:pointer;font-weight:700;font-size:13px;">✕ Tutup</button>
+    </div>
+    ${content}`;
+
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+// ---- RENDER GRID ----
+function renderSOPGrid(){
+  const search = (document.getElementById('sop-full-search')||{}).value||'';
+  const divisiF = (document.getElementById('sop-full-divisi')||{}).value||'ALL';
+  const tipeF   = (document.getElementById('sop-full-tipe')||{}).value||'ALL';
+  const statusF = (document.getElementById('sop-full-status')||{}).value||'ALL';
+
+  // Update stats
+  const s1 = document.getElementById('sop-stat-total-full');
+  const s2 = document.getElementById('sop-stat-aktif');
+  const s3 = document.getElementById('sop-stat-revisi');
+  if(s1) s1.textContent = sopFullData.length;
+  if(s2) s2.textContent = sopFullData.filter(x=>x.status==='Aktif').length;
+  if(s3) s3.textContent = sopFullData.filter(x=>x.status==='Revisi').length;
+
+  // Update tombol tambah sesuai login
+  const btnT = document.getElementById('btn-tambah-sop');
+  if(btnT) btnT.style.display = window._isAdmin ? 'inline-block' : 'none';
+
+  let list = sopFullData.filter(s=>{
+    const mDiv  = divisiF==='ALL' || s.divisi===divisiF;
+    const mTipe = tipeF==='ALL'   || s.tipe===tipeF;
+    const mStat = statusF==='ALL' || s.status===statusF;
+    const mSrch = !search || (s.nama||'').toLowerCase().includes(search.toLowerCase())
+                           || (s.noDok||'').toLowerCase().includes(search.toLowerCase())
+                           || (s.pic||'').toLowerCase().includes(search.toLowerCase());
+    return mDiv && mTipe && mStat && mSrch;
+  });
+
+  const lbl = document.getElementById('sop-count-label');
+  if(lbl) lbl.textContent = list.length + ' dokumen ditemukan';
+
+  const grid = document.getElementById('sop-full-grid');
+  if(!grid) return;
+
+  if(list.length===0){
+    grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:80px 20px;color:#94A3B8;">
+      <div style="font-size:64px;margin-bottom:16px;">📭</div>
+      <div style="font-size:18px;font-weight:700;color:#64748B;margin-bottom:8px;">Belum ada dokumen</div>
+      <div style="font-size:13px;">${window._isAdmin?'Klik "➕ Tambah SOP" untuk mulai menambahkan dokumen.':'Dokumen belum tersedia.'}</div>
+    </div>`;
+    return;
+  }
+
+  const TIPE_COLOR = {
+    'SOP':'#1D4ED8','IK':'#059669','Memo Internal':'#7C3AED',
+    'Berita Acara':'#D97706','Jobdesk':'#DC2626','Kebijakan':'#0891B2','Lainnya':'#64748B'
+  };
+  const STATUS_COLOR = {
+    'Aktif':  {bg:'#D1FAE5',color:'#065F46'},
+    'Revisi': {bg:'#FFF3CD',color:'#856404'},
+    'Obsolete':{bg:'#F3F4F6',color:'#6B7280'}
+  };
+  const DEPT_C = window.DEPT_COLORS || {};
+
+  grid.innerHTML='';
+  list.forEach(s=>{
+    const dc = DEPT_C[s.divisi] || {header:'#374151',light:'#F8FAFC'};
+    const tc = TIPE_COLOR[s.tipe] || '#64748B';
+    const sc = STATUS_COLOR[s.status] || STATUS_COLOR['Aktif'];
+    const fileIcon = s.fileType&&s.fileType.includes('pdf')?'📄':s.fileType&&s.fileType.startsWith('image/')?'🖼️':s.fileType&&s.fileType.includes('word')?'📝':s.fileName?'📎':'📋';
+    const tglStr = s.tglTerbit ? new Date(s.tglTerbit).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '-';
+
+    const card = document.createElement('div');
+    card.style.cssText = 'background:#fff;border-radius:14px;border:2px solid #E2E8F0;overflow:hidden;transition:box-shadow 0.2s,transform 0.15s;display:flex;flex-direction:column;';
+    card.onmouseenter = ()=>{ card.style.boxShadow='0 8px 28px rgba(0,0,0,0.12)'; card.style.transform='translateY(-3px)'; };
+    card.onmouseleave = ()=>{ card.style.boxShadow=''; card.style.transform=''; };
+
+    card.innerHTML = `
+      <!-- Stripe warna divisi -->
+      <div style="height:5px;background:${dc.header};"></div>
+      <div style="padding:16px 18px;flex:1;display:flex;flex-direction:column;gap:10px;">
+        <!-- Icon + Nama -->
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <div style="width:48px;height:48px;border-radius:12px;background:${dc.light};display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;border:1px solid ${dc.header}22;">${fileIcon}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:800;color:#1E293B;line-height:1.3;word-break:break-word;">${s.nama}</div>
+            <div style="font-size:11px;color:#64748B;margin-top:3px;">${s.noDok||'—'} ${s.versi?'· '+s.versi:''}</div>
+          </div>
+        </div>
+
+        <!-- Badge tipe + status -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+          <span style="background:${tc}18;color:${tc};border-radius:5px;padding:2px 9px;font-size:11px;font-weight:700;">${s.tipe}</span>
+          <span style="background:${sc.bg};color:${sc.color};border-radius:5px;padding:2px 9px;font-size:11px;font-weight:700;">${s.status}</span>
+          <span style="background:${dc.light};color:${dc.header};border-radius:5px;padding:2px 9px;font-size:11px;font-weight:700;">${s.divisi}</span>
+        </div>
+
+        <!-- Meta info -->
+        <div style="font-size:11px;color:#64748B;display:flex;flex-direction:column;gap:3px;">
+          ${s.pic?`<div>👤 PIC: <strong style="color:#374151;">${s.pic}</strong></div>`:''}
+          <div>📅 Terbit: ${tglStr}</div>
+          ${s.deskripsi?`<div style="margin-top:4px;font-size:12px;color:#475569;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${s.deskripsi}</div>`:''}
+        </div>
+
+        <!-- Tombol aksi -->
+        <div style="display:flex;gap:8px;margin-top:auto;padding-top:8px;flex-wrap:wrap;">
+          ${s.fileDataUrl
+            ? `<button onclick="previewSOPFull('${s.id}')" style="background:#EFF6FF;color:#2563EB;border:1.5px solid #BFDBFE;border-radius:7px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;flex:1;">👁️ Preview</button>`
+            : `<span style="font-size:11px;color:#CBD5E1;padding:6px 4px;flex:1;">Tidak ada file</span>`
+          }
+          ${window._isAdmin
+            ? `<button onclick="openModalSOP('${s.id}')" style="background:#FFF7ED;color:#C2410C;border:1.5px solid #FED7AA;border-radius:7px;padding:6px 10px;cursor:pointer;font-size:12px;font-weight:700;">✏️</button>
+               <button onclick="deleteSOPFull('${s.id}')" style="background:#FEF2F2;color:#991B1B;border:1.5px solid #FECACA;border-radius:7px;padding:6px 10px;cursor:pointer;font-size:12px;font-weight:700;">🗑️</button>`
+            : ''
+          }
+        </div>
+      </div>`;
+
+    grid.appendChild(card);
+  });
+}
+
+// Inisialisasi saat halaman load
+loadSOPFullData();
   
 </script>
 
