@@ -3677,6 +3677,7 @@ document.body.classList.add('home-active');
 <div id="notulen-toolbar" style="background:#F8FAFC;border-bottom:2px solid #E2E8F0;padding:8px 24px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0;">
   <button id="btn-notulen-add-col" onclick="showNotulenAddColModal()" style="background:#0891B2;color:#fff;border:none;border-radius:8px;padding:7px 13px;cursor:pointer;font-weight:700;font-size:12px;display:none;align-items:center;gap:6px;">➕ Tambah Kolom</button>
   <button id="btn-notulen-del-col" onclick="showNotulenDelColModal()" style="background:#DC2626;color:#fff;border:none;border-radius:8px;padding:7px 13px;cursor:pointer;font-weight:700;font-size:12px;display:none;align-items:center;gap:6px;">🗑️ Hapus Kolom</button>
+  <button onclick="exportNotulenExcel()" style="background:#1A237E;color:#fff;border:none;border-radius:8px;padding:7px 13px;cursor:pointer;font-weight:700;font-size:12px;display:inline-flex;align-items:center;gap:6px;">📤 Export Excel</button>
   <div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,0.92);border:2px solid #E2E8F0;border-radius:10px;padding:3px 8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-left:auto;">
     <span style="font-size:11px;color:#64748B;font-weight:700;white-space:nowrap;margin-right:2px;">🔍 Tabel</span>
     <button id="notulen-zoom-out" onclick="notulenZoom(-10)" style="background:#F1F5F9;border:1.5px solid #E2E8F0;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:14px;font-weight:900;color:#374151;padding:0;line-height:1;">−</button>
@@ -4082,6 +4083,204 @@ function notulenZoomReset(){
   });
   const lbl = document.getElementById('notulen-zoom-label');
   if(lbl) lbl.textContent = '100%';
+}
+  // ============================================================
+// EXPORT EXCEL NOTULEN
+// ============================================================
+function exportNotulenExcel(){
+  if(notulenData.length===0){ showNotif('Belum ada data notulen untuk di-export.','info'); return; }
+
+  // Modal pilih format
+  const existing=document.getElementById('modal-notulen-export');
+  if(existing) existing.remove();
+  const overlay=document.createElement('div');
+  overlay.id='modal-notulen-export';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:11000;display:flex;align-items:center;justify-content:center;';
+  overlay.innerHTML=`
+    <div style="background:#fff;border-radius:16px;padding:28px 32px;min-width:380px;max-width:460px;box-shadow:0 10px 50px rgba(0,0,0,0.25);">
+      <h3 style="font-size:15px;font-weight:800;color:#1E293B;margin-bottom:6px;">📤 Export Notulen ke Excel</h3>
+      <p style="font-size:12px;color:#64748B;margin-bottom:16px;">Pilih format export yang diinginkan.</p>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:5px;">Format Export</label>
+        <select id="notulen-export-format" style="width:100%;border:2px solid #E2E8F0;border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;outline:none;">
+          <option value="per-meeting">Per Meeting (setiap meeting jadi satu section)</option>
+          <option value="flat">Semua Tindak Lanjut (tabel flat)</option>
+        </select>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:5px;">Filter Status Tindak Lanjut</label>
+        <select id="notulen-export-status" style="width:100%;border:2px solid #E2E8F0;border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;outline:none;">
+          <option value="ALL">Semua Status</option>
+          <option value="OPEN">OPEN</option>
+          <option value="IN PROGRESS">IN PROGRESS</option>
+          <option value="CLOSE">CLOSE</option>
+          <option value="PENDING">PENDING</option>
+        </select>
+      </div>
+      <div style="margin-bottom:18px;">
+        <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:5px;">Tanggal Export</label>
+        <input id="notulen-export-date" type="text" value="${new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}" style="width:100%;border:2px solid #E2E8F0;border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;">
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button id="nexp-cancel" style="background:#F1F5F9;color:#374151;border:none;border-radius:8px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;">Batal</button>
+        <button id="nexp-confirm" style="background:#1A237E;color:#fff;border:none;border-radius:8px;padding:9px 20px;cursor:pointer;font-weight:700;font-size:13px;">⬇️ Download Excel</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.getElementById('nexp-cancel').onclick=()=>overlay.remove();
+  overlay.onclick=e=>{ if(e.target===overlay) overlay.remove(); };
+  document.getElementById('nexp-confirm').onclick=function(){
+    const format=document.getElementById('notulen-export-format').value;
+    const statusF=document.getElementById('notulen-export-status').value;
+    const tglExport=document.getElementById('notulen-export-date').value;
+    overlay.remove();
+    doExportNotulenExcel(format, statusF, tglExport);
+  };
+}
+
+function doExportNotulenExcel(format, statusF, tglExport){
+  const sorted=[...notulenData].sort((a,b)=>a.tanggal>b.tanggal?1:-1);
+
+  // Header kolom custom
+  const extraColHeaders = NOTULEN_EXTRA_COLS.map(c=>`<th style="border:1px solid #ccc;padding:6px;white-space:nowrap;font-weight:bold;min-width:150px;">${c.label}</th>`).join('');
+  const extraColKeys = NOTULEN_EXTRA_COLS.map(c=>c.key);
+
+  let htmlRows='';
+
+  if(format==='per-meeting'){
+    sorted.forEach(m=>{
+      const agendas=(m.agendas||[]).filter(ag=>statusF==='ALL'||ag.status===statusF);
+      if(agendas.length===0 && statusF!=='ALL') return;
+
+      const tgl=m.tanggal?new Date(m.tanggal).toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'';
+      const pesertaStr=(m.peserta||[]).join(', ');
+
+      // Header meeting
+      htmlRows+=`<tr><td colspan="${6+NOTULEN_EXTRA_COLS.length}" style="background:#2E1065;color:#fff;font-weight:bold;padding:10px 14px;font-size:13px;">
+        📝 ${m.judul||'(Tanpa Judul)'}
+      </td></tr>`;
+      htmlRows+=`<tr style="background:#F3E8FF;">
+        <td colspan="2" style="border:1px solid #E2E8F0;padding:6px 10px;font-size:11px;color:#5B21B6;font-weight:700;">📅 ${tgl}${m.waktu?' · '+m.waktu:''}</td>
+        <td colspan="2" style="border:1px solid #E2E8F0;padding:6px 10px;font-size:11px;color:#5B21B6;font-weight:700;">📍 ${m.lokasi||'-'}</td>
+        <td colspan="${2+NOTULEN_EXTRA_COLS.length}" style="border:1px solid #E2E8F0;padding:6px 10px;font-size:11px;color:#5B21B6;font-weight:700;">👤 Dipimpin: ${m.pimpinan||'-'}</td>
+      </tr>`;
+      if(pesertaStr){
+        htmlRows+=`<tr style="background:#FAF5FF;">
+          <td colspan="${6+NOTULEN_EXTRA_COLS.length}" style="border:1px solid #E2E8F0;padding:6px 10px;font-size:11px;color:#7C3AED;">👥 Peserta: ${pesertaStr}</td>
+        </tr>`;
+      }
+      // Kolom thead agenda
+      htmlRows+=`<tr style="background:#7C3AED;color:#fff;">
+        <th style="border:1px solid #6D28D9;padding:7px 10px;font-weight:bold;width:35px;">No</th>
+        <th style="border:1px solid #6D28D9;padding:7px 10px;font-weight:bold;min-width:300px;">Hasil / Tindak Lanjut</th>
+        <th style="border:1px solid #6D28D9;padding:7px 10px;font-weight:bold;min-width:120px;">PIC</th>
+        <th style="border:1px solid #6D28D9;padding:7px 10px;font-weight:bold;min-width:100px;">Deadline</th>
+        <th style="border:1px solid #6D28D9;padding:7px 10px;font-weight:bold;min-width:100px;">Status</th>
+        ${NOTULEN_EXTRA_COLS.map(c=>`<th style="border:1px solid #6D28D9;padding:7px 10px;font-weight:bold;min-width:150px;">${c.label}</th>`).join('')}
+      </tr>`;
+      if(agendas.length===0){
+        htmlRows+=`<tr><td colspan="${6+NOTULEN_EXTRA_COLS.length}" style="border:1px solid #E2E8F0;padding:10px;text-align:center;color:#94A3B8;font-size:12px;">Belum ada tindak lanjut.</td></tr>`;
+      } else {
+        agendas.forEach((ag,i)=>{
+          const stStyle=ag.status==='CLOSE'?'background:#D1FAE5;color:#065F46':ag.status==='OPEN'?'background:#FFF3CD;color:#856404':ag.status==='IN PROGRESS'?'background:#DBEAFE;color:#1E40AF':'background:#FEE2E2;color:#991B1B';
+          const extraTds=extraColKeys.map(k=>`<td style="border:1px solid #E2E8F0;padding:6px 10px;">${ag[k]||''}</td>`).join('');
+          htmlRows+=`<tr style="${i%2===1?'background:#FAFAFA':''}">
+            <td style="border:1px solid #E2E8F0;padding:6px 10px;text-align:center;font-weight:700;">${i+1}</td>
+            <td style="border:1px solid #E2E8F0;padding:6px 10px;">${(ag.agenda||'').replace(/\n/g,'<br>')}</td>
+            <td style="border:1px solid #E2E8F0;padding:6px 10px;">${ag.pic||''}</td>
+            <td style="border:1px solid #E2E8F0;padding:6px 10px;white-space:nowrap;">${ag.deadline||''}</td>
+            <td style="border:1px solid #E2E8F0;padding:6px 10px;text-align:center;font-weight:bold;${stStyle}">${ag.status}</td>
+            ${extraTds}
+          </tr>`;
+        });
+      }
+      // Summary baris
+      const openC=agendas.filter(a=>a.status==='OPEN').length;
+      const ipC=agendas.filter(a=>a.status==='IN PROGRESS').length;
+      const clC=agendas.filter(a=>a.status==='CLOSE').length;
+      htmlRows+=`<tr style="background:#F1F5F9;font-weight:bold;">
+        <td colspan="${6+NOTULEN_EXTRA_COLS.length}" style="border:1px solid #E2E8F0;padding:6px 10px;font-size:11px;color:#374151;">
+          Total: ${agendas.length} tindak lanjut &nbsp;|&nbsp; OPEN: ${openC} &nbsp;|&nbsp; IN PROGRESS: ${ipC} &nbsp;|&nbsp; CLOSE: ${clC}
+        </td>
+      </tr>`;
+      htmlRows+=`<tr><td colspan="${6+NOTULEN_EXTRA_COLS.length}" style="padding:6px;"></td></tr>`;
+    });
+
+  } else {
+    // FLAT TABLE
+    htmlRows+=`<tr style="background:#2E1065;color:#fff;">
+      <th style="border:1px solid #6D28D9;padding:7px 10px;font-weight:bold;width:35px;">No</th>
+      <th style="border:1px solid #6D28D9;padding:7px 10px;font-weight:bold;min-width:160px;">Judul Meeting</th>
+      <th style="border:1px solid #6D28D9;padding:7px 10px;font-weight:bold;min-width:130px;">Tanggal</th>
+      <th style="border:1px solid #6D28D9;padding:7px 10px;font-weight:bold;min-width:300px;">Hasil / Tindak Lanjut</th>
+      <th style="border:1px solid #6D28D9;padding:7px 10px;font-weight:bold;min-width:120px;">PIC</th>
+      <th style="border:1px solid #6D28D9;padding:7px 10px;font-weight:bold;min-width:100px;">Deadline</th>
+      <th style="border:1px solid #6D28D9;padding:7px 10px;font-weight:bold;min-width:100px;">Status</th>
+      ${NOTULEN_EXTRA_COLS.map(c=>`<th style="border:1px solid #6D28D9;padding:7px 10px;font-weight:bold;min-width:150px;">${c.label}</th>`).join('')}
+    </tr>`;
+    let rowNum=0;
+    sorted.forEach(m=>{
+      const agendas=(m.agendas||[]).filter(ag=>statusF==='ALL'||ag.status===statusF);
+      const tgl=m.tanggal?new Date(m.tanggal).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}):'';
+      agendas.forEach((ag,i)=>{
+        rowNum++;
+        const stStyle=ag.status==='CLOSE'?'background:#D1FAE5;color:#065F46':ag.status==='OPEN'?'background:#FFF3CD;color:#856404':ag.status==='IN PROGRESS'?'background:#DBEAFE;color:#1E40AF':'background:#FEE2E2;color:#991B1B';
+        const extraTds=extraColKeys.map(k=>`<td style="border:1px solid #E2E8F0;padding:6px 10px;">${ag[k]||''}</td>`).join('');
+        htmlRows+=`<tr style="${rowNum%2===0?'background:#FAFAFA':''}">
+          <td style="border:1px solid #E2E8F0;padding:6px 10px;text-align:center;font-weight:700;">${rowNum}</td>
+          <td style="border:1px solid #E2E8F0;padding:6px 10px;font-weight:${i===0?'700':'400'}">${i===0?m.judul||'':''}</td>
+          <td style="border:1px solid #E2E8F0;padding:6px 10px;white-space:nowrap;">${i===0?tgl:''}</td>
+          <td style="border:1px solid #E2E8F0;padding:6px 10px;">${(ag.agenda||'').replace(/\n/g,'<br>')}</td>
+          <td style="border:1px solid #E2E8F0;padding:6px 10px;">${ag.pic||''}</td>
+          <td style="border:1px solid #E2E8F0;padding:6px 10px;white-space:nowrap;">${ag.deadline||''}</td>
+          <td style="border:1px solid #E2E8F0;padding:6px 10px;text-align:center;font-weight:bold;${stStyle}">${ag.status}</td>
+          ${extraTds}
+        </tr>`;
+      });
+    });
+  }
+
+  const htmlContent=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="UTF-8">
+<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Notulen Meeting</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+<style>body{font-family:Arial,sans-serif;font-size:10pt;}td,th{vertical-align:top;}</style>
+</head><body>
+<table style="width:100%;border-collapse:collapse;">
+  <tr><td colspan="${7+NOTULEN_EXTRA_COLS.length}" style="padding:0;">
+    <table style="width:100%;border:2px solid #1A237E;border-collapse:collapse;">
+      <tr>
+        <td style="width:140px;padding:10px;text-align:center;vertical-align:middle;border-right:2px solid #1A237E;">
+          <div style="background:#1A237E;color:#fff;padding:8px 12px;border-radius:6px;display:inline-block;">
+            <div style="font-size:9pt;font-weight:bold;">CV.</div>
+            <div style="font-size:16pt;font-weight:900;color:#F59E0B;">KENCANA</div>
+            <div style="font-size:9pt;font-weight:bold;">PRINT</div>
+          </div>
+        </td>
+        <td style="padding:10px 18px;vertical-align:middle;">
+          <div style="font-size:16pt;font-weight:900;color:#2E1065;">NOTULEN RAPAT</div>
+          <div style="font-size:10pt;color:#374151;margin-top:4px;">CV. Kencana Print — Dokumentasi Hasil Rapat</div>
+          <div style="font-size:9pt;color:#64748B;margin-top:2px;">
+            Format: <strong>${format==='per-meeting'?'Per Meeting':'Tabel Flat'}</strong> &nbsp;|&nbsp;
+            Status: <strong>${statusF==='ALL'?'Semua Status':statusF}</strong> &nbsp;|&nbsp;
+            Tanggal Export: <strong>${tglExport}</strong>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+  <tr><td colspan="${7+NOTULEN_EXTRA_COLS.length}" style="padding:6px;"></td></tr>
+  ${htmlRows}
+</table>
+</body></html>`;
+
+  const blob=new Blob([htmlContent],{type:'application/vnd.ms-excel;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='Notulen_Rapat_Kencana_'+tglExport.replace(/[^a-zA-Z0-9]/g,'_')+'.xls';
+  a.click();
+  URL.revokeObjectURL(url);
+  showNotif('✅ Export notulen berhasil didownload!','success');
 }
 function renderNotulenList(){
   updateNotulenStats();
