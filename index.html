@@ -4603,7 +4603,7 @@ loadFlowData();
 // ============================================================
 // SOP FULLSCREEN — DATA & LOGIC
 // ============================================================
-let sopFullData = [];
+var sopFullData = [];
 
 function loadSOPFullData(){
   try{
@@ -4659,9 +4659,9 @@ async function saveSOPToFirebase(){
 }
 
 // ---- MODAL CRUD ----
-let _sopEditId = null;
-let _sopFileBuffer = null;
-
+var _sopEditId = null;
+var _sopFileBuffer = null;
+  
 function openModalSOP(editId){
   _sopEditId = editId || null;
   _sopFileBuffer = null;
