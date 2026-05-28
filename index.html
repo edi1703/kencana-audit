@@ -93,6 +93,10 @@
   NOTULEN_EXTRA_COLS = d.notulenExtraCols;
   window.notulenExtraCols = d.notulenExtraCols;
 }
+        if(d.sopData && Array.isArray(d.sopData)){
+  sopData = d.sopData;
+  window.sopData = d.sopData;
+}
         if(d.DEPARTMENTS && Array.isArray(d.DEPARTMENTS)) {
           DEPARTMENTS.length = 0;
           d.DEPARTMENTS.forEach(dep => DEPARTMENTS.push(dep));
@@ -148,6 +152,10 @@
         if(d.notulenExtraCols && Array.isArray(d.notulenExtraCols)) {
   NOTULEN_EXTRA_COLS = d.notulenExtraCols;
   window.notulenExtraCols = d.notulenExtraCols;
+}
+        if(d.sopData && Array.isArray(d.sopData)){
+  sopData = d.sopData;
+  window.sopData = d.sopData;
 }
   // HANYA render notulen jika flag aktif
         if(window._notulenPageActive) {
