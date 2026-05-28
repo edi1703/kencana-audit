@@ -4123,14 +4123,14 @@ function renderNotulenList(){
         ${window._isAdmin?`<button onclick="addAgenda('${m.id}')" style="margin-left:auto;background:#7C3AED;color:#fff;border:none;border-radius:7px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700;">➕ Tambah Tindak Lanjut</button>`:''}
       </div>
       <div style="overflow-x:auto;">
-        <table style="width:100%;border-collapse:collapse;min-width:700px;">
+        <table style="width:100%;border-collapse:collapse;min-width:700px;table-layout:fixed;">
           <thead><tr style="background:#F1F5F9;">
             <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:40px;">No</th>
             <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;">Hasil / Tindak Lanjut</th>
             <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:130px;">PIC</th>
             <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:120px;">Deadline</th>
             <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:140px;">Status</th>
-            ${NOTULEN_EXTRA_COLS.map(c=>`<th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;min-width:140px;">${c.label}</th>`).join('')}
+            ${NOTULEN_EXTRA_COLS.map(c=>`<th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:180px;max-width:180px;">${c.label}</th>`).join('')}
             ${window._isAdmin?'<th style="padding:8px 12px;text-align:center;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:60px;">Aksi</th>':''}
           </tr></thead>
           <tbody id="ag-tbody-${m.id}"></tbody>
@@ -4164,7 +4164,7 @@ function renderNotulenList(){
       :`<span style="border-radius:5px;padding:3px 8px;font-size:11px;font-weight:700;${sc};">${ag.status}</span>`
     }</td>
     ${NOTULEN_EXTRA_COLS.map(c=>`
-  <td style="padding:8px 12px;vertical-align:top;min-width:140px;">${window._isAdmin
+  <td style="padding:8px 12px;vertical-align:top;width:180px;max-width:180px;">${window._isAdmin
     ?`<textarea style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:6px 8px;font-size:12px;font-family:inherit;outline:none;resize:none;overflow:hidden;min-height:36px;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" onchange="updateAgendaField('${m.id}','${ag.id}','${c.key}',this.value)">${ag[c.key]||''}</textarea>`
     :`<div style="font-size:12px;color:#1E293B;white-space:pre-wrap;">${ag[c.key]||'-'}</div>`
   }</td>`).join('')}
