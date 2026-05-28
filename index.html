@@ -3655,6 +3655,14 @@ document.body.classList.add('home-active');
       <div style="background:rgba(255,255,255,0.12);border-radius:10px;padding:6px 16px;text-align:center;border:1px solid rgba(255,255,255,0.15);">
         <div style="font-size:18px;font-weight:800;" id="notulen-stat-close">0</div>
         <div style="font-size:10px;opacity:0.8;">Close</div>
+        <div style="background:rgba(255,255,255,0.12);border-radius:10px;padding:6px 16px;text-align:center;border:1px solid rgba(255,255,255,0.15);">
+  <div style="font-size:18px;font-weight:800;" id="notulen-stat-inprog">0</div>
+  <div style="font-size:10px;opacity:0.8;">In Progress</div>
+</div>
+<div style="background:rgba(255,255,255,0.12);border-radius:10px;padding:6px 16px;text-align:center;border:1px solid rgba(255,255,255,0.15);">
+  <div style="font-size:18px;font-weight:800;" id="notulen-stat-pending">0</div>
+  <div style="font-size:10px;opacity:0.8;">Pending</div>
+</div>
       </div>
       <button id="btn-add-meeting" onclick="openAddMeeting()" style="background:#F59E0B;color:#fff;border:none;border-radius:10px;padding:8px 18px;cursor:pointer;font-weight:700;font-size:13px;">➕ Tambah Meeting</button>
     </div>
@@ -3971,14 +3979,20 @@ async function saveNotulenData(){
 function updateNotulenStats(){
   const total=notulenData.length;
   const allAg=notulenData.flatMap(m=>m.agendas||[]);
-  const open=allAg.filter(a=>a.status==='OPEN'||a.status==='IN PROGRESS').length;
-  const close=allAg.filter(a=>a.status==='CLOSE').length;
+  const open=allAg.filter(a=>a.status==='OPEN').length;
+const inprog=allAg.filter(a=>a.status==='IN PROGRESS').length;
+const close=allAg.filter(a=>a.status==='CLOSE').length;
+const pending=allAg.filter(a=>a.status==='PENDING').length;
   const el1=document.getElementById('notulen-stat-total');
-  const el2=document.getElementById('notulen-stat-open');
-  const el3=document.getElementById('notulen-stat-close');
-  if(el1) el1.textContent=total;
-  if(el2) el2.textContent=open;
-  if(el3) el3.textContent=close;
+const el2=document.getElementById('notulen-stat-open');
+const el3=document.getElementById('notulen-stat-close');
+const el4=document.getElementById('notulen-stat-inprog');
+const el5=document.getElementById('notulen-stat-pending');
+if(el1) el1.textContent=total;
+if(el2) el2.textContent=open;
+if(el3) el3.textContent=close;
+if(el4) el4.textContent=inprog;
+if(el5) el5.textContent=pending;
   const lbl=document.getElementById('notulen-count-label');
   if(lbl) lbl.textContent=total+' meeting ditemukan';
 }
@@ -4393,7 +4407,7 @@ function renderNotulenList(){
       :`<div style="font-size:12px;color:#1E293B;">${ag.deadline||'-'}</div>`
     }</td>
     <td style="padding:8px 12px;vertical-align:top;width:150px;">${window._isAdmin
-      ?`<select style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;outline:none;cursor:pointer;" onchange="updateAgendaField('${m.id}','${ag.id}','status',this.value);renderNotulenList()"><option value="OPEN" ${ag.status==='OPEN'?'selected':''}>OPEN</option><option value="IN PROGRESS" ${ag.status==='IN PROGRESS'?'selected':''}>IN PROGRESS</option><option value="CLOSE" ${ag.status==='CLOSE'?'selected':''}>CLOSE</option><option value="PENDING" ${ag.status==='PENDING'?'selected':''}>PENDING</option></select>`
+      ?`<select style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;outline:none;cursor:pointer;" onchange="updateAgendaField('${m.id}','${ag.id}','status',this.value);updateNotulenStats();renderNotulenList()"><option value="OPEN" ${ag.status==='OPEN'?'selected':''}>OPEN</option><option value="IN PROGRESS" ${ag.status==='IN PROGRESS'?'selected':''}>IN PROGRESS</option><option value="CLOSE" ${ag.status==='CLOSE'?'selected':''}>CLOSE</option><option value="PENDING" ${ag.status==='PENDING'?'selected':''}>PENDING</option></select>`
       :`<span style="border-radius:5px;padding:3px 8px;font-size:11px;font-weight:700;${sc};">${ag.status}</span>`
     }</td>
     ${NOTULEN_EXTRA_COLS.map(c=>`
