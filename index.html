@@ -3665,6 +3665,18 @@ document.body.classList.add('home-active');
     </select>
     <div style="margin-left:auto;font-size:12px;color:#64748B;font-weight:600;" id="notulen-count-label">—</div>
   </div>
+  <!-- TOOLBAR KOLOM & ZOOM NOTULEN -->
+<div id="notulen-toolbar" style="background:#F8FAFC;border-bottom:2px solid #E2E8F0;padding:8px 24px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0;">
+  <button id="btn-notulen-add-col" onclick="showNotulenAddColModal()" style="background:#0891B2;color:#fff;border:none;border-radius:8px;padding:7px 13px;cursor:pointer;font-weight:700;font-size:12px;display:none;align-items:center;gap:6px;">➕ Tambah Kolom</button>
+  <button id="btn-notulen-del-col" onclick="showNotulenDelColModal()" style="background:#DC2626;color:#fff;border:none;border-radius:8px;padding:7px 13px;cursor:pointer;font-weight:700;font-size:12px;display:none;align-items:center;gap:6px;">🗑️ Hapus Kolom</button>
+  <div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,0.92);border:2px solid #E2E8F0;border-radius:10px;padding:3px 8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-left:auto;">
+    <span style="font-size:11px;color:#64748B;font-weight:700;white-space:nowrap;margin-right:2px;">🔍 Tabel</span>
+    <button id="notulen-zoom-out" onclick="notulenZoom(-10)" style="background:#F1F5F9;border:1.5px solid #E2E8F0;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:14px;font-weight:900;color:#374151;padding:0;line-height:1;">−</button>
+    <span id="notulen-zoom-label" style="font-size:12px;font-weight:800;color:#1E293B;min-width:42px;text-align:center;">100%</span>
+    <button id="notulen-zoom-in" onclick="notulenZoom(10)" style="background:#F1F5F9;border:1.5px solid #E2E8F0;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:14px;font-weight:900;color:#374151;padding:0;line-height:1;">+</button>
+    <button onclick="notulenZoomReset()" style="background:#EFF6FF;border:1.5px solid #BFDBFE;border-radius:6px;padding:0 7px;height:26px;cursor:pointer;font-size:10px;font-weight:700;color:#2563EB;white-space:nowrap;">Reset</button>
+  </div>
+</div>
 
   <!-- KONTEN UTAMA -->
   <div style="flex:1;overflow-y:auto;padding:16px;background:#F8FAFC;">
@@ -3943,6 +3955,125 @@ function updateNotulenStats(){
   const lbl=document.getElementById('notulen-count-label');
   if(lbl) lbl.textContent=total+' meeting ditemukan';
 }
+  // ============================================================
+// NOTULEN KOLOM CUSTOM
+// ============================================================
+let NOTULEN_EXTRA_COLS = []; // [{key, label}]
+
+function applyNotulenAdminUI(){
+  const isAdmin = window._isAdmin;
+  const btnAdd = document.getElementById('btn-notulen-add-col');
+  const btnDel = document.getElementById('btn-notulen-del-col');
+  if(btnAdd) btnAdd.style.display = isAdmin ? 'inline-flex' : 'none';
+  if(btnDel) btnDel.style.display = isAdmin ? 'inline-flex' : 'none';
+}
+
+function showNotulenAddColModal(){
+  if(!window._isAdmin){ showNotif('⛔ Hanya admin.','error'); return; }
+  const existing = document.getElementById('modal-notulen-add-col');
+  if(existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'modal-notulen-add-col';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:11000;display:flex;align-items:center;justify-content:center;';
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:28px 32px;min-width:340px;max-width:420px;box-shadow:0 10px 50px rgba(0,0,0,0.25);">
+      <h3 style="font-size:15px;font-weight:800;color:#1E293B;margin-bottom:16px;">➕ Tambah Kolom Notulen</h3>
+      <div style="margin-bottom:12px;">
+        <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:5px;">Nama Kolom *</label>
+        <input id="ncol-label" type="text" placeholder="Contoh: Catatan, Progres, Keterangan..." style="width:100%;border:2px solid #E2E8F0;border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;">
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
+        <button id="ncol-cancel" style="background:#F1F5F9;color:#374151;border:none;border-radius:8px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;">Batal</button>
+        <button id="ncol-confirm" style="background:#0891B2;color:#fff;border:none;border-radius:8px;padding:9px 20px;cursor:pointer;font-weight:700;font-size:13px;">➕ Tambah</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.getElementById('ncol-label').focus();
+  document.getElementById('ncol-cancel').onclick = () => overlay.remove();
+  overlay.onclick = e => { if(e.target===overlay) overlay.remove(); };
+  document.getElementById('ncol-confirm').onclick = function(){
+    const label = document.getElementById('ncol-label').value.trim();
+    if(!label){ showNotif('Nama kolom wajib diisi!','error'); return; }
+    let key = 'ncol_' + label.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+    let cnt = 1;
+    while(NOTULEN_EXTRA_COLS.find(c=>c.key===key)) key = key + '_' + cnt++;
+    overlay.remove();
+    NOTULEN_EXTRA_COLS.push({key, label});
+    // Tambahkan field ke semua agenda yang ada
+    notulenData.forEach(m=>{
+      (m.agendas||[]).forEach(ag=>{ if(ag[key]===undefined) ag[key]=''; });
+    });
+    window.notulenData = notulenData;
+    saveNotulenData();
+    renderNotulenList();
+    showNotif('Kolom "'+label+'" berhasil ditambahkan!','success');
+  };
+}
+
+function showNotulenDelColModal(){
+  if(!window._isAdmin){ showNotif('⛔ Hanya admin.','error'); return; }
+  if(NOTULEN_EXTRA_COLS.length===0){ showNotif('Belum ada kolom tambahan yang bisa dihapus.','info'); return; }
+  const existing = document.getElementById('modal-notulen-del-col');
+  if(existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'modal-notulen-del-col';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:11000;display:flex;align-items:center;justify-content:center;';
+  const listHTML = NOTULEN_EXTRA_COLS.map(c =>
+    `<button onclick="deleteNotulenCol('${c.key}')" style="background:#FEF2F2;color:#991B1B;border:2px solid #FECACA;border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:700;font-size:13px;text-align:left;width:100%;display:flex;align-items:center;gap:8px;"><span>✕</span><span>Hapus: <strong>${c.label}</strong></span></button>`
+  ).join('');
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:24px 28px;min-width:320px;max-width:420px;box-shadow:0 10px 50px rgba(0,0,0,0.28);">
+      <h3 style="font-size:15px;font-weight:800;color:#1E293B;margin-bottom:12px;">🗑️ Hapus Kolom Notulen</h3>
+      <p style="font-size:12px;color:#64748B;margin-bottom:14px;">Pilih kolom tambahan yang ingin dihapus:</p>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">${listHTML}</div>
+      <div style="display:flex;justify-content:flex-end;">
+        <button id="ndel-cancel" style="background:#F1F5F9;color:#374151;border:none;border-radius:8px;padding:8px 18px;cursor:pointer;font-weight:600;font-size:13px;">Tutup</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.getElementById('ndel-cancel').onclick = () => overlay.remove();
+  overlay.onclick = e => { if(e.target===overlay) overlay.remove(); };
+}
+
+function deleteNotulenCol(key){
+  const col = NOTULEN_EXTRA_COLS.find(c=>c.key===key);
+  if(!col) return;
+  if(!confirm('Hapus kolom "'+col.label+'"? Data di kolom ini akan hilang.')) return;
+  const existing = document.getElementById('modal-notulen-del-col');
+  if(existing) existing.remove();
+  NOTULEN_EXTRA_COLS = NOTULEN_EXTRA_COLS.filter(c=>c.key!==key);
+  notulenData.forEach(m=>{
+    (m.agendas||[]).forEach(ag=>{ delete ag[key]; });
+  });
+  window.notulenData = notulenData;
+  saveNotulenData();
+  renderNotulenList();
+  showNotif('Kolom dihapus.','info');
+}
+
+// ============================================================
+// NOTULEN ZOOM
+// ============================================================
+let _notulenZoom = 100;
+function notulenZoom(delta){
+  _notulenZoom = Math.min(200, Math.max(50, _notulenZoom + delta));
+  document.querySelectorAll('#notulen-list table').forEach(t=>{
+    t.style.transform = `scale(${_notulenZoom/100})`;
+    t.style.transformOrigin = 'top left';
+    t.parentElement.style.height = (t.offsetHeight * _notulenZoom/100) + 'px';
+  });
+  const lbl = document.getElementById('notulen-zoom-label');
+  if(lbl) lbl.textContent = _notulenZoom + '%';
+}
+function notulenZoomReset(){
+  _notulenZoom = 100;
+  document.querySelectorAll('#notulen-list table').forEach(t=>{
+    t.style.transform = '';
+    t.parentElement.style.height = '';
+  });
+  const lbl = document.getElementById('notulen-zoom-label');
+  if(lbl) lbl.textContent = '100%';
+}
 function renderNotulenList(){
   updateNotulenStats();
   const search=(document.getElementById('notulen-search')||{}).value||'';
@@ -3958,6 +4089,7 @@ function renderNotulenList(){
     return;
   }
   container.innerHTML='';
+  applyNotulenAdminUI();
   list.forEach(m=>{
     const agendas=m.agendas||[];
     const openCount=agendas.filter(a=>a.status==='OPEN').length;
@@ -3998,6 +4130,7 @@ function renderNotulenList(){
             <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:130px;">PIC</th>
             <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:120px;">Deadline</th>
             <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:140px;">Status</th>
+            ${NOTULEN_EXTRA_COLS.map(c=>`<th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;min-width:140px;">${c.label}</th>`).join('')}
             ${window._isAdmin?'<th style="padding:8px 12px;text-align:center;font-size:11px;font-weight:800;color:#64748B;border-bottom:2px solid #E2E8F0;width:60px;">Aksi</th>':''}
           </tr></thead>
           <tbody id="ag-tbody-${m.id}"></tbody>
@@ -4030,6 +4163,11 @@ function renderNotulenList(){
       ?`<select style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;outline:none;cursor:pointer;" onchange="updateAgendaField('${m.id}','${ag.id}','status',this.value);renderNotulenList()"><option value="OPEN" ${ag.status==='OPEN'?'selected':''}>OPEN</option><option value="IN PROGRESS" ${ag.status==='IN PROGRESS'?'selected':''}>IN PROGRESS</option><option value="CLOSE" ${ag.status==='CLOSE'?'selected':''}>CLOSE</option><option value="PENDING" ${ag.status==='PENDING'?'selected':''}>PENDING</option></select>`
       :`<span style="border-radius:5px;padding:3px 8px;font-size:11px;font-weight:700;${sc};">${ag.status}</span>`
     }</td>
+    ${NOTULEN_EXTRA_COLS.map(c=>`
+  <td style="padding:8px 12px;vertical-align:top;min-width:140px;">${window._isAdmin
+    ?`<textarea style="width:100%;border:1px solid #E2E8F0;border-radius:6px;padding:6px 8px;font-size:12px;font-family:inherit;outline:none;resize:none;overflow:hidden;min-height:36px;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" onchange="updateAgendaField('${m.id}','${ag.id}','${c.key}',this.value)">${ag[c.key]||''}</textarea>`
+    :`<div style="font-size:12px;color:#1E293B;white-space:pre-wrap;">${ag[c.key]||'-'}</div>`
+  }</td>`).join('')}
     ${window._isAdmin?`<td style="padding:8px 12px;text-align:center;vertical-align:top;width:52px;"><button onclick="deleteAgenda('${m.id}','${ag.id}')" style="background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px;font-weight:700;">🗑️</button></td>`:''}`;
   tbody.appendChild(tr);
 });
