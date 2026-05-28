@@ -3980,13 +3980,19 @@ function updateNotulenStats(){
   const total=notulenData.length;
   const allAg=notulenData.flatMap(m=>m.agendas||[]);
   const open=allAg.filter(a=>a.status==='OPEN').length;
+const inprog=allAg.filter(a=>a.status==='IN PROGRESS').length;
 const close=allAg.filter(a=>a.status==='CLOSE').length;
+const pending=allAg.filter(a=>a.status==='PENDING').length;
   const el1=document.getElementById('notulen-stat-total');
 const el2=document.getElementById('notulen-stat-open');
 const el3=document.getElementById('notulen-stat-close');
+  const el4=document.getElementById('notulen-stat-inprog');
+const el5=document.getElementById('notulen-stat-pending');
 if(el1) el1.textContent=total;
 if(el2) el2.textContent=open;
 if(el3) el3.textContent=close;
+  if(el4) el4.textContent=inprog;
+if(el5) el5.textContent=pending;
   const lbl=document.getElementById('notulen-count-label');
   if(lbl) lbl.textContent=total+' meeting ditemukan';
 }
