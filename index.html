@@ -89,6 +89,10 @@
   window.notulenData = d.notulenData;
   notulenData = d.notulenData;
 }
+        if(d.notulenExtraCols && Array.isArray(d.notulenExtraCols)) {
+  NOTULEN_EXTRA_COLS = d.notulenExtraCols;
+  window.notulenExtraCols = d.notulenExtraCols;
+}
         if(d.DEPARTMENTS && Array.isArray(d.DEPARTMENTS)) {
           DEPARTMENTS.length = 0;
           d.DEPARTMENTS.forEach(dep => DEPARTMENTS.push(dep));
@@ -141,6 +145,10 @@
       if(d.notulenData) {
   window.notulenData = d.notulenData;
   notulenData = d.notulenData;
+        if(d.notulenExtraCols && Array.isArray(d.notulenExtraCols)) {
+  NOTULEN_EXTRA_COLS = d.notulenExtraCols;
+  window.notulenExtraCols = d.notulenExtraCols;
+}
   // HANYA render notulen jika flag aktif
         if(window._notulenPageActive) {
           renderNotulenPage();
@@ -3936,6 +3944,7 @@ async function saveNotulenData(){
     await window._fbSetDoc(window._fbDocRef(),{
       appData:appData,COLS:COLS,DEPARTMENTS:DEPARTMENTS,
       DEPT_COLORS:DEPT_COLORS,notulenData:notulenData,
+      notulenExtraCols:NOTULEN_EXTRA_COLS,
       savedAt:new Date().toISOString(),
       savedBy:window._currentUser?window._currentUser.email:'notulen-save'
     });
@@ -3958,7 +3967,7 @@ function updateNotulenStats(){
   // ============================================================
 // NOTULEN KOLOM CUSTOM
 // ============================================================
-let NOTULEN_EXTRA_COLS = []; // [{key, label}]
+let NOTULEN_EXTRA_COLS = window.notulenExtraCols || [];
 
 function applyNotulenAdminUI(){
   const isAdmin = window._isAdmin;
