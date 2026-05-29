@@ -4967,7 +4967,7 @@ window.sopFullData = window.sopFullData || [];
 sopFullData = window.sopFullData;
 
 function loadSOPFullData(){
-  // Load dari localStorage dulu sebagai tampilan sementara
+  // Load localStorage dulu sebagai cache sementara
   try{
     const r = localStorage.getItem('sop_full_v1');
     if(r){
@@ -4976,10 +4976,21 @@ function loadSOPFullData(){
     }
   }catch(e){ window.sopFullData=[]; sopFullData=[]; }
 
-  // Firebase realtime sync
-setTimeout(function(){
-  try{
-    if(typeof window._fbSopRef === 'function' && typeof window._fbOnSnap === 'function'){
+  // Tunggu Firebase siap lalu sync
+  var maxTry = 10;
+  var tryCount = 0;
+  var interval = setInterval(function(){
+    tryCount++;
+    if(tryCount > maxTry){ clearInterval(interval); return; }
+
+    if(typeof window._fbOnSnap !== 'function' ||
+       typeof window._fbSopRef !== 'function'){
+      return; // Belum siap, coba lagi
+    }
+
+    clearInterval(interval); // Firebase sudah siap
+
+    try{
       window._fbOnSnap(window._fbSopRef(), function(snap){
         if(snap.exists()){
           const d = snap.data();
@@ -4992,11 +5003,10 @@ setTimeout(function(){
           }
         }
       });
+    }catch(e){
+      console.warn('SOP Firebase sync error:', e);
     }
-  }catch(e){
-    console.warn('SOP Firebase sync error:', e);
-  }
-}, 2000);
+  }, 500); // Cek setiap 500ms
 }
 
 function goToSOP(){
