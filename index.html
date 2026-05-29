@@ -5016,9 +5016,37 @@ function goToSOP(){
   const pg = document.getElementById('page-sop-full');
   pg.style.display='flex';
   document.body.classList.remove('home-active');
+
   // Tampilkan tombol tambah jika admin
-  document.getElementById('btn-tambah-sop').style.display = window._isAdmin ? 'inline-block' : 'none';
+  const btnT = document.getElementById('btn-tambah-sop');
+  if(btnT) btnT.style.display = window._isAdmin ? 'inline-block' : 'none';
+
+  // Render dulu dengan data yang ada
   renderSOPGrid();
+
+  // Load ulang dari Firebase setiap kali halaman SOP dibuka
+  var maxTry = 20;
+  var tryCount = 0;
+  var interval = setInterval(function(){
+    tryCount++;
+    if(tryCount > maxTry){ clearInterval(interval); return; }
+    if(typeof window._fbOnSnap !== 'function' ||
+       typeof window._fbSopRef !== 'function') return;
+    clearInterval(interval);
+    try{
+      window._fbOnSnap(window._fbSopRef(), function(snap){
+        if(snap.exists()){
+          const d = snap.data();
+          if(d.sopFullData && Array.isArray(d.sopFullData)){
+            window.sopFullData = d.sopFullData;
+            sopFullData = window.sopFullData;
+            try{ localStorage.setItem('sop_full_v1', JSON.stringify(sopFullData)); }catch(e){}
+            renderSOPGrid();
+          }
+        }
+      });
+    }catch(e){ console.warn('SOP load error:',e); }
+  }, 300);
 }
 
 function closeSOPPage(){
