@@ -4662,8 +4662,16 @@ async function saveSOPToFirebase(){
   if(!window._isAdmin) return;
   try{
     window.sopFullData = sopFullData;
-    await window._fbSetDoc(window._fbSopRef(),{
-      sopFullData: sopFullData,
+    const sopRef = window._fbSopRef();
+    await window._fbSetDoc(sopRef,{
+      sopFullData: sopFullData.map(function(item){
+        // Pastikan tidak ada nilai undefined
+        var clean = {};
+        Object.keys(item).forEach(function(k){
+          clean[k] = (item[k] === undefined || item[k] === null) ? '' : item[k];
+        });
+        return clean;
+      }),
       savedAt: new Date().toISOString(),
       savedBy: window._currentUser ? window._currentUser.email : 'sop-save'
     });
