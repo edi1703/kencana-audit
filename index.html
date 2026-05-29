@@ -4598,7 +4598,7 @@ function renderNotulenList(){
   });
 }
   
-loadFlowData();
+if(typeof loadFlowData === 'function') loadFlowData();
   
 // ============================================================
 // SOP FULLSCREEN — DATA & LOGIC
@@ -4841,6 +4841,8 @@ function previewSOPFull(id){
 
 // ---- RENDER GRID ----
 function renderSOPGrid(){
+  window.sopFullData = window.sopFullData || [];
+  sopFullData = window.sopFullData;
   const search = (document.getElementById('sop-full-search')||{}).value||'';
   const divisiF = (document.getElementById('sop-full-divisi')||{}).value||'ALL';
   const tipeF   = (document.getElementById('sop-full-tipe')||{}).value||'ALL';
