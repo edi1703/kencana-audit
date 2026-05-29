@@ -4618,24 +4618,26 @@ function loadSOPFullData(){
   }catch(e){ window.sopFullData=[]; sopFullData=[]; }
 
   // Firebase realtime sync
+setTimeout(function(){
   try{
-    window._fbOnSnap(window._fbSopRef(), function(snap){
-      if(snap.exists()){
-        const d = snap.data();
-        if(d.sopFullData && Array.isArray(d.sopFullData)){
-          window.sopFullData = d.sopFullData;
-          sopFullData = window.sopFullData;
-          // Simpan ke localStorage sebagai cache
-          try{ localStorage.setItem('sop_full_v1', JSON.stringify(sopFullData)); }catch(e){}
-          // Re-render jika halaman SOP sedang aktif
-          const pg = document.getElementById('page-sop-full');
-          if(pg && pg.style.display !== 'none') renderSOPGrid();
+    if(typeof window._fbSopRef === 'function' && typeof window._fbOnSnap === 'function'){
+      window._fbOnSnap(window._fbSopRef(), function(snap){
+        if(snap.exists()){
+          const d = snap.data();
+          if(d.sopFullData && Array.isArray(d.sopFullData)){
+            window.sopFullData = d.sopFullData;
+            sopFullData = window.sopFullData;
+            try{ localStorage.setItem('sop_full_v1', JSON.stringify(sopFullData)); }catch(e){}
+            const pg = document.getElementById('page-sop-full');
+            if(pg && pg.style.display !== 'none') renderSOPGrid();
+          }
         }
-      }
-    });
+      });
+    }
   }catch(e){
     console.warn('SOP Firebase sync error:', e);
   }
+}, 2000);
 }
 
 function goToSOP(){
