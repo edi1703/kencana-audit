@@ -4608,23 +4608,33 @@ window.sopFullData = window.sopFullData || [];
 sopFullData = window.sopFullData;
 
 function loadSOPFullData(){
+  // Load dari localStorage dulu sebagai tampilan sementara
   try{
     const r = localStorage.getItem('sop_full_v1');
-    if(r) sopFullData = JSON.parse(r);
-  }catch(e){ sopFullData=[]; }
-  // Firebase akan override via onSnapshot
-  if(window._fbDb){
-    const { doc, onSnapshot } = window._fbOnSnap
-      ? { doc: (db,col,id)=>window._fbDocRef(), onSnapshot: window._fbOnSnap }
-      : { doc: null, onSnapshot: null };
-    try{
-      window._fbOnSnap(window._fbSopRef(), snap=>{
-        if(snap.exists() && snap.data().sopFullData){
-          sopFullData = snap.data().sopFullData;
-          if(document.getElementById('page-sop-full').style.display!=='none') renderSOPGrid();
+    if(r){
+      window.sopFullData = JSON.parse(r);
+      sopFullData = window.sopFullData;
+    }
+  }catch(e){ window.sopFullData=[]; sopFullData=[]; }
+
+  // Firebase realtime sync
+  try{
+    window._fbOnSnap(window._fbSopRef(), function(snap){
+      if(snap.exists()){
+        const d = snap.data();
+        if(d.sopFullData && Array.isArray(d.sopFullData)){
+          window.sopFullData = d.sopFullData;
+          sopFullData = window.sopFullData;
+          // Simpan ke localStorage sebagai cache
+          try{ localStorage.setItem('sop_full_v1', JSON.stringify(sopFullData)); }catch(e){}
+          // Re-render jika halaman SOP sedang aktif
+          const pg = document.getElementById('page-sop-full');
+          if(pg && pg.style.display !== 'none') renderSOPGrid();
         }
-      });
-    }catch(e){}
+      }
+    });
+  }catch(e){
+    console.warn('SOP Firebase sync error:', e);
   }
 }
 
@@ -4651,13 +4661,18 @@ function closeSOPPage(){
 async function saveSOPToFirebase(){
   if(!window._isAdmin) return;
   try{
+    window.sopFullData = sopFullData;
     await window._fbSetDoc(window._fbSopRef(),{
       sopFullData: sopFullData,
       savedAt: new Date().toISOString(),
       savedBy: window._currentUser ? window._currentUser.email : 'sop-save'
-    },{merge:true});
-    localStorage.setItem('sop_full_v1', JSON.stringify(sopFullData));
-  }catch(e){ showNotif('❌ Gagal simpan SOP: '+e.message,'error'); }
+    });
+    try{ localStorage.setItem('sop_full_v1', JSON.stringify(sopFullData)); }catch(e){}
+    showNotif('✅ SOP tersimpan ke Firebase!','success');
+  }catch(e){
+    showNotif('❌ Gagal simpan SOP: '+e.message,'error');
+    console.error('saveSOPToFirebase error:',e);
+  }
 }
 
 // ---- MODAL CRUD ----
