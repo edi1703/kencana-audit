@@ -102,9 +102,17 @@
         }
       }
       const sopSnap = await getDoc(doc(db,"dashboard","sop"));
-      if(sopSnap.exists() && sopSnap.data().sopData){
-        window.sopData = sopSnap.data().sopData;
-      }
+if(sopSnap.exists()){
+  const sopD = sopSnap.data();
+  if(sopD.sopData){
+    window.sopData = sopD.sopData;
+  }
+  if(sopD.sopFullData && Array.isArray(sopD.sopFullData)){
+    window.sopFullData = sopD.sopFullData;
+    sopFullData = window.sopFullData;
+    try{ localStorage.setItem('sop_full_v1', JSON.stringify(sopFullData)); }catch(e){}
+  }
+}
       hideLoadingOverlay();
       renderAll();
     }catch(e){
