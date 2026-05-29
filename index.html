@@ -4733,48 +4733,53 @@ function saveSOPCRUD(){
   const nama = document.getElementById('sop-crud-nama').value.trim();
   if(!nama){ showNotif('Nama dokumen wajib diisi!','error'); return; }
 
+  window.sopFullData = window.sopFullData || [];
+  sopFullData = window.sopFullData;
+
   const payload = {
-    nama,
-    noDok:     document.getElementById('sop-crud-nodok').value.trim(),
-    tipe:      document.getElementById('sop-crud-tipe').value,
-    divisi:    document.getElementById('sop-crud-divisi').value,
-    versi:     document.getElementById('sop-crud-versi').value.trim(),
-    tglTerbit: document.getElementById('sop-crud-tgl').value,
-    status:    document.getElementById('sop-crud-status').value,
-    pic:       document.getElementById('sop-crud-pic').value.trim(),
-    deskripsi: document.getElementById('sop-crud-desc').value.trim(),
+    id: _sopEditId || ('sop-'+Date.now()+'-'+Math.random().toString(36).slice(2,5)),
+    nama: nama,
+    noDok:     document.getElementById('sop-crud-nodok').value.trim() || '',
+    tipe:      document.getElementById('sop-crud-tipe').value || 'SOP',
+    divisi:    document.getElementById('sop-crud-divisi').value || 'Marketing',
+    versi:     document.getElementById('sop-crud-versi').value.trim() || '',
+    tglTerbit: document.getElementById('sop-crud-tgl').value || '',
+    status:    document.getElementById('sop-crud-status').value || 'Aktif',
+    pic:       document.getElementById('sop-crud-pic').value.trim() || '',
+    deskripsi: document.getElementById('sop-crud-desc').value.trim() || '',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    fileName:  '',
+    fileType:  '',
+    fileDataUrl: ''
   };
 
-  if(_sopFileBuffer){
+  // Tambahkan file jika ada
+  if(_sopFileBuffer && _sopFileBuffer.dataUrl){
     payload.fileDataUrl = _sopFileBuffer.dataUrl;
-    payload.fileName    = _sopFileBuffer.name;
-    payload.fileType    = _sopFileBuffer.type;
+    payload.fileName    = _sopFileBuffer.name || '';
+    payload.fileType    = _sopFileBuffer.type || '';
   }
 
   if(_sopEditId){
     const idx = sopFullData.findIndex(x=>x.id===_sopEditId);
     if(idx>=0){
-      // Pertahankan file lama jika tidak ada upload baru
+      // Pertahankan file lama jika tidak upload baru
       if(!_sopFileBuffer){
-        payload.fileDataUrl = sopFullData[idx].fileDataUrl;
-        payload.fileName    = sopFullData[idx].fileName;
-        payload.fileType    = sopFullData[idx].fileType;
+        payload.fileDataUrl = sopFullData[idx].fileDataUrl || '';
+        payload.fileName    = sopFullData[idx].fileName || '';
+        payload.fileType    = sopFullData[idx].fileType || '';
       }
-      payload.id = _sopEditId;
-      payload.createdAt = sopFullData[idx].createdAt;
-      payload.updatedAt = new Date().toISOString();
+      payload.createdAt = sopFullData[idx].createdAt || new Date().toISOString();
       sopFullData[idx] = payload;
       showNotif('✅ Dokumen berhasil diperbarui!','success');
     }
   } else {
-    payload.id = 'sop-'+Date.now()+'-'+Math.random().toString(36).slice(2,5);
-    payload.createdAt = new Date().toISOString();
-    window.sopFullData = window.sopFullData || [];
-sopFullData = window.sopFullData;
-sopFullData.push(payload);
+    sopFullData.push(payload);
     showNotif('✅ Dokumen berhasil ditambahkan!','success');
   }
 
+  window.sopFullData = sopFullData;
   saveSOPToFirebase();
   closeModalSOP();
   renderSOPGrid();
