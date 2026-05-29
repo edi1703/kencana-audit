@@ -3959,15 +3959,13 @@ document.body.classList.add('home-active');
     </div>
 
     <div style="margin-bottom:20px;">
-      <label style="font-size:11px;font-weight:700;color:#64748B;display:block;margin-bottom:4px;">Upload File Dokumen (PDF/DOCX/XLSX/Gambar — maks 5MB)</label>
-      <div id="sop-crud-dropzone" onclick="document.getElementById('sop-crud-file').click()"
-        style="border:2px dashed #FCD34D;border-radius:10px;background:#FFFBEB;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;">
-        <div style="font-size:28px;margin-bottom:6px;">📎</div>
-        <div id="sop-crud-file-label" style="font-size:13px;color:#92400E;font-weight:600;">Klik untuk pilih file</div>
-        <div style="font-size:11px;color:#A16207;margin-top:3px;">atau seret file ke sini</div>
-      </div>
-      <input id="sop-crud-file" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" style="display:none" onchange="handleSOPFileSelect(event)">
-    </div>
+  <label style="font-size:11px;font-weight:700;color:#64748B;display:block;margin-bottom:4px;">🔗 Link File Google Drive</label>
+  <input id="sop-crud-link" type="text" placeholder="Paste link Google Drive di sini... (contoh: https://drive.google.com/file/d/...)"
+    style="width:100%;border:2px solid #FCD34D;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit;box-sizing:border-box;">
+  <div style="font-size:11px;color:#92400E;margin-top:5px;background:#FFFBEB;border-radius:6px;padding:6px 10px;">
+    💡 Cara mendapatkan link: Klik kanan file di Google Drive → <strong>Share</strong> → <strong>Copy link</strong>
+  </div>
+</div>
 
     <div style="display:flex;gap:10px;justify-content:flex-end;">
       <button onclick="closeModalSOP()" style="background:#F1F5F9;color:#374151;border:none;border-radius:8px;padding:10px 20px;cursor:pointer;font-weight:600;font-size:13px;">Batal</button>
@@ -4708,7 +4706,7 @@ function openModalSOP(editId){
     document.getElementById('sop-crud-status').value = s.status||'Aktif';
     document.getElementById('sop-crud-pic').value = s.pic||'';
     document.getElementById('sop-crud-desc').value = s.deskripsi||'';
-    lbl.textContent = s.fileName ? '📎 '+s.fileName+' (sudah ada — upload baru untuk ganti)' : 'Klik untuk pilih file';
+    document.getElementById('sop-crud-link').value = s.fileLink || '';
   } else {
     title.textContent = '➕ Tambah Dokumen SOP';
     ['sop-crud-nama','sop-crud-nodok','sop-crud-versi','sop-crud-pic','sop-crud-desc'].forEach(id=>{ document.getElementById(id).value=''; });
@@ -4716,7 +4714,7 @@ function openModalSOP(editId){
     document.getElementById('sop-crud-divisi').value='Marketing';
     document.getElementById('sop-crud-status').value='Aktif';
     document.getElementById('sop-crud-tgl').value='';
-    lbl.textContent='Klik untuk pilih file';
+    document.getElementById('sop-crud-link').value='';
   }
   document.getElementById('modal-sop-crud').style.display='flex';
 }
@@ -4760,8 +4758,9 @@ function saveSOPCRUD(){
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     fileName:  '',
-    fileType:  '',
-    fileDataUrl: ''
+fileType:  '',
+fileDataUrl: '',
+fileLink: document.getElementById('sop-crud-link').value.trim() || ''
   };
 
   // Tambahkan file jika ada
