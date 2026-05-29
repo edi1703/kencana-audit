@@ -4756,9 +4756,17 @@ function saveSOPCRUD(){
 
   // Tambahkan file jika ada
   if(_sopFileBuffer && _sopFileBuffer.dataUrl){
-    payload.fileDataUrl = _sopFileBuffer.dataUrl;
-    payload.fileName    = _sopFileBuffer.name || '';
-    payload.fileType    = _sopFileBuffer.type || '';
+    const sizeKB = Math.round(_sopFileBuffer.dataUrl.length * 0.75 / 1024);
+    if(sizeKB > 800){
+      showNotif('⚠️ File terlalu besar ('+sizeKB+'KB). Maks ~800KB. Data tersimpan tanpa file.','error');
+      payload.fileDataUrl = '';
+      payload.fileName    = _sopFileBuffer.name || '';
+      payload.fileType    = _sopFileBuffer.type || '';
+    } else {
+      payload.fileDataUrl = _sopFileBuffer.dataUrl;
+      payload.fileName    = _sopFileBuffer.name || '';
+      payload.fileType    = _sopFileBuffer.type || '';
+    }
   }
 
   if(_sopEditId){
