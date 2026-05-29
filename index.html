@@ -4956,10 +4956,12 @@ var list = sopFullData.filter(s=>{
 
         <!-- Tombol aksi -->
         <div style="display:flex;gap:8px;margin-top:auto;padding-top:8px;flex-wrap:wrap;">
-          ${s.fileDataUrl
-            ? `<button onclick="previewSOPFull('${s.id}')" style="background:#EFF6FF;color:#2563EB;border:1.5px solid #BFDBFE;border-radius:7px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;flex:1;">👁️ Preview</button>`
-            : `<span style="font-size:11px;color:#CBD5E1;padding:6px 4px;flex:1;">Tidak ada file</span>`
-          }
+          ${s.fileLink
+  ? `<button onclick="window.open('${s.fileLink}','_blank')" style="background:#EFF6FF;color:#2563EB;border:1.5px solid #BFDBFE;border-radius:7px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;flex:1;">🔗 Buka Dokumen</button>`
+  : s.fileDataUrl
+  ? `<button onclick="previewSOPFull('${s.id}')" style="background:#EFF6FF;color:#2563EB;border:1.5px solid #BFDBFE;border-radius:7px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;flex:1;">👁️ Preview</button>`
+  : `<span style="font-size:11px;color:#CBD5E1;padding:6px 4px;flex:1;">Tidak ada file</span>`
+}
           ${window._isAdmin
             ? `<button onclick="openModalSOP('${s.id}')" style="background:#FFF7ED;color:#C2410C;border:1.5px solid #FED7AA;border-radius:7px;padding:6px 10px;cursor:pointer;font-size:12px;font-weight:700;">✏️</button>
                <button onclick="deleteSOPFull('${s.id}')" style="background:#FEF2F2;color:#991B1B;border:1.5px solid #FECACA;border-radius:7px;padding:6px 10px;cursor:pointer;font-size:12px;font-weight:700;">🗑️</button>`
