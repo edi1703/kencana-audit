@@ -5017,35 +5017,42 @@ function goToSOP(){
   pg.style.display='flex';
   document.body.classList.remove('home-active');
 
-  // Tampilkan tombol tambah jika admin
   const btnT = document.getElementById('btn-tambah-sop');
   if(btnT) btnT.style.display = window._isAdmin ? 'inline-block' : 'none';
 
-  // Render dulu dengan data yang ada
+  // Render dulu dengan data lokal
+  window.sopFullData = window.sopFullData || [];
+  sopFullData = window.sopFullData;
   renderSOPGrid();
 
-  // Load ulang dari Firebase setiap kali halaman SOP dibuka
+  // Fetch langsung dari Firebase pakai getDoc (tidak butuh login)
   var maxTry = 20;
   var tryCount = 0;
-  var interval = setInterval(function(){
+  var timer = setInterval(function(){
     tryCount++;
-    if(tryCount > maxTry){ clearInterval(interval); return; }
-    if(typeof window._fbOnSnap !== 'function' ||
+    if(tryCount > maxTry){ clearInterval(timer); return; }
+
+    // Tunggu sampai _fbGetDoc dan _fbSopRef siap
+    if(typeof window._fbGetDoc !== 'function' ||
        typeof window._fbSopRef !== 'function') return;
-    clearInterval(interval);
-    try{
-      window._fbOnSnap(window._fbSopRef(), function(snap){
-        if(snap.exists()){
-          const d = snap.data();
-          if(d.sopFullData && Array.isArray(d.sopFullData)){
-            window.sopFullData = d.sopFullData;
-            sopFullData = window.sopFullData;
-            try{ localStorage.setItem('sop_full_v1', JSON.stringify(sopFullData)); }catch(e){}
-            renderSOPGrid();
-          }
+
+    clearInterval(timer);
+
+    // Pakai getDoc (one-time read, tidak butuh auth)
+    window._fbGetDoc(window._fbSopRef()).then(function(snap){
+      if(snap.exists()){
+        const d = snap.data();
+        if(d.sopFullData && Array.isArray(d.sopFullData) && d.sopFullData.length > 0){
+          window.sopFullData = d.sopFullData;
+          sopFullData = window.sopFullData;
+          try{ localStorage.setItem('sop_full_v1', JSON.stringify(sopFullData)); }catch(e){}
+          renderSOPGrid();
         }
-      });
-    }catch(e){ console.warn('SOP load error:',e); }
+      }
+    }).catch(function(e){
+      console.warn('SOP getDoc error:', e);
+    });
+
   }, 300);
 }
 
