@@ -4596,7 +4596,368 @@ function renderNotulenList(){
   });
 }
   
-if(typeof loadFlowData === 'function') loadFlowData();
+// ============================================================
+// FLOW BISNIS — DATA & LOGIC
+// ============================================================
+var flowData = window.flowData || [];
+
+function loadFlowData(){
+  // Load dari localStorage dulu
+  try{
+    const r = localStorage.getItem('flow_data_v1');
+    if(r){ window.flowData = JSON.parse(r); flowData = window.flowData; }
+  }catch(e){ window.flowData=[]; flowData=[]; }
+
+  // Firebase realtime sync
+  setTimeout(function(){
+    try{
+      if(typeof window._fbOnSnap==='function' && typeof window._fbDb!=='undefined'){
+        const { doc, onSnapshot } = { 
+          doc: function(db,col,id){ return window._fbDocRef ? window._fbDocRef() : null; },
+          onSnapshot: window._fbOnSnap 
+        };
+        // Gunakan collection khusus flow
+        import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js")
+          .then(function(fb){
+            const flowRef = fb.doc(window._fbDb, "dashboard", "flowBisnis");
+            window._fbOnSnap(flowRef, function(snap){
+              if(snap.exists() && snap.data().flowData){
+                window.flowData = snap.data().flowData;
+                flowData = window.flowData;
+                try{ localStorage.setItem('flow_data_v1', JSON.stringify(flowData)); }catch(e){}
+                const pg = document.getElementById('page-flow-bisnis');
+                if(pg && pg.style.display !== 'none') renderFlowGrid();
+              }
+            });
+          });
+      }
+    }catch(e){ console.warn('Flow Firebase sync error:', e); }
+  }, 2500);
+}
+
+async function saveFlowToFirebase(){
+  if(!window._isAdmin) return;
+  try{
+    const fb = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const flowRef = fb.doc(window._fbDb, "dashboard", "flowBisnis");
+    await fb.setDoc(flowRef, {
+      flowData: flowData.map(function(item){
+        var clean = {};
+        Object.keys(item).forEach(function(k){
+          clean[k] = (item[k]===undefined||item[k]===null) ? '' : item[k];
+        });
+        return clean;
+      }),
+      savedAt: new Date().toISOString(),
+      savedBy: window._currentUser ? window._currentUser.email : 'flow-save'
+    });
+    try{ localStorage.setItem('flow_data_v1', JSON.stringify(flowData)); }catch(e){}
+    showNotif('✅ Flow tersimpan!','success');
+  }catch(e){
+    showNotif('❌ Gagal simpan: '+e.message,'error');
+    console.error('saveFlowToFirebase error:',e);
+  }
+}
+
+// ---- MODAL TAMBAH FLOW ----
+function openAddFlowModal(){
+  if(!window._isAdmin){ showNotif('⛔ Hanya admin.','error'); return; }
+  const existing = document.getElementById('modal-add-flow');
+  if(existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'modal-add-flow';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10500;display:flex;align-items:center;justify-content:center;';
+
+  overlay.innerHTML = `
+    <div style="background:#1a2236;border-radius:16px;padding:28px 32px;width:min(560px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:1px solid #1e2d45;">
+      <h3 style="font-size:16px;font-weight:800;color:#22D3EE;margin-bottom:20px;">➕ Tambah Flow Bisnis</h3>
+      
+      <div style="margin-bottom:14px;">
+        <label style="font-size:11px;font-weight:700;color:#94A3B8;display:block;margin-bottom:5px;">Nama Flow *</label>
+        <input id="flow-add-nama" type="text" placeholder="Contoh: Alur Produksi Sublim, Flow Order Marketing..."
+          style="width:100%;border:2px solid #1e2d45;border-radius:8px;padding:8px 12px;font-size:13px;outline:none;font-family:inherit;background:#0D1117;color:#e2e8f0;box-sizing:border-box;">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#94A3B8;display:block;margin-bottom:5px;">Kategori *</label>
+          <select id="flow-add-cat" style="width:100%;border:2px solid #1e2d45;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;background:#0D1117;color:#e2e8f0;outline:none;">
+            <option value="Produksi">🏭 Produksi</option>
+            <option value="Marketing">📊 Marketing</option>
+            <option value="Gudang">📦 Gudang</option>
+            <option value="Finance">💰 Finance</option>
+            <option value="HRGA">👥 HRGA</option>
+            <option value="IT">💻 IT</option>
+            <option value="Lainnya">📋 Lainnya</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#94A3B8;display:block;margin-bottom:5px;">Versi</label>
+          <input id="flow-add-versi" type="text" placeholder="Contoh: v1.0"
+            style="width:100%;border:2px solid #1e2d45;border-radius:8px;padding:8px 12px;font-size:13px;outline:none;font-family:inherit;background:#0D1117;color:#e2e8f0;box-sizing:border-box;">
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="font-size:11px;font-weight:700;color:#94A3B8;display:block;margin-bottom:5px;">Deskripsi Singkat</label>
+        <textarea id="flow-add-desc" rows="2" placeholder="Jelaskan isi diagram flow ini..."
+          style="width:100%;border:2px solid #1e2d45;border-radius:8px;padding:8px 12px;font-size:13px;outline:none;font-family:inherit;background:#0D1117;color:#e2e8f0;resize:vertical;box-sizing:border-box;"></textarea>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="font-size:11px;font-weight:700;color:#94A3B8;display:block;margin-bottom:5px;">🔗 Link Google Drive (opsional)</label>
+        <input id="flow-add-link" type="text" placeholder="https://drive.google.com/file/d/..."
+          style="width:100%;border:2px solid #1e2d45;border-radius:8px;padding:8px 12px;font-size:13px;outline:none;font-family:inherit;background:#0D1117;color:#e2e8f0;box-sizing:border-box;">
+        <div style="font-size:11px;color:#475569;margin-top:4px;">Untuk file besar — share via Google Drive</div>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <label style="font-size:11px;font-weight:700;color:#94A3B8;display:block;margin-bottom:5px;">📂 Upload File HTML (maks 2MB)</label>
+        <div onclick="document.getElementById('flow-add-file').click()"
+          style="border:2px dashed #0891B2;border-radius:10px;background:#0C1826;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;"
+          onmouseenter="this.style.borderColor='#22D3EE'" onmouseleave="this.style.borderColor='#0891B2'">
+          <div style="font-size:28px;margin-bottom:6px;">📂</div>
+          <div id="flow-add-file-label" style="font-size:13px;color:#0891B2;font-weight:600;">Klik untuk pilih file HTML</div>
+          <div style="font-size:11px;color:#475569;margin-top:3px;">Format: .html atau .htm</div>
+        </div>
+        <input id="flow-add-file" type="file" accept=".html,.htm" style="display:none" onchange="handleFlowFileSelect(event)">
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button onclick="document.getElementById('modal-add-flow').remove()" 
+          style="background:#1e2d45;color:#94A3B8;border:none;border-radius:8px;padding:10px 20px;cursor:pointer;font-weight:600;font-size:13px;">Batal</button>
+        <button onclick="saveNewFlow()"
+          style="background:linear-gradient(135deg,#0891B2,#0E7490);color:#fff;border:none;border-radius:8px;padding:10px 22px;cursor:pointer;font-weight:800;font-size:13px;">💾 Simpan Flow</button>
+      </div>
+    </div>`;
+
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+  document.getElementById('flow-add-nama').focus();
+}
+
+var _flowFileBuffer = null;
+
+function handleFlowFileSelect(ev){
+  const file = ev.target.files[0];
+  if(!file) return;
+  if(file.size > 2*1024*1024){ showNotif('File terlalu besar! Maks 2MB.','error'); return; }
+  const reader = new FileReader();
+  reader.onload = function(re){
+    _flowFileBuffer = { content: re.result, name: file.name };
+    document.getElementById('flow-add-file-label').textContent = '✅ '+file.name;
+  };
+  reader.readAsText(file);
+}
+
+function saveNewFlow(){
+  if(!window._isAdmin){ showNotif('⛔ Hanya admin.','error'); return; }
+  const nama = (document.getElementById('flow-add-nama').value||'').trim();
+  if(!nama){ showNotif('Nama flow wajib diisi!','error'); return; }
+
+  const payload = {
+    id: 'flow-'+Date.now()+'-'+Math.random().toString(36).slice(2,5),
+    nama: nama,
+    kategori: document.getElementById('flow-add-cat').value || 'Lainnya',
+    versi:    document.getElementById('flow-add-versi').value.trim() || '',
+    deskripsi:document.getElementById('flow-add-desc').value.trim() || '',
+    fileLink: document.getElementById('flow-add-link').value.trim() || '',
+    fileContent: _flowFileBuffer ? _flowFileBuffer.content : '',
+    fileName:    _flowFileBuffer ? _flowFileBuffer.name : '',
+    createdAt: new Date().toISOString()
+  };
+
+  window.flowData = window.flowData || [];
+  flowData = window.flowData;
+  flowData.push(payload);
+  window.flowData = flowData;
+
+  _flowFileBuffer = null;
+  document.getElementById('modal-add-flow').remove();
+  saveFlowToFirebase();
+  renderFlowGrid();
+  showNotif('✅ Flow berhasil ditambahkan!','success');
+}
+
+function deleteFlow(id){
+  if(!window._isAdmin){ showNotif('⛔ Hanya admin.','error'); return; }
+  if(!confirm('Hapus flow ini?')) return;
+  window.flowData = window.flowData || [];
+  flowData = window.flowData;
+  flowData = flowData.filter(f=>f.id!==id);
+  window.flowData = flowData;
+  saveFlowToFirebase();
+  renderFlowGrid();
+  showNotif('Flow dihapus.','info');
+}
+
+function openFlowViewer(id){
+  const f = (window.flowData||[]).find(x=>x.id===id);
+  if(!f){ showNotif('Flow tidak ditemukan.','error'); return; }
+
+  const modal = document.getElementById('modal-flow-viewer');
+  const titleEl = document.getElementById('flow-viewer-title');
+  const catEl = document.getElementById('flow-viewer-cat');
+  const iframe = document.getElementById('flow-iframe');
+
+  if(titleEl) titleEl.textContent = f.nama;
+  if(catEl) catEl.textContent = f.kategori||'';
+
+  // Simpan link untuk tombol "Tab Baru"
+  window._currentFlowLink = f.fileLink||'';
+  window._currentFlowContent = f.fileContent||'';
+  window._currentFlowName = f.fileName||'';
+
+  if(iframe){
+    iframe.src = '';
+    if(f.fileContent){
+      // Render HTML content langsung di iframe
+      const blob = new Blob([f.fileContent], {type:'text/html'});
+      const url = URL.createObjectURL(blob);
+      iframe.src = url;
+    } else if(f.fileLink){
+      // Buka via Google Drive embed
+      let embedUrl = f.fileLink;
+      if(embedUrl.includes('drive.google.com/file/d/')){
+        const match = embedUrl.match(/\/d\/([^\/]+)/);
+        if(match) embedUrl = 'https://drive.google.com/file/d/'+match[1]+'/preview';
+      }
+      iframe.src = embedUrl;
+    } else {
+      iframe.srcdoc = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#64748B;font-size:16px;font-family:sans-serif;">Tidak ada file untuk ditampilkan</div>';
+    }
+  }
+
+  if(modal) modal.style.display='flex';
+}
+
+function closeFlowViewer(){
+  const modal = document.getElementById('modal-flow-viewer');
+  const iframe = document.getElementById('flow-iframe');
+  if(iframe) iframe.src='';
+  if(modal) modal.style.display='none';
+}
+
+function openFlowNewTab(){
+  if(window._currentFlowContent){
+    const blob = new Blob([window._currentFlowContent], {type:'text/html'});
+    window.open(URL.createObjectURL(blob), '_blank');
+  } else if(window._currentFlowLink){
+    window.open(window._currentFlowLink, '_blank');
+  } else {
+    showNotif('Tidak ada file untuk dibuka.','info');
+  }
+}
+
+function handleFlowUpload(event){
+  // Legacy handler — arahkan ke modal baru
+  openAddFlowModal();
+}
+
+function renderFlowGrid(){
+  window.flowData = window.flowData || [];
+  flowData = window.flowData;
+
+  const search = (document.getElementById('flow-search')||{}).value||'';
+  const catF = (document.getElementById('flow-cat-filter')||{}).value||'ALL';
+
+  // Update stat
+  const statEl = document.getElementById('flow-stat-total');
+  if(statEl) statEl.textContent = flowData.length;
+
+  // Tampilkan tombol upload jika admin
+  const uploadZone = document.getElementById('flow-upload-zone-wrap');
+  const btnUpload = document.getElementById('btn-upload-flow');
+  if(uploadZone) uploadZone.style.display = window._isAdmin ? 'block' : 'none';
+  if(btnUpload) btnUpload.style.display = window._isAdmin ? 'inline-flex' : 'none';
+
+  let list = flowData.filter(f=>{
+    const mCat = catF==='ALL' || f.kategori===catF;
+    const mSrch = !search || (f.nama||'').toLowerCase().includes(search.toLowerCase())
+                           || (f.deskripsi||'').toLowerCase().includes(search.toLowerCase());
+    return mCat && mSrch;
+  });
+
+  const lbl = document.getElementById('flow-count-label');
+  if(lbl) lbl.textContent = list.length+' flow ditemukan';
+
+  const grid = document.getElementById('flow-grid');
+  if(!grid) return;
+
+  if(list.length===0){
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:80px 20px;color:#475569;">
+      <div style="font-size:64px;margin-bottom:16px;">🔄</div>
+      <div style="font-size:18px;font-weight:700;color:#64748B;margin-bottom:8px;">Belum ada Flow Bisnis</div>
+      <div style="font-size:13px;">${window._isAdmin?'Klik "➕ Tambah Flow" untuk menambahkan diagram.':'Diagram belum tersedia.'}</div>
+    </div>`;
+    return;
+  }
+
+  const CAT_COLOR = {
+    'Produksi':'#0891B2','Marketing':'#7C3AED','Gudang':'#D97706',
+    'Finance':'#059669','HRGA':'#DC2626','IT':'#2563EB','Lainnya':'#64748B'
+  };
+
+  grid.innerHTML='';
+  list.forEach(f=>{
+    const cc = CAT_COLOR[f.kategori]||'#64748B';
+    const hasFile = f.fileContent || f.fileLink;
+
+    const card = document.createElement('div');
+    card.style.cssText = 'background:#111827;border-radius:14px;border:1px solid #1e2d45;overflow:hidden;transition:box-shadow 0.2s,transform 0.15s;display:flex;flex-direction:column;';
+    card.onmouseenter = ()=>{ card.style.boxShadow='0 8px 32px rgba(8,145,178,0.25)'; card.style.transform='translateY(-3px)'; };
+    card.onmouseleave = ()=>{ card.style.boxShadow=''; card.style.transform=''; };
+
+    card.innerHTML = `
+      <div style="height:4px;background:${cc};"></div>
+      <div style="padding:16px 18px;flex:1;display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <div style="width:44px;height:44px;border-radius:10px;background:${cc}22;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;border:1px solid ${cc}44;">🔄</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:800;color:#e2e8f0;line-height:1.3;word-break:break-word;">${f.nama}</div>
+            <div style="font-size:11px;color:#64748B;margin-top:3px;">${f.versi||''}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <span style="background:${cc}22;color:${cc};border-radius:5px;padding:2px 9px;font-size:11px;font-weight:700;">${f.kategori||'Lainnya'}</span>
+          ${f.fileContent?'<span style="background:#065F4622;color:#34D399;border-radius:5px;padding:2px 9px;font-size:11px;font-weight:700;">📂 HTML</span>':''}
+          ${f.fileLink?'<span style="background:#1D4ED822;color:#93C5FD;border-radius:5px;padding:2px 9px;font-size:11px;font-weight:700;">🔗 Drive</span>':''}
+        </div>
+        ${f.deskripsi?`<div style="font-size:12px;color:#475569;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${f.deskripsi}</div>`:''}
+        <div style="font-size:10px;color:#374151;">📅 ${new Date(f.createdAt).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}</div>
+        <div style="display:flex;gap:8px;margin-top:auto;padding-top:8px;flex-wrap:wrap;">
+          ${hasFile
+            ? `<button onclick="openFlowViewer('${f.id}')" style="background:#0891B222;color:#22D3EE;border:1.5px solid #0891B244;border-radius:7px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;flex:1;">👁️ Lihat Flow</button>`
+            : `<span style="font-size:11px;color:#374151;padding:6px 4px;flex:1;">Tidak ada file</span>`
+          }
+          ${window._isAdmin
+            ? `<button onclick="deleteFlow('${f.id}')" style="background:#DC262622;color:#F87171;border:1.5px solid #DC262644;border-radius:7px;padding:6px 10px;cursor:pointer;font-size:12px;font-weight:700;">🗑️</button>`
+            : ''
+          }
+        </div>
+      </div>`;
+
+    grid.appendChild(card);
+  });
+}
+
+// Tambahkan tombol Upload ke header Flow Bisnis
+(function injectFlowUploadBtn(){
+  setTimeout(function(){
+    const header = document.querySelector('#page-flow-bisnis > div:first-child > div:last-child');
+    if(header && !document.getElementById('btn-upload-flow-inject')){
+      const btn = document.createElement('button');
+      btn.id = 'btn-upload-flow-inject';
+      btn.textContent = '➕ Tambah Flow';
+      btn.style.cssText = 'background:#F59E0B;color:#fff;border:none;border-radius:10px;padding:8px 18px;cursor:pointer;font-weight:700;font-size:13px;display:none;';
+      btn.onclick = openAddFlowModal;
+      header.appendChild(btn);
+    }
+  }, 500);
+})();
+
+loadFlowData();
   
 // ============================================================
 // SOP FULLSCREEN — DATA & LOGIC
