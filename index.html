@@ -5028,40 +5028,40 @@ function goToSOP(){
   const btnT = document.getElementById('btn-tambah-sop');
   if(btnT) btnT.style.display = window._isAdmin ? 'inline-block' : 'none';
 
-  // Render dulu dengan data lokal
+  // Render dulu dengan data lokal jika ada
   window.sopFullData = window.sopFullData || [];
   sopFullData = window.sopFullData;
   renderSOPGrid();
 
-  // Fetch langsung dari Firebase pakai getDoc (tidak butuh login)
-  var maxTry = 20;
-  var tryCount = 0;
-  var timer = setInterval(function(){
-    tryCount++;
-    if(tryCount > maxTry){ clearInterval(timer); return; }
+  // Fetch langsung pakai Firebase REST API — tidak butuh SDK
+  const projectId = 'kencana-audit';
+  const url = 'https://firestore.googleapis.com/v1/projects/'+projectId+'/databases/(default)/documents/dashboard/sop';
 
-    // Tunggu sampai _fbGetDoc dan _fbSopRef siap
-    if(typeof window._fbGetDoc !== 'function' ||
-       typeof window._fbSopRef !== 'function') return;
-
-    clearInterval(timer);
-
-    // Pakai getDoc (one-time read, tidak butuh auth)
-    window._fbGetDoc(window._fbSopRef()).then(function(snap){
-      if(snap.exists()){
-        const d = snap.data();
-        if(d.sopFullData && Array.isArray(d.sopFullData) && d.sopFullData.length > 0){
-          window.sopFullData = d.sopFullData;
-          sopFullData = window.sopFullData;
-          try{ localStorage.setItem('sop_full_v1', JSON.stringify(sopFullData)); }catch(e){}
+  fetch(url)
+    .then(function(res){ return res.json(); })
+    .then(function(data){
+      if(data.fields && data.fields.sopFullData){
+        const arr = data.fields.sopFullData.arrayValue.values || [];
+        const parsed = arr.map(function(item){
+          const f = item.mapValue.fields;
+          var obj = {};
+          Object.keys(f).forEach(function(k){
+            const v = f[k];
+            obj[k] = v.stringValue || v.integerValue || v.booleanValue || '';
+          });
+          return obj;
+        });
+        if(parsed.length > 0){
+          window.sopFullData = parsed;
+          sopFullData = parsed;
+          try{ localStorage.setItem('sop_full_v1', JSON.stringify(parsed)); }catch(e){}
           renderSOPGrid();
         }
       }
-    }).catch(function(e){
-      console.warn('SOP getDoc error:', e);
+    })
+    .catch(function(e){
+      console.warn('SOP REST fetch error:', e);
     });
-
-  }, 300);
 }
 
 function closeSOPPage(){
