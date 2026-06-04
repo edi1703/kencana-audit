@@ -31,7 +31,6 @@
   --detail-desc-color: #c8d8ec;
 }
 
-/* ── LIGHT THEME ── */
 html.light {
   --bg: #f0f4f8;
   --surface: #ffffff;
@@ -57,613 +56,178 @@ html.light {
   --detail-desc-color: #334155;
 }
 
-/* ── THEME TOGGLE BUTTON ── */
 .theme-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 24px;
-  padding: 5px 14px 5px 8px;
-  cursor: pointer;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  color: var(--text);
-  transition: all .25s ease;
-  user-select: none;
-  white-space: nowrap;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 24px; padding: 5px 14px 5px 8px;
+  cursor: pointer; font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; color: var(--text); transition: all .25s ease;
+  user-select: none; white-space: nowrap;
 }
-
-.theme-toggle:hover {
-  border-color: var(--accent);
-  box-shadow: 0 0 12px rgba(0,120,255,.15);
-}
-
-.toggle-track {
-  width: 34px;
-  height: 18px;
-  border-radius: 9px;
-  background: var(--border);
-  position: relative;
-  transition: background .25s;
-  flex-shrink: 0;
-}
-
-html.light .toggle-track {
-  background: var(--accent);
-}
-
-.toggle-thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #ffffff;
-  transition: transform .25s cubic-bezier(.4,0,.2,1);
-  box-shadow: 0 1px 4px rgba(0,0,0,.3);
-}
-
-html.light .toggle-thumb {
-  transform: translateX(16px);
-}
-
-.toggle-icon {
-  font-size: 14px;
-  line-height: 1;
-}
+.theme-toggle:hover { border-color: var(--accent); box-shadow: 0 0 12px rgba(0,120,255,.15); }
+.toggle-track { width: 34px; height: 18px; border-radius: 9px; background: var(--border); position: relative; transition: background .25s; flex-shrink: 0; }
+html.light .toggle-track { background: var(--accent); }
+.toggle-thumb { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #ffffff; transition: transform .25s cubic-bezier(.4,0,.2,1); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+html.light .toggle-thumb { transform: translateX(16px); }
+.toggle-icon { font-size: 14px; line-height: 1; }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Sora', sans-serif; font-size: 13px; min-height: 100vh; overflow-x: hidden; }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Sora', sans-serif;
-  font-size: 13px;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* ── HEADER ── */
-header {
-  background: linear-gradient(135deg, var(--header-bg-start) 0%, var(--header-bg-end) 100%);
-  border-bottom: 1px solid var(--border);
-  padding: 14px 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.logo-icon {
-  width: 34px; height: 34px;
-  background: linear-gradient(135deg, var(--accent), var(--accent4));
-  border-radius: 8px;
-  display: grid;
-  place-items: center;
-  font-size: 16px;
-}
-
+header { background: linear-gradient(135deg, var(--header-bg-start) 0%, var(--header-bg-end) 100%); border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 34px; height: 34px; background: linear-gradient(135deg, var(--accent), var(--accent4)); border-radius: 8px; display: grid; place-items: center; font-size: 16px; }
 .logo-text { font-size: 15px; font-weight: 700; letter-spacing: -.3px; color: #e2e8f0; }
 .logo-sub { font-size: 10px; color: #94a3b8; font-family: 'IBM Plex Mono', monospace; margin-top: 1px; }
+.header-right { display: flex; align-items: center; gap: 16px; }
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+.export-btn {
+  display: flex; align-items: center; gap: 6px;
+  border: 1.5px solid var(--border); border-radius: 24px;
+  padding: 5px 14px; cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+  font-weight: 600; transition: all .22s ease;
+  user-select: none; white-space: nowrap; text-decoration: none;
+}
+.export-btn.pdf {
+  background: rgba(255,107,53,.1); color: #ff6b35;
+  border-color: rgba(255,107,53,.3);
+}
+.export-btn.pdf:hover {
+  background: rgba(255,107,53,.22); border-color: #ff6b35;
+  box-shadow: 0 0 12px rgba(255,107,53,.2);
+}
+.export-btn.xls {
+  background: rgba(52,211,153,.1); color: #34d399;
+  border-color: rgba(52,211,153,.3);
+}
+.export-btn.xls:hover {
+  background: rgba(52,211,153,.22); border-color: #34d399;
+  box-shadow: 0 0 12px rgba(52,211,153,.2);
 }
 
-.badge {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 4px 12px;
-  font-size: 11px;
-  font-family: 'IBM Plex Mono', monospace;
-  color: var(--accent);
+@media print {
+  header, .legend-bar { display: none !important; }
+  body { background: #fff !important; }
+  .flow-wrapper { padding: 6px !important; overflow: visible !important; }
+  .flow-canvas { min-width: unset !important; transform-origin: top left; }
+  * { color: #000 !important; border-color: #999 !important; background: #fff !important; box-shadow: none !important; }
+  .node-inner, .diamond-inner { border: 1px solid #999 !important; }
+  .node-num { color: #555 !important; }
+  .node-title { color: #000 !important; font-size: 9px !important; }
+  .node-tag { color: #666 !important; font-size: 7px !important; }
+  .phase-label { border: 1px solid #999 !important; font-size: 7px !important; }
+  .phase-line { background: #ccc !important; }
+  .arrow-line { background: #999 !important; }
+  .arrow-line::after { border-left-color: #999 !important; }
+  .diamond-text { color: #555 !important; font-size: 8px !important; }
+  .return-label { border: 1px solid #999 !important; font-size: 7px !important; }
+  #detail-modal-overlay { display: none !important; }
 }
+.badge { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--accent); }
 
-/* ── PHASE LEGEND ── */
-.legend-bar {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 10px 28px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
-}
+.legend-bar { display: flex; align-items: center; gap: 20px; padding: 10px 28px; background: var(--surface); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
 
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 11px;
-  color: var(--muted);
-}
+.flow-wrapper { padding: 20px 20px 12px; overflow-x: auto; background: var(--bg); }
+.flow-canvas { min-width: 1400px; position: relative; }
 
-.legend-dot {
-  width: 10px; height: 10px;
-  border-radius: 3px;
-  flex-shrink: 0;
-}
-
-/* ── FLOW CONTAINER ── */
-.flow-wrapper {
-  padding: 20px 20px 12px;
-  overflow-x: auto;
-  background: var(--bg);
-}
-
-.flow-canvas {
-  min-width: 1400px;
-  position: relative;
-}
-
-/* Phase label */
-.phase-label {
-  font-size: 9px;
-  font-family: 'IBM Plex Mono', monospace;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  padding: 3px 8px;
-  border-radius: 3px;
-  margin-bottom: 6px;
-  display: inline-block;
-}
-
+.phase-label { font-size: 9px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; margin-bottom: 6px; display: inline-block; }
 .phase-label.pre { background: rgba(0,200,255,.12); color: var(--accent); border: 1px solid rgba(0,200,255,.2); }
 .phase-label.sample { background: rgba(52,211,153,.1); color: var(--accent3); border: 1px solid rgba(52,211,153,.2); }
 .phase-label.mass { background: rgba(251,191,36,.1); color: var(--accent5); border: 1px solid rgba(251,191,36,.2); }
 .phase-label.delivery { background: rgba(255,107,53,.1); color: var(--accent2); border: 1px solid rgba(255,107,53,.2); }
+.phase-label.so { background: rgba(167,139,250,.12); color: var(--accent4); border: 1px solid rgba(167,139,250,.2); }
 
-/* Phase row */
-.phase-row {
-  margin-bottom: 8px;
-  position: relative;
-}
+.phase-row { margin-bottom: 8px; position: relative; }
+.phase-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding-left: 4px; }
+.phase-title { font-size: 9.5px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); }
+.phase-line { flex: 1; height: 1px; background: var(--border); }
 
-.phase-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  padding-left: 4px;
-}
+.nodes-row { display: flex; align-items: center; gap: 0; position: relative; }
 
-.phase-title {
-  font-size: 9.5px;
-  font-family: 'IBM Plex Mono', monospace;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.phase-line {
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-
-/* Nodes row */
-.nodes-row {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  position: relative;
-}
-
-/* Node */
-.node {
-  flex-shrink: 0;
-  cursor: pointer;
-  position: relative;
-  transition: transform .15s;
-}
-
+.node { flex-shrink: 0; cursor: pointer; position: relative; transition: transform .15s; }
 .node:hover { transform: translateY(-2px); }
+.node-inner { background: var(--node-bg); border: 1.5px solid var(--node-border); border-radius: 8px; padding: 9px 11px; width: 120px; min-height: 58px; display: flex; flex-direction: column; justify-content: center; transition: border-color .2s, background .2s, box-shadow .2s; position: relative; }
+.node.active .node-inner { border-color: var(--node-active-border); background: var(--node-active); box-shadow: 0 0 16px rgba(0,200,255,.18); }
 
-.node-inner {
-  background: var(--node-bg);
-  border: 1.5px solid var(--node-border);
-  border-radius: 8px;
-  padding: 9px 11px;
-  width: 120px;
-  min-height: 58px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  transition: border-color .2s, background .2s, box-shadow .2s;
-  position: relative;
-}
-
-.node.active .node-inner {
-  border-color: var(--node-active-border);
-  background: var(--node-active);
-  box-shadow: 0 0 16px rgba(0,200,255,.18);
-}
-
-/* Phase-specific node colors */
 .node.phase-sample .node-inner { border-color: #1a4a35; }
 .node.phase-sample.active .node-inner { border-color: var(--accent3); box-shadow: 0 0 16px rgba(52,211,153,.18); }
 .node.phase-mass .node-inner { border-color: #3a3010; }
 .node.phase-mass.active .node-inner { border-color: var(--accent5); box-shadow: 0 0 16px rgba(251,191,36,.15); }
 .node.phase-delivery .node-inner { border-color: #3a1e0a; }
 .node.phase-delivery.active .node-inner { border-color: var(--accent2); box-shadow: 0 0 16px rgba(255,107,53,.15); }
+.node.phase-so .node-inner { border-color: #2d1a6a; }
+.node.phase-so.active .node-inner { border-color: var(--accent4); box-shadow: 0 0 16px rgba(167,139,250,.18); }
 
 html.light .node.phase-sample .node-inner { border-color: #86efac; background: #f0fdf4; }
 html.light .node.phase-mass .node-inner { border-color: #fde68a; background: #fefce8; }
 html.light .node.phase-delivery .node-inner { border-color: #fdba74; background: #fff7ed; }
 html.light .diamond-inner { background: #fef9c3; border-color: #fde68a; }
 
-.node-num {
-  font-size: 9px;
-  font-family: 'IBM Plex Mono', monospace;
-  color: var(--muted);
-  margin-bottom: 3px;
-}
+.node-num { font-size: 9px; font-family: 'IBM Plex Mono', monospace; color: var(--muted); margin-bottom: 3px; }
+.node-title { font-size: 10.5px; font-weight: 600; line-height: 1.3; color: var(--text); }
+.node-tag { font-size: 8px; font-family: 'IBM Plex Mono', monospace; color: var(--muted); margin-top: 3px; }
 
-.node-title {
-  font-size: 10.5px;
-  font-weight: 600;
-  line-height: 1.3;
-  color: var(--text);
-}
-
-.node-tag {
-  font-size: 8px;
-  font-family: 'IBM Plex Mono', monospace;
-  color: var(--muted);
-  margin-top: 3px;
-}
-
-/* active indicator */
 .node.active .node-num { color: var(--accent); }
 .node.phase-sample.active .node-num { color: var(--accent3); }
 .node.phase-mass.active .node-num { color: var(--accent5); }
 .node.phase-delivery.active .node-num { color: var(--accent2); }
+.node.phase-so.active .node-num { color: var(--accent4); }
 
-/* Arrow connector */
-.arrow {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  width: 28px;
-  position: relative;
-}
+.arrow { flex-shrink: 0; display: flex; align-items: center; width: 28px; position: relative; }
+.arrow-line { width: 100%; height: 1.5px; background: var(--border); position: relative; }
+.arrow-line::after { content: ''; position: absolute; right: -1px; top: 50%; transform: translateY(-50%); border-left: 6px solid var(--border); border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
 
-.arrow-line {
-  width: 100%;
-  height: 1.5px;
-  background: var(--border);
-  position: relative;
-}
+.diamond-node { flex-shrink: 0; cursor: pointer; position: relative; width: 100px; height: 62px; display: flex; align-items: center; justify-content: center; }
+.diamond-inner { width: 80px; height: 80px; background: var(--node-bg); border: 1.5px solid #2d3a1a; transform: rotate(45deg); transition: border-color .2s, box-shadow .2s; }
+.diamond-node.active .diamond-inner { border-color: var(--accent5); box-shadow: 0 0 14px rgba(251,191,36,.2); }
+.diamond-text { position: absolute; text-align: center; font-size: 9px; font-weight: 600; line-height: 1.25; padding: 0 6px; pointer-events: none; color: #d4b44a; }
 
-.arrow-line::after {
-  content: '';
-  position: absolute;
-  right: -1px;
-  top: 50%;
-  transform: translateY(-50%);
-  border-left: 6px solid var(--border);
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
-}
+.diamond-node.pre-style .diamond-inner { border-color: #1a3a5a; }
+.diamond-node.pre-style.active .diamond-inner { border-color: var(--accent); box-shadow: 0 0 14px rgba(0,200,255,.2); }
+.diamond-node.pre-style .diamond-text { color: var(--accent); }
 
-/* Decision diamond */
-.diamond-node {
-  flex-shrink: 0;
-  cursor: pointer;
-  position: relative;
-  width: 100px;
-  height: 62px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+.return-label { font-size: 8.5px; font-family: 'IBM Plex Mono', monospace; color: var(--accent5); background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.2); border-radius: 4px; padding: 2px 7px; margin: 0 6px; white-space: nowrap; }
+.return-label.pre { color: var(--accent); background: rgba(0,200,255,.08); border-color: rgba(0,200,255,.2); }
 
-.diamond-inner {
-  width: 80px;
-  height: 80px;
-  background: var(--node-bg);
-  border: 1.5px solid #2d3a1a;
-  transform: rotate(45deg);
-  transition: border-color .2s, box-shadow .2s;
-}
+#detail-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.72); z-index: 9999; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); animation: fadeInOverlay .2s ease; }
+#detail-modal-overlay.open { display: flex; }
+@keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+#detail-modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; width: min(780px, 96vw); max-height: 88vh; display: flex; flex-direction: column; box-shadow: 0 24px 80px rgba(0,0,0,0.6); animation: slideUpModal .25s cubic-bezier(.34,1.56,.64,1); }
+@keyframes slideUpModal { from { opacity: 0; transform: translateY(40px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+#detail-modal-body { overflow-y: auto; flex: 1; }
 
-.diamond-node.active .diamond-inner {
-  border-color: var(--accent5);
-  box-shadow: 0 0 14px rgba(251,191,36,.2);
-}
+.modal-close-btn { background: rgba(255,255,255,0.08); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 18px; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .15s; }
+.modal-close-btn:hover { background: rgba(220,38,38,0.5); border-color: #dc2626; color: #fff; }
 
-.diamond-text {
-  position: absolute;
-  text-align: center;
-  font-size: 9px;
-  font-weight: 600;
-  line-height: 1.25;
-  padding: 0 6px;
-  pointer-events: none;
-  color: #d4b44a;
-}
-
-/* Down arrow for multi-line */
-.down-arrow-wrap {
-  display: flex;
-  align-items: center;
-  padding: 0 8px;
-  height: 28px;
-}
-
-.down-arrow {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
-}
-
-.down-line {
-  width: 1.5px;
-  height: 16px;
-  background: var(--border);
-}
-
-.down-tip {
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 6px solid var(--border);
-}
-
-/* Return arrow label */
-.return-label {
-  font-size: 8.5px;
-  font-family: 'IBM Plex Mono', monospace;
-  color: var(--accent5);
-  background: rgba(251,191,36,.08);
-  border: 1px solid rgba(251,191,36,.2);
-  border-radius: 4px;
-  padding: 2px 7px;
-  margin: 0 6px;
-  white-space: nowrap;
-}
-
-/* ── DETAIL MODAL ── */
-.detail-wrapper {
-  display: none;
-}
-
-/* Modal overlay */
-#detail-modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.72);
-  z-index: 9999;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  backdrop-filter: blur(4px);
-  animation: fadeInOverlay .2s ease;
-}
-#detail-modal-overlay.open {
-  display: flex;
-}
-@keyframes fadeInOverlay {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-#detail-modal-box {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  overflow: hidden;
-  width: min(780px, 96vw);
-  max-height: 88vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
-  animation: slideUpModal .25s cubic-bezier(.34,1.56,.64,1);
-}
-@keyframes slideUpModal {
-  from { opacity: 0; transform: translateY(40px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-#detail-modal-body {
-  overflow-y: auto;
-  flex: 1;
-}
-
-/* Tombol tutup modal */
-.modal-close-btn {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text);
-  font-size: 18px;
-  width: 34px;
-  height: 34px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: background .15s;
-}
-.modal-close-btn:hover {
-  background: rgba(220,38,38,0.5);
-  border-color: #dc2626;
-  color: #fff;
-}
-
-.detail-panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-  min-height: 200px;
-  transition: all .3s ease;
-}
-
-.detail-header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px 22px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface2);
-}
-
-.detail-num {
-  font-size: 11px;
-  font-family: 'IBM Plex Mono', monospace;
-  color: var(--muted);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 3px 8px;
-}
-
-.detail-title {
-  font-size: 17px;
-  font-weight: 700;
-  flex: 1;
-}
-
-.detail-phase-badge {
-  font-size: 9.5px;
-  font-family: 'IBM Plex Mono', monospace;
-  letter-spacing: 1px;
-  padding: 3px 10px;
-  border-radius: 20px;
-}
-
-.detail-body {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
-}
-
-.detail-section {
-  padding: 18px 22px;
-  border-right: 1px solid var(--border);
-}
-
+.detail-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; min-height: 200px; }
+.detail-header { display: flex; align-items: center; gap: 14px; padding: 16px 22px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+.detail-num { font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--muted); background: var(--bg); border: 1px solid var(--border); border-radius: 5px; padding: 3px 8px; }
+.detail-title { font-size: 17px; font-weight: 700; flex: 1; }
+.detail-phase-badge { font-size: 9.5px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1px; padding: 3px 10px; border-radius: 20px; }
+.detail-body { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+.detail-section { padding: 18px 22px; border-right: 1px solid var(--border); }
 .detail-section:last-child { border-right: none; }
-.detail-section:nth-child(3), .detail-section:nth-child(4) {
-  border-top: 1px solid var(--border);
-}
-
-.detail-section-title {
-  font-size: 9.5px;
-  font-family: 'IBM Plex Mono', monospace;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 10px;
-}
-
-.detail-desc {
-  font-size: 13px;
-  line-height: 1.65;
-  color: var(--detail-desc-color);
-}
-
-.detail-notes {
-  list-style: none;
-  padding: 0;
-}
-
-.detail-notes li {
-  font-size: 12px;
-  color: var(--text);
-  padding: 5px 0;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  line-height: 1.5;
-}
-
+.detail-section:nth-child(3), .detail-section:nth-child(4) { border-top: 1px solid var(--border); }
+.detail-section-title { font-size: 9.5px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.detail-desc { font-size: 13px; line-height: 1.65; color: var(--detail-desc-color); }
+.detail-notes { list-style: none; padding: 0; }
+.detail-notes li { font-size: 12px; color: var(--text); padding: 5px 0; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
 .detail-notes li:last-child { border-bottom: none; }
-
-.note-icon {
-  flex-shrink: 0;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: rgba(0,200,255,.1);
-  border: 1px solid rgba(0,200,255,.3);
-  display: grid;
-  place-items: center;
-  font-size: 9px;
-  margin-top: 1px;
-}
-
-.note-icon.warn {
-  background: rgba(251,191,36,.1);
-  border-color: rgba(251,191,36,.3);
-}
-
-.detail-inputs {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.input-chip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 11.5px;
-  font-family: 'IBM Plex Mono', monospace;
-}
-
-.chip-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: var(--accent3);
-  flex-shrink: 0;
-}
-
+.note-icon { flex-shrink: 0; width: 16px; height: 16px; border-radius: 50%; background: rgba(0,200,255,.1); border: 1px solid rgba(0,200,255,.3); display: grid; place-items: center; font-size: 9px; margin-top: 1px; }
+.note-icon.warn { background: rgba(251,191,36,.1); border-color: rgba(251,191,36,.3); }
+.detail-inputs { display: flex; flex-direction: column; gap: 7px; }
+.input-chip { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 11.5px; font-family: 'IBM Plex Mono', monospace; }
+.chip-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent3); flex-shrink: 0; }
 .chip-dot.out { background: var(--accent2); }
 .chip-dot.warn { background: var(--accent5); }
 
-/* placeholder */
-.detail-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 180px;
-  gap: 10px;
-  color: var(--muted);
-}
-
-.placeholder-icon { font-size: 32px; opacity: .4; }
-.placeholder-text { font-size: 12px; opacity: .6; }
-
-/* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-/* ── Responsive ── */
 @media (max-width: 768px) {
   .detail-body { grid-template-columns: 1fr; }
   .detail-section { border-right: none; border-bottom: 1px solid var(--border); }
@@ -681,8 +245,10 @@ html.light .diamond-inner { background: #fef9c3; border-color: #fde68a; }
     </div>
   </div>
   <div class="header-right">
-    <div class="badge">REV 1.0</div>
+    <div class="badge">REV 2.0</div>
     <div class="badge" id="clock"></div>
+    <button class="export-btn pdf" onclick="exportPDF()" title="Export ke PDF (1 halaman)">📄 PDF</button>
+    <button class="export-btn xls" onclick="exportWord()" title="Export ke Word (.docx)">📝 Word</button>
     <button class="theme-toggle" onclick="toggleTheme()" title="Ganti tema terang/gelap">
       <div class="toggle-track"><div class="toggle-thumb"></div></div>
       <span class="toggle-icon" id="themeIcon">🌙</span>
@@ -694,15 +260,12 @@ html.light .diamond-inner { background: #fef9c3; border-color: #fde68a; }
 <div class="legend-bar">
   <div class="legend-item"><div class="legend-dot" style="background:#00c8ff"></div>Pre-Produksi / Order</div>
   <div class="legend-item"><div class="legend-dot" style="background:#34d399"></div>Pembuatan Sampel</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>Sales Order</div>
   <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Produksi Massal</div>
   <div class="legend-item"><div class="legend-dot" style="background:#ff6b35"></div>Finishing & Pengiriman</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>Administrasi / Input Sistem</div>
   <span style="margin-left:auto;font-size:11px;color:var(--muted)">⬡ Klik node untuk melihat detail</span>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- FLOW DIAGRAM                                               -->
-<!-- ═══════════════════════════════════════════════════════════ -->
 <div class="flow-wrapper">
 <div class="flow-canvas">
 
@@ -730,16 +293,38 @@ html.light .diamond-inner { background: #fef9c3; border-color: #fde68a; }
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
       <div class="node" onclick="show(3)" id="n3">
-        <div class="node-inner">
+        <div class="node-inner" style="border-color:#2d1a6a">
           <div class="node-num">#03</div>
+          <div class="node-title">Validasi MAP</div>
+          <div class="node-tag">PPIC</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"></div></div>
+
+      <!-- DECISION: MAP Lengkap? -->
+      <div class="diamond-node pre-style" onclick="show(4)" id="n4">
+        <div class="diamond-inner"></div>
+        <div class="diamond-text">MAP<br>Lengkap?</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-start;padding:0 4px;gap:3px">
+        <div style="display:flex;align-items:center;gap:4px">
+          <span class="return-label pre">TIDAK → #03</span>
+        </div>
+        <div style="font-size:8.5px;color:var(--muted);font-family:'IBM Plex Mono',monospace">YA ↓</div>
+      </div>
+
+      <div class="arrow"><div class="arrow-line"></div></div>
+      <div class="node" onclick="show(5)" id="n5">
+        <div class="node-inner">
+          <div class="node-num">#05</div>
           <div class="node-title">Permintaan Bahan</div>
           <div class="node-tag">INPUT SISTEM</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node" onclick="show(4)" id="n4">
+      <div class="node" onclick="show(6)" id="n6">
         <div class="node-inner">
-          <div class="node-num">#04</div>
+          <div class="node-num">#06</div>
           <div class="node-title">Realisasi Bahan</div>
           <div class="node-tag">GUDANG</div>
         </div>
@@ -754,49 +339,49 @@ html.light .diamond-inner { background: #fef9c3; border-color: #fde68a; }
       <div class="phase-line"></div>
     </div>
     <div class="nodes-row">
-      <div class="node phase-sample" onclick="show(5)" id="n5">
+      <div class="node phase-sample" onclick="show(7)" id="n7">
         <div class="node-inner">
-          <div class="node-num">#05</div>
+          <div class="node-num">#07</div>
           <div class="node-title">Pembuatan Pola</div>
           <div class="node-tag">POLA</div>
-        </div>
-      </div>
-      <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-sample" onclick="show(6)" id="n6">
-        <div class="node-inner">
-          <div class="node-num">#06</div>
-          <div class="node-title">Layout Pola</div>
-          <div class="node-tag">POLA + CUTTING</div>
-        </div>
-      </div>
-      <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-sample" onclick="show(7)" id="n7">
-        <div class="node-inner" style="border-color:#2d1a6a">
-          <div class="node-num">#07</div>
-          <div class="node-title">Input LHK Pola</div>
-          <div class="node-tag">ADMIN</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
       <div class="node phase-sample" onclick="show(8)" id="n8">
         <div class="node-inner">
           <div class="node-num">#08</div>
+          <div class="node-title">Layout Pola</div>
+          <div class="node-tag">POLA + CUTTING</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"></div></div>
+      <div class="node phase-sample" onclick="show(9)" id="n9">
+        <div class="node-inner" style="border-color:#2d1a6a">
+          <div class="node-num">#09</div>
+          <div class="node-title">Input LHK Pola</div>
+          <div class="node-tag">ADMIN</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"></div></div>
+      <div class="node phase-sample" onclick="show(10)" id="n10">
+        <div class="node-inner">
+          <div class="node-num">#10</div>
           <div class="node-title">Serah Terima Pola</div>
           <div class="node-tag">ke TIM DESAIN P5</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-sample" onclick="show(9)" id="n9">
+      <div class="node phase-sample" onclick="show(11)" id="n11">
         <div class="node-inner">
-          <div class="node-num">#09</div>
+          <div class="node-num">#11</div>
           <div class="node-title">Desain</div>
           <div class="node-tag">SUBLIM DESAIN</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-sample" onclick="show(10)" id="n10">
+      <div class="node phase-sample" onclick="show(12)" id="n12">
         <div class="node-inner" style="border-color:#2d1a6a">
-          <div class="node-num">#10</div>
+          <div class="node-num">#12</div>
           <div class="node-title">Input LHK Desain</div>
           <div class="node-tag">ADMIN</div>
         </div>
@@ -804,64 +389,56 @@ html.light .diamond-inner { background: #fef9c3; border-color: #fde68a; }
     </div>
   </div>
 
-  <!-- ROW 3: SAMPEL - PAPERPRINT & SUBLIM -->
+  <!-- ROW 3: PEMBUATAN SAMPEL - CETAK & SUBLIM -->
   <div class="phase-row">
     <div class="phase-header">
       <span class="phase-label sample">PEMBUATAN SAMPEL — CETAK & SUBLIM</span>
       <div class="phase-line"></div>
     </div>
     <div class="nodes-row">
-      <div class="node phase-sample" onclick="show(11)" id="n11">
+      <div class="node phase-sample" onclick="show(13)" id="n13">
         <div class="node-inner">
-          <div class="node-num">#11</div>
+          <div class="node-num">#13</div>
           <div class="node-title">Paperprint</div>
           <div class="node-tag">CETAK PAPER</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-sample" onclick="show(12)" id="n12">
+      <div class="node phase-sample" onclick="show(14)" id="n14">
         <div class="node-inner" style="border-color:#2d1a6a">
-          <div class="node-num">#12</div>
+          <div class="node-num">#14</div>
           <div class="node-title">LHK Paperprint</div>
           <div class="node-tag">ADMIN + BS</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-sample" onclick="show(13)" id="n13">
+      <div class="node phase-sample" onclick="show(15)" id="n15">
         <div class="node-inner" style="border-color:#2d1a6a">
-          <div class="node-num">#13</div>
+          <div class="node-num">#15</div>
           <div class="node-title">Mutasi Stock Paper</div>
           <div class="node-tag">→ FLOOR SUBLIM</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-sample" onclick="show(14)" id="n14">
+      <div class="node phase-sample" onclick="show(16)" id="n16">
         <div class="node-inner">
-          <div class="node-num">#14</div>
+          <div class="node-num">#16</div>
           <div class="node-title">Proses Sublim</div>
           <div class="node-tag">PRODUKSI</div>
-        </div>
-      </div>
-      <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-sample" onclick="show(15)" id="n15">
-        <div class="node-inner">
-          <div class="node-num">#15</div>
-          <div class="node-title">QC Sublim</div>
-          <div class="node-tag">OK / NON-OK</div>
-        </div>
-      </div>
-      <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-sample" onclick="show(16)" id="n16">
-        <div class="node-inner" style="border-color:#2d1a6a">
-          <div class="node-num">#16</div>
-          <div class="node-title">LHK Sublim</div>
-          <div class="node-tag">ADMIN + BS</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
       <div class="node phase-sample" onclick="show(17)" id="n17">
         <div class="node-inner" style="border-color:#2d1a6a">
           <div class="node-num">#17</div>
+          <div class="node-title">LHK Sublim</div>
+          <div class="node-tag">ADMIN + BS</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"></div></div>
+      <div class="node phase-sample" onclick="show(18)" id="n18">
+        <div class="node-inner" style="border-color:#2d1a6a">
+          <div class="node-num">#18</div>
           <div class="node-title">Mutasi → Proof</div>
           <div class="node-tag">FLOOR PROOF</div>
         </div>
@@ -869,56 +446,56 @@ html.light .diamond-inner { background: #fef9c3; border-color: #fde68a; }
     </div>
   </div>
 
-  <!-- ROW 4: PROOF & VALIDASI -->
+  <!-- ROW 4: PROOF & VALIDASI CUSTOMER -->
   <div class="phase-row">
     <div class="phase-header">
       <span class="phase-label sample">PEMBUATAN SAMPEL — PROOF & VALIDASI CUSTOMER</span>
       <div class="phase-line"></div>
     </div>
     <div class="nodes-row">
-      <div class="node phase-sample" onclick="show(18)" id="n18">
+      <div class="node phase-sample" onclick="show(19)" id="n19">
         <div class="node-inner">
-          <div class="node-num">#18</div>
+          <div class="node-num">#19</div>
           <div class="node-title">Pembuatan Sampel</div>
           <div class="node-tag">POTONG + JAHIT</div>
-        </div>
-      </div>
-      <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-sample" onclick="show(19)" id="n19">
-        <div class="node-inner" style="border-color:#2d1a6a">
-          <div class="node-num">#19</div>
-          <div class="node-title">LHK Proof + Trimcard</div>
-          <div class="node-tag">ADMIN</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
       <div class="node phase-sample" onclick="show(20)" id="n20">
         <div class="node-inner" style="border-color:#2d1a6a">
           <div class="node-num">#20</div>
-          <div class="node-title">Mutasi Sampel</div>
-          <div class="node-tag">→ MARKETING</div>
+          <div class="node-title">LHK Proof + Trimcard</div>
+          <div class="node-tag">ADMIN</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
       <div class="node phase-sample" onclick="show(21)" id="n21">
-        <div class="node-inner">
+        <div class="node-inner" style="border-color:#2d1a6a">
           <div class="node-num">#21</div>
-          <div class="node-title">Kirim Sampel</div>
-          <div class="node-tag">ke CUSTOMER</div>
+          <div class="node-title">Mutasi Sampel</div>
+          <div class="node-tag">→ MARKETING</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
       <div class="node phase-sample" onclick="show(22)" id="n22">
         <div class="node-inner">
           <div class="node-num">#22</div>
-          <div class="node-title">Terima Sampel</div>
-          <div class="node-tag">DARI CUSTOMER</div>
+          <div class="node-title">Kirim Sampel</div>
+          <div class="node-tag">ke CUSTOMER</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
       <div class="node phase-sample" onclick="show(23)" id="n23">
         <div class="node-inner">
           <div class="node-num">#23</div>
+          <div class="node-title">Terima Sampel</div>
+          <div class="node-tag">DARI CUSTOMER</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"></div></div>
+      <div class="node phase-sample" onclick="show(24)" id="n24">
+        <div class="node-inner">
+          <div class="node-num">#24</div>
           <div class="node-title">Serah Terima Tervalidasi</div>
           <div class="node-tag">→ PROOF</div>
         </div>
@@ -926,64 +503,73 @@ html.light .diamond-inner { background: #fef9c3; border-color: #fde68a; }
     </div>
   </div>
 
-  <!-- ROW 5: SPK & PRODUKSI MASSAL - SETUP -->
+  <!-- ROW 4B: SALES ORDER -->
+  <div class="phase-row">
+    <div class="phase-header">
+      <span class="phase-label so">SALES ORDER</span>
+      <div class="phase-line"></div>
+    </div>
+    <div class="nodes-row">
+      <div class="node phase-so" onclick="show(25)" id="n25">
+        <div class="node-inner">
+          <div class="node-num">#25</div>
+          <div class="node-title">Sales Order</div>
+          <div class="node-tag">INPUT SO</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 5: PRODUKSI MASSAL - SETUP & POLA -->
   <div class="phase-row">
     <div class="phase-header">
       <span class="phase-label mass">PRODUKSI MASSAL — SETUP & POLA</span>
       <div class="phase-line"></div>
     </div>
     <div class="nodes-row">
-      <div class="node phase-mass" onclick="show(24)" id="n24">
+      <div class="node phase-mass" onclick="show(26)" id="n26">
         <div class="node-inner">
-          <div class="node-num">#24</div>
+          <div class="node-num">#26</div>
           <div class="node-title">SPK</div>
           <div class="node-tag">SURAT PERINTAH KERJA</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-mass" onclick="show(25)" id="n25">
-        <div class="node-inner">
-          <div class="node-num">#25</div>
-          <div class="node-title">Permintaan Bahan</div>
-          <div class="node-tag">PRODUKSI MASSAL</div>
-        </div>
-      </div>
-      <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-mass" onclick="show(26)" id="n26">
-        <div class="node-inner">
-          <div class="node-num">#26</div>
-          <div class="node-title">Realisasi Bahan</div>
-          <div class="node-tag">GUDANG</div>
-        </div>
-      </div>
-      <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-mass" onclick="show(27)" id="n27">
-        <div class="node-inner">
-          <div class="node-num">#27</div>
-          <div class="node-title">Pembedahan Sampel</div>
-          <div class="node-tag">CEK REVISI</div>
-        </div>
-      </div>
-      <div class="arrow"><div class="arrow-line"></div></div>
 
-      <!-- DECISION DIAMOND -->
-      <div class="diamond-node" onclick="show(28)" id="n28">
+      <!-- DECISION: Ada Revisi Pola? -->
+      <div class="diamond-node" onclick="show(27)" id="n27">
         <div class="diamond-inner"></div>
         <div class="diamond-text">Ada Revisi<br>Pola?</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-start;padding:0 4px;gap:3px">
         <div style="display:flex;align-items:center;gap:4px">
-          <span class="return-label">YA → #05</span>
+          <span class="return-label">YA → #07</span>
         </div>
         <div style="font-size:8.5px;color:var(--muted);font-family:'IBM Plex Mono',monospace">TIDAK ↓</div>
       </div>
 
       <div class="arrow"><div class="arrow-line"></div></div>
+      <div class="node phase-mass" onclick="show(28)" id="n28">
+        <div class="node-inner">
+          <div class="node-num">#28</div>
+          <div class="node-title">Breakdown Size</div>
+          <div class="node-tag">SEMUA UKURAN</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"></div></div>
+      <div class="node phase-mass" onclick="show(29)" id="n29">
+        <div class="node-inner">
+          <div class="node-num">#29</div>
+          <div class="node-title">Pola Massal</div>
+          <div class="node-tag">TIM POLA</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"></div></div>
       <div class="node phase-mass" onclick="show(30)" id="n30">
         <div class="node-inner">
           <div class="node-num">#30</div>
-          <div class="node-title">Breakdown Size</div>
-          <div class="node-tag">SEMUA UKURAN</div>
+          <div class="node-title">Layout Pola Massal</div>
+          <div class="node-tag">POLA + CUTTING</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
@@ -1031,46 +617,54 @@ html.light .diamond-inner { background: #fef9c3; border-color: #fde68a; }
       <div class="node phase-mass" onclick="show(35)" id="n35">
         <div class="node-inner">
           <div class="node-num">#35</div>
+          <div class="node-title">Permintaan Bahan</div>
+          <div class="node-tag">PRODUKSI MASSAL</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"></div></div>
+      <div class="node phase-mass" onclick="show(36)" id="n36">
+        <div class="node-inner">
+          <div class="node-num">#36</div>
+          <div class="node-title">Realisasi Bahan</div>
+          <div class="node-tag">GUDANG</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"></div></div>
+      <div class="node phase-mass" onclick="show(37)" id="n37">
+        <div class="node-inner">
+          <div class="node-num">#37</div>
           <div class="node-title">Paperprint Massal</div>
           <div class="node-tag">CETAK PAPER</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-mass" onclick="show(36)" id="n36">
+      <div class="node phase-mass" onclick="show(38)" id="n38">
         <div class="node-inner" style="border-color:#4a3a10">
-          <div class="node-num">#36</div>
+          <div class="node-num">#38</div>
           <div class="node-title">LHK Paperprint</div>
           <div class="node-tag">ADMIN + BS</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-mass" onclick="show(37)" id="n37">
+      <div class="node phase-mass" onclick="show(39)" id="n39">
         <div class="node-inner" style="border-color:#4a3a10">
-          <div class="node-num">#37</div>
+          <div class="node-num">#39</div>
           <div class="node-title">Mutasi → Sublim</div>
           <div class="node-tag">FLOOR SUBLIM</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-mass" onclick="show(38)" id="n38">
+      <div class="node phase-mass" onclick="show(40)" id="n40">
         <div class="node-inner">
-          <div class="node-num">#38</div>
+          <div class="node-num">#40</div>
           <div class="node-title">Sublim Massal</div>
           <div class="node-tag">PRESS MESIN</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-mass" onclick="show(39)" id="n39">
-        <div class="node-inner">
-          <div class="node-num">#39</div>
-          <div class="node-title">QC Sublim</div>
-          <div class="node-tag">OK / NON-OK</div>
-        </div>
-      </div>
-      <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-mass" onclick="show(40)" id="n40">
+      <div class="node phase-mass" onclick="show(41)" id="n41">
         <div class="node-inner" style="border-color:#4a3a10">
-          <div class="node-num">#40</div>
+          <div class="node-num">#41</div>
           <div class="node-title">LHK Sublim</div>
           <div class="node-tag">ADMIN + BS</div>
         </div>
@@ -1085,57 +679,57 @@ html.light .diamond-inner { background: #fef9c3; border-color: #fde68a; }
       <div class="phase-line"></div>
     </div>
     <div class="nodes-row">
-      <div class="node phase-mass" onclick="show(41)" id="n41">
+      <div class="node phase-mass" onclick="show(42)" id="n42">
         <div class="node-inner" style="border-color:#4a3a10">
-          <div class="node-num">#41</div>
+          <div class="node-num">#42</div>
           <div class="node-title">Mutasi → Cutting</div>
           <div class="node-tag">FLOOR CUTTING</div>
-        </div>
-      </div>
-      <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-mass" onclick="show(42)" id="n42">
-        <div class="node-inner">
-          <div class="node-num">#42</div>
-          <div class="node-title">Cutting</div>
-          <div class="node-tag">POTONG KAIN</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
       <div class="node phase-mass" onclick="show(43)" id="n43">
         <div class="node-inner">
           <div class="node-num">#43</div>
-          <div class="node-title">QC Cutting</div>
-          <div class="node-tag">CEK POTONGAN</div>
+          <div class="node-title">Cutting</div>
+          <div class="node-tag">POTONG KAIN</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
       <div class="node phase-mass" onclick="show(44)" id="n44">
-        <div class="node-inner">
+        <div class="node-inner" style="border-color:#4a3a10">
           <div class="node-num">#44</div>
-          <div class="node-title">Numbering</div>
-          <div class="node-tag">LABEL PART</div>
+          <div class="node-title">LHK Cutting</div>
+          <div class="node-tag">ADMIN + BS</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
       <div class="node phase-mass" onclick="show(45)" id="n45">
-        <div class="node-inner" style="border-color:#4a3a10">
+        <div class="node-inner">
           <div class="node-num">#45</div>
-          <div class="node-title">LHK Cutting</div>
-          <div class="node-tag">ADMIN + BS</div>
+          <div class="node-title">QC Sublim</div>
+          <div class="node-tag">OK / NON-OK</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
       <div class="node phase-mass" onclick="show(46)" id="n46">
         <div class="node-inner" style="border-color:#4a3a10">
           <div class="node-num">#46</div>
-          <div class="node-title">Mutasi → DC</div>
-          <div class="node-tag">DISTRIBUSI CENTER</div>
+          <div class="node-title">LHK QC Sublim</div>
+          <div class="node-tag">ADMIN + BS</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
       <div class="node phase-mass" onclick="show(47)" id="n47">
         <div class="node-inner" style="border-color:#4a3a10">
           <div class="node-num">#47</div>
+          <div class="node-title">Mutasi → DC</div>
+          <div class="node-tag">DISTRIBUSI CENTER</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"></div></div>
+      <div class="node phase-mass" onclick="show(48)" id="n48">
+        <div class="node-inner" style="border-color:#4a3a10">
+          <div class="node-num">#48</div>
           <div class="node-title">DC → Sewing</div>
           <div class="node-tag">PLOT SEWING</div>
         </div>
@@ -1150,57 +744,57 @@ html.light .diamond-inner { background: #fef9c3; border-color: #fde68a; }
       <div class="phase-line"></div>
     </div>
     <div class="nodes-row">
-      <div class="node phase-mass" onclick="show(48)" id="n48">
+      <div class="node phase-mass" onclick="show(49)" id="n49">
         <div class="node-inner">
-          <div class="node-num">#48</div>
+          <div class="node-num">#49</div>
           <div class="node-title">Sewing</div>
           <div class="node-tag">PROSES JAHIT</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-mass" onclick="show(49)" id="n49">
+      <div class="node phase-mass" onclick="show(50)" id="n50">
         <div class="node-inner">
-          <div class="node-num">#49</div>
+          <div class="node-num">#50</div>
           <div class="node-title">QC Sewing</div>
           <div class="node-tag">CEK JAHITAN</div>
-        </div>
-      </div>
-      <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-mass" onclick="show(50)" id="n50">
-        <div class="node-inner" style="border-color:#4a3a10">
-          <div class="node-num">#50</div>
-          <div class="node-title">LHK Sewing</div>
-          <div class="node-tag">ADMIN + BS</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
       <div class="node phase-mass" onclick="show(51)" id="n51">
         <div class="node-inner" style="border-color:#4a3a10">
           <div class="node-num">#51</div>
+          <div class="node-title">LHK Sewing</div>
+          <div class="node-tag">ADMIN + BS</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"></div></div>
+      <div class="node phase-mass" onclick="show(52)" id="n52">
+        <div class="node-inner" style="border-color:#4a3a10">
+          <div class="node-num">#52</div>
           <div class="node-title">Mutasi → Lipat</div>
           <div class="node-tag">FLOOR LIPAT</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-mass" onclick="show(52)" id="n52">
+      <div class="node phase-mass" onclick="show(53)" id="n53">
         <div class="node-inner">
-          <div class="node-num">#52</div>
+          <div class="node-num">#53</div>
           <div class="node-title">Lipat</div>
           <div class="node-tag">FOLDING</div>
-        </div>
-      </div>
-      <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-mass" onclick="show(53)" id="n53">
-        <div class="node-inner" style="border-color:#4a3a10">
-          <div class="node-num">#53</div>
-          <div class="node-title">LHK Lipat</div>
-          <div class="node-tag">ADMIN</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
       <div class="node phase-mass" onclick="show(54)" id="n54">
         <div class="node-inner" style="border-color:#4a3a10">
           <div class="node-num">#54</div>
+          <div class="node-title">LHK Lipat</div>
+          <div class="node-tag">ADMIN</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"></div></div>
+      <div class="node phase-mass" onclick="show(55)" id="n55">
+        <div class="node-inner" style="border-color:#4a3a10">
+          <div class="node-num">#55</div>
           <div class="node-title">Mutasi → Koli</div>
           <div class="node-tag">FLOOR KOLI</div>
         </div>
@@ -1208,56 +802,56 @@ html.light .diamond-inner { background: #fef9c3; border-color: #fde68a; }
     </div>
   </div>
 
-  <!-- ROW 9: FINISHING & DELIVERY -->
+  <!-- ROW 9: FINISHING & PENGIRIMAN -->
   <div class="phase-row">
     <div class="phase-header">
       <span class="phase-label delivery">FINISHING & PENGIRIMAN</span>
       <div class="phase-line"></div>
     </div>
     <div class="nodes-row">
-      <div class="node phase-delivery" onclick="show(55)" id="n55">
+      <div class="node phase-delivery" onclick="show(56)" id="n56">
         <div class="node-inner">
-          <div class="node-num">#55</div>
+          <div class="node-num">#56</div>
           <div class="node-title">Koli / Packing</div>
           <div class="node-tag">PACKING</div>
-        </div>
-      </div>
-      <div class="arrow"><div class="arrow-line"></div></div>
-      <div class="node phase-delivery" onclick="show(56)" id="n56">
-        <div class="node-inner" style="border-color:#3a1e0a">
-          <div class="node-num">#56</div>
-          <div class="node-title">LHK Koli</div>
-          <div class="node-tag">ADMIN</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
       <div class="node phase-delivery" onclick="show(57)" id="n57">
         <div class="node-inner" style="border-color:#3a1e0a">
           <div class="node-num">#57</div>
-          <div class="node-title">Input STBJ</div>
-          <div class="node-tag">→ GBJ</div>
+          <div class="node-title">LHK Koli</div>
+          <div class="node-tag">ADMIN</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
       <div class="node phase-delivery" onclick="show(58)" id="n58">
-        <div class="node-inner">
+        <div class="node-inner" style="border-color:#3a1e0a">
           <div class="node-num">#58</div>
-          <div class="node-title">Jadwal Kirim</div>
-          <div class="node-tag">READY KIRIM</div>
+          <div class="node-title">Input STBJ</div>
+          <div class="node-tag">→ GBJ</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
       <div class="node phase-delivery" onclick="show(59)" id="n59">
         <div class="node-inner">
           <div class="node-num">#59</div>
-          <div class="node-title">Surat Jalan</div>
-          <div class="node-tag">DELIVERY</div>
+          <div class="node-title">Jadwal Kirim</div>
+          <div class="node-tag">READY KIRIM</div>
         </div>
       </div>
       <div class="arrow"><div class="arrow-line"></div></div>
       <div class="node phase-delivery" onclick="show(60)" id="n60">
         <div class="node-inner">
           <div class="node-num">#60</div>
+          <div class="node-title">Surat Jalan</div>
+          <div class="node-tag">DELIVERY</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"></div></div>
+      <div class="node phase-delivery" onclick="show(61)" id="n61">
+        <div class="node-inner">
+          <div class="node-num">#61</div>
           <div class="node-title">Approval Surat Jalan</div>
           <div class="node-tag">SCAN & VALIDASI</div>
         </div>
@@ -1265,12 +859,10 @@ html.light .diamond-inner { background: #fef9c3; border-color: #fde68a; }
     </div>
   </div>
 
-</div><!-- /flow-canvas -->
-</div><!-- /flow-wrapper -->
+</div>
+</div>
 
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- DETAIL MODAL POPUP                                         -->
-<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- DETAIL MODAL -->
 <div id="detail-modal-overlay" onclick="closeDetailModal(event)">
   <div id="detail-modal-box">
     <div id="detail-modal-body">
@@ -1298,226 +890,234 @@ const data = {
     pic: "Marketing / PPIC"
   },
   3: {
-    num: "#03", title: "Input Permintaan Bahan/Barang (Sampel)", phase: "Pre-Produksi", phaseColor: "#00c8ff",
-    desc: "Proses input permintaan kebutuhan bahan dan barang ke sistem untuk keperluan pembuatan sampel. Meliputi bahan baku utama (kain), paper print, aksesoris, krah, dan material pendukung lainnya sesuai spesifikasi MAP.",
-    notes: ["Pastikan request sesuai spesifikasi MAP", "Sertakan kode bahan dan satuan yang benar", "Input dilakukan sebelum proses produksi dimulai"],
-    inputs: [{label: "Dokumen MAP", type: "in"}, {label: "Daftar kebutuhan bahan sampel", type: "in"}],
+    num: "#03", title: "Validasi MAP oleh PPIC", phase: "Pre-Produksi", phaseColor: "#00c8ff",
+    desc: "Proses validasi dokumen MAP yang dibuat oleh Marketing oleh tim PPIC sebelum proses pembuatan sampel dan permintaan bahan dimulai. Di dalam sistem, PPIC menyalin (copy) seluruh isian MAP kemudian melengkapi bagan atau keterangan tambahan pada kolom yang belum terisi atau kurang sempurna. PPIC wajib memastikan seluruh isian MAP sudah lengkap dan akurat sebelum memberikan validasi.",
+    notes: ["Sistem: PPIC meng-copy semua isian MAP → melengkapi kolom yang kurang di sistem", "Jika MAP tidak lengkap → PPIC wajib melengkapi dan mengisi keterangan tambahan sebelum validasi", "MAP yang sudah divalidasi PPIC = syarat wajib sebelum lanjut ke proses berikutnya", "Dokumentasikan setiap penambahan/perubahan yang dilakukan PPIC dalam sistem", "PPIC tidak boleh memvalidasi MAP yang masih kurang lengkap"],
+    inputs: [{label: "Dokumen MAP dari Marketing (#02)", type: "in"}, {label: "Checklist standar kelengkapan MAP", type: "in"}],
+    outputs: [{label: "MAP Tervalidasi → lanjut ke #05", type: "out"}, {label: "MAP Tidak Lengkap → PPIC melengkapi di sistem → kembali validasi", type: "warn"}],
+    pic: "PPIC"
+  },
+  4: {
+    num: "⬡", title: "Decision: MAP Sudah Lengkap?", phase: "Pre-Produksi", phaseColor: "#00c8ff",
+    desc: "Titik keputusan berdasarkan hasil validasi PPIC. Jika MAP sudah lengkap dan memenuhi semua standar kelengkapan, proses dilanjutkan ke Permintaan Bahan (#05). Jika MAP belum lengkap, PPIC melengkapi isian di sistem terlebih dahulu sebelum validasi disetujui dan kembali ke proses Validasi MAP (#03).",
+    notes: ["LENGKAP → Lanjut ke #05 Permintaan Bahan Sampel", "TIDAK LENGKAP → PPIC melengkapi di sistem → kembali ke #03 untuk validasi ulang", "PPIC tidak boleh melewati decision ini tanpa memastikan kelengkapan MAP"],
+    inputs: [{label: "Hasil Review MAP oleh PPIC (#03)", type: "in"}],
+    outputs: [{label: "LENGKAP → Lanjut #05 Permintaan Bahan", type: "out"}, {label: "TIDAK LENGKAP → Kembali ke #03", type: "warn"}],
+    pic: "PPIC"
+  },
+  5: {
+    num: "#05", title: "Input Permintaan Bahan/Barang (Sampel)", phase: "Pre-Produksi", phaseColor: "#00c8ff",
+    desc: "Proses input permintaan kebutuhan bahan dan barang ke sistem untuk keperluan pembuatan sampel. Meliputi bahan baku utama (kain), paper print, aksesoris, krah, dan material pendukung lainnya sesuai spesifikasi MAP yang telah divalidasi PPIC.",
+    notes: ["Pastikan request sesuai spesifikasi MAP yang telah divalidasi", "Sertakan kode bahan dan satuan yang benar", "Input dilakukan setelah MAP divalidasi PPIC"],
+    inputs: [{label: "Dokumen MAP Tervalidasi (#03)", type: "in"}, {label: "Daftar kebutuhan bahan sampel", type: "in"}],
     outputs: [{label: "Permintaan Bahan ke Gudang", type: "out"}],
     pic: "PPIC / Tim Produksi"
   },
-  4: {
-    num: "#04", title: "Input Realisasi Permintaan Bahan/Barang", phase: "Pre-Produksi", phaseColor: "#00c8ff",
+  6: {
+    num: "#06", title: "Input Realisasi Permintaan Bahan/Barang", phase: "Pre-Produksi", phaseColor: "#00c8ff",
     desc: "Proses administrasi gudang dalam mengeluarkan bahan/barang yang telah diminta oleh tim produksi. Gudang memverifikasi permintaan dan mengeluarkan bahan sesuai yang tertera di dokumen permintaan.",
     notes: ["Cek ketersediaan stok sebelum realisasi", "Catat kuantitas aktual yang dikeluarkan", "Update stock sistem setelah pengeluaran bahan"],
-    inputs: [{label: "Form Permintaan Bahan (#03)", type: "in"}, {label: "Stok Gudang Aktual", type: "in"}],
+    inputs: [{label: "Form Permintaan Bahan (#05)", type: "in"}, {label: "Stok Gudang Aktual", type: "in"}],
     outputs: [{label: "Bahan keluar ke floor produksi", type: "out"}, {label: "Update stock gudang", type: "out"}],
     pic: "Admin Gudang"
   },
-  5: {
-    num: "#05", title: "Pembuatan Pola", phase: "Pembuatan Sampel", phaseColor: "#34d399",
+  7: {
+    num: "#07", title: "Pembuatan Pola", phase: "Pembuatan Sampel", phaseColor: "#34d399",
     desc: "Proses pembuatan pola produk sesuai spesifikasi ukuran standar atau ukuran khusus yang diminta customer berdasarkan MAP. Tim pola membuat master pola yang akan menjadi acuan untuk proses cetak dan produksi.",
     notes: ["⚠️ WAJIB: Tambahkan allowance jahit 3cm untuk semua produk (1,5cm sisi kanan + 1,5cm sisi kiri)", "Berlaku untuk SEMUA produk sublim maupun non-sublim", "Cek kesesuaian ukuran dengan spesifikasi MAP", "Simpan pola dengan kode referensi yang jelas"],
     inputs: [{label: "Dokumen MAP + Spesifikasi Ukuran", type: "in"}],
     outputs: [{label: "Master Pola Siap Layout", type: "out"}],
     pic: "Tim Pola"
   },
-  6: {
-    num: "#06", title: "Layout Pola", phase: "Pembuatan Sampel", phaseColor: "#34d399",
+  8: {
+    num: "#08", title: "Layout Pola", phase: "Pembuatan Sampel", phaseColor: "#34d399",
     desc: "Proses koordinasi antara tim pola dan tim cutting untuk menyusun layout pola yang akan dicetak. Layout dirancang untuk memudahkan proses cutting serta memaksimalkan efisiensi penggunaan bahan.",
     notes: ["⚠️ Layout SANGAT PENTING — mempengaruhi efisiensi bahan dan kemudahan cutting", "Koordinasi tim pola dan tim cutting wajib dilakukan", "Pertimbangkan efisiensi kebutuhan bahan dalam layout", "Minimalkan waste material saat menentukan susunan pola"],
     inputs: [{label: "Master Pola dari Tim Pola", type: "in"}, {label: "Info lebar material dari gudang", type: "in"}],
     outputs: [{label: "File Layout Pola Siap Cetak", type: "out"}],
     pic: "Tim Pola + Tim Cutting"
   },
-  7: {
-    num: "#07", title: "Input LHK Pola", phase: "Pembuatan Sampel", phaseColor: "#a78bfa",
+  9: {
+    num: "#09", title: "Input LHK Pola", phase: "Pembuatan Sampel", phaseColor: "#a78bfa",
     desc: "Proses input administrasi Laporan Hasil Kerja (LHK) atas kegiatan pembuatan dan layouting pola. Bertujuan sebagai alat monitoring progress proses MAP — sudah sampai tahap mana pekerjaan atas MAP tersebut.",
     notes: ["Catat tanggal selesai pembuatan pola", "Catat jumlah pola yang dibuat dan dilayout", "Digunakan untuk monitoring progress real-time"],
     inputs: [{label: "Hasil kerja tim pola + layout", type: "in"}],
     outputs: [{label: "Data LHK Pola tersimpan di sistem", type: "out"}],
     pic: "Admin Produksi / Tim Pola"
   },
-  8: {
-    num: "#08", title: "Input Serah Terima Hasil Pola", phase: "Pembuatan Sampel", phaseColor: "#34d399",
+  10: {
+    num: "#10", title: "Input Serah Terima Hasil Pola", phase: "Pembuatan Sampel", phaseColor: "#34d399",
     desc: "Proses administrasi serah terima pola yang telah dilayout kepada tim desain sublim (P5). Proses ini memastikan pola tersampai ke tim yang tepat dan ada bukti serah terima yang terrekam di sistem.",
     notes: ["Verifikasi kelengkapan file pola sebelum serah terima", "Tandatangani berita acara serah terima", "Tim desain P5 mengkonfirmasi penerimaan di sistem"],
     inputs: [{label: "File Layout Pola Final", type: "in"}],
     outputs: [{label: "Pola diterima Tim Desain P5", type: "out"}, {label: "Bukti serah terima tersimpan", type: "out"}],
     pic: "Tim Pola → Tim Desain P5"
   },
-  9: {
-    num: "#09", title: "Desain", phase: "Pembuatan Sampel", phaseColor: "#34d399",
+  11: {
+    num: "#11", title: "Desain", phase: "Pembuatan Sampel", phaseColor: "#34d399",
     desc: "Proses penempelan/penggabungan desain grafis pada pola yang telah dilayout oleh tim pola. Tim desain sublim (P5) memastikan desain terpasang tepat sesuai posisi dan spesifikasi yang ada di MAP.",
     notes: ["Sesuaikan desain dengan spesifikasi warna dan ukuran di MAP", "Pastikan posisi desain pada pola sudah akurat", "Cek resolusi dan kualitas file desain sebelum proses"],
     inputs: [{label: "File Layout Pola (dari P5)", type: "in"}, {label: "File Desain Grafis Customer", type: "in"}],
     outputs: [{label: "File Pola + Desain Siap Paperprint", type: "out"}],
     pic: "Tim Desain Sublim (P5)"
   },
-  10: {
-    num: "#10", title: "Input LHK Desain", phase: "Pembuatan Sampel", phaseColor: "#a78bfa",
+  12: {
+    num: "#12", title: "Input LHK Desain", phase: "Pembuatan Sampel", phaseColor: "#a78bfa",
     desc: "Proses input administrasi LHK atas hasil penempelan desain pada pola yang telah dilayout. Digunakan untuk monitoring progress dan sebagai dokumentasi bahwa proses desain telah selesai.",
     notes: ["Catat jumlah file pola yang telah didesain", "Catat waktu penyelesaian", "Update status progress MAP di sistem"],
     inputs: [{label: "Hasil kerja tim desain", type: "in"}],
     outputs: [{label: "Data LHK Desain tersimpan", type: "out"}],
     pic: "Admin / Tim Desain P5"
   },
-  11: {
-    num: "#11", title: "Paperprint", phase: "Pembuatan Sampel", phaseColor: "#34d399",
+  13: {
+    num: "#13", title: "Paperprint", phase: "Pembuatan Sampel", phaseColor: "#34d399",
     desc: "Proses mencetak pola yang telah dilayout dan diberi desain ke media kertas paper (paper print). Paper print ini yang nantinya akan digunakan dalam proses sublim untuk mentransfer desain ke kain.",
     notes: ["Pastikan resolusi print sesuai standar sublim", "Cek kualitas warna hasil print vs file digital", "Simpan sisa paper print untuk dokumentasi"],
     inputs: [{label: "File Pola + Desain Final", type: "in"}, {label: "Kertas Paper Print", type: "in"}],
     outputs: [{label: "Roll Paper Print Hasil Cetak", type: "out"}],
     pic: "Tim Cetak / Floor Cetak"
   },
-  12: {
-    num: "#12", title: "Input LHK Paperprint", phase: "Pembuatan Sampel", phaseColor: "#a78bfa",
+  14: {
+    num: "#14", title: "Input LHK Paperprint", phase: "Pembuatan Sampel", phaseColor: "#a78bfa",
     desc: "Proses input administrasi LHK atas hasil proses cetak paperprint. Inputan ini mencakup tiga komponen wajib: Hasil cetak, Pemakaian bahan (kertas + tinta), dan jumlah BS (barang tidak sesuai/reject).",
     notes: ["⚠️ WAJIB isi: Hasil Cetak + Pemakaian Bahan + Jumlah BS", "Catat pemakaian tinta per warna", "BS paperprint harus terpisah dan terdokumentasi"],
     inputs: [{label: "Hasil cetak paperprint aktual", type: "in"}, {label: "Data pemakaian bahan", type: "in"}],
     outputs: [{label: "LHK Paperprint tersimpan", type: "out"}, {label: "Data BS terdokumentasi", type: "out"}],
     pic: "Admin / Tim Cetak"
   },
-  13: {
-    num: "#13", title: "Input Mutasi Stock Hasil Paperprint", phase: "Pembuatan Sampel", phaseColor: "#a78bfa",
+  15: {
+    num: "#15", title: "Input Mutasi Stock Hasil Paperprint", phase: "Pembuatan Sampel", phaseColor: "#a78bfa",
     desc: "Proses perpindahan stok hasil paperprint dari floor cetak ke floor sublim melalui sistem. Mutasi ini memastikan terjadi perpindahan tanggung jawab atas material dan tercatat secara akurat di sistem stok.",
     notes: ["Input mutasi segera setelah barang berpindah secara fisik", "Verifikasi kuantitas sebelum konfirmasi mutasi", "Floor sublim konfirmasi penerimaan di sistem"],
     inputs: [{label: "Stock Paperprint di Floor Cetak", type: "in"}],
     outputs: [{label: "Stock berpindah ke Floor Sublim", type: "out"}],
     pic: "Admin Gudang / Floor"
   },
-  14: {
-    num: "#14", title: "Proses Sublim (Sampel)", phase: "Pembuatan Sampel", phaseColor: "#34d399",
+  16: {
+    num: "#16", title: "Proses Sublim (Sampel)", phase: "Pembuatan Sampel", phaseColor: "#34d399",
     desc: "Proses produksi utama sublim untuk sampel. Kain polos digelar, lalu paperprint yang berisi pola dan desain diletakkan di atas kain, kemudian keduanya di-press menggunakan mesin sublim dengan suhu dan tekanan standar untuk mentransfer desain ke kain.",
     notes: ["Atur suhu dan tekanan mesin sesuai jenis kain", "Pastikan posisi paper print tidak bergeser sebelum press", "Pantau konsistensi hasil sublim antar lembar"],
     inputs: [{label: "Kain Polos (dari gudang)", type: "in"}, {label: "Paper Print (dari floor cetak)", type: "in"}],
     outputs: [{label: "Kain Sublim Jadi (belum di-QC)", type: "out"}],
     pic: "Tim Sublim / Floor Sublim"
   },
-  15: {
-    num: "#15", title: "QC Sublim (Sampel)", phase: "Pembuatan Sampel", phaseColor: "#34d399",
-    desc: "Proses pengecekan kualitas hasil sublim untuk menentukan apakah hasil sublim masuk kategori OK, Toleransi, atau BS (reject). QC harus memiliki pedoman yang jelas agar tidak semua hasil non-OK dikirim ke Marketing untuk persetujuan.",
-    notes: ["⚠️ Wajib ada kategorisasi: OK / Toleransi / BS", "QC harus memiliki pedoman baku — mana yang langsung BS, mana yang masuk toleransi", "Tidak semua NON-OK perlu approval Marketing", "Defect yang masuk toleransi tetap bisa diproses lanjut"],
-    inputs: [{label: "Kain Sublim Hasil Produksi", type: "in"}, {label: "Pedoman QC (standar kualitas)", type: "in"}],
-    outputs: [{label: "Kain OK → lanjut proses", type: "out"}, {label: "BS → dokumentasi & pisahkan", type: "out"}],
-    pic: "Tim QC"
-  },
-  16: {
-    num: "#16", title: "Input LHK Sublim (Sampel)", phase: "Pembuatan Sampel", phaseColor: "#a78bfa",
+  17: {
+    num: "#17", title: "Input LHK Sublim (Sampel)", phase: "Pembuatan Sampel", phaseColor: "#a78bfa",
     desc: "Proses input administrasi LHK atas hasil produksi sublim sampel. Mencakup tiga komponen wajib: Hasil produksi OK, Pemakaian bahan (kain + paper), dan jumlah BS.",
     notes: ["⚠️ WAJIB isi: Hasil + Pemakaian Bahan + BS", "Catat penggunaan kain per SPK secara detail", "BS harus dikategorikan sesuai jenis cacat"],
-    inputs: [{label: "Data hasil QC sublim", type: "in"}, {label: "Data pemakaian bahan sublim", type: "in"}],
+    inputs: [{label: "Data hasil sublim sampel", type: "in"}, {label: "Data pemakaian bahan sublim", type: "in"}],
     outputs: [{label: "LHK Sublim tersimpan di sistem", type: "out"}],
     pic: "Admin / Tim Sublim"
   },
-  17: {
-    num: "#17", title: "Input Mutasi Stock Hasil Sublim → Proof", phase: "Pembuatan Sampel", phaseColor: "#a78bfa",
+  18: {
+    num: "#18", title: "Input Mutasi Stock Hasil Sublim → Proof", phase: "Pembuatan Sampel", phaseColor: "#a78bfa",
     desc: "Proses mutasi stok hasil sublim dari floor sublim ke floor proof. Perpindahan ini menandakan tanggung jawab material berpindah dari tim sublim ke tim proof untuk proses pembuatan sampel selanjutnya.",
-    notes: ["Verifikasi jumlah sebelum mutasi", "Hanya kain OK yang dimutasi ke proof", "BS tetap di floor sublim untuk proses dokumen BS"],
-    inputs: [{label: "Stock Kain Sublim OK di Floor Sublim", type: "in"}],
+    notes: ["Verifikasi jumlah sebelum mutasi", "Hanya kain hasil sublim yang dimutasi ke proof", "Update sistem setelah perpindahan fisik terjadi"],
+    inputs: [{label: "Stock Kain Sublim di Floor Sublim", type: "in"}],
     outputs: [{label: "Stock berpindah ke Floor Proof", type: "out"}],
     pic: "Admin Gudang / Floor"
   },
-  18: {
-    num: "#18", title: "Pembuatan Sampel", phase: "Pembuatan Sampel", phaseColor: "#34d399",
+  19: {
+    num: "#19", title: "Pembuatan Sampel", phase: "Pembuatan Sampel", phaseColor: "#34d399",
     desc: "Proses pemotongan dan penjahitan hasil sublim sesuai spesifikasi yang tercantum dalam MAP. Tim proof memotong kain sublim mengikuti pola dan menjahitnya menjadi produk sampel yang siap dikurasi.",
     notes: ["Ikuti spesifikasi MAP secara detail", "Perhatikan allowance jahit 3cm sesuai standar pola", "Tambahkan aksesoris sesuai spesifikasi MAP"],
     inputs: [{label: "Kain Sublim dari Floor Sublim", type: "in"}, {label: "Dokumen MAP (spesifikasi)", type: "in"}, {label: "Aksesoris & Krah", type: "in"}],
     outputs: [{label: "Sampel Produk Jadi", type: "out"}],
     pic: "Tim Proof"
   },
-  19: {
-    num: "#19", title: "Input LHK Proof + Pembuatan Trimcard", phase: "Pembuatan Sampel", phaseColor: "#a78bfa",
+  20: {
+    num: "#20", title: "Input LHK Proof + Pembuatan Trimcard", phase: "Pembuatan Sampel", phaseColor: "#a78bfa",
     desc: "Proses input administrasi LHK atas hasil pembuatan sampel oleh tim proof, sekaligus pembuatan trimcard yang akan disertakan bersama sampel. Trimcard berisi informasi detail produk sebagai referensi customer.",
     notes: ["LHK mencatat jumlah sampel selesai dan BS", "Trimcard memuat: kode produk, ukuran, warna, bahan, spesifikasi", "Trimcard disertakan saat pengiriman sampel ke customer"],
     inputs: [{label: "Sampel produk jadi", type: "in"}, {label: "Data spesifikasi MAP", type: "in"}],
     outputs: [{label: "LHK Proof tersimpan", type: "out"}, {label: "Trimcard dicetak", type: "out"}],
     pic: "Admin / Tim Proof"
   },
-  20: {
-    num: "#20", title: "Input Mutasi Stock Sampel → Marketing", phase: "Pembuatan Sampel", phaseColor: "#a78bfa",
+  21: {
+    num: "#21", title: "Input Mutasi Stock Sampel → Marketing", phase: "Pembuatan Sampel", phaseColor: "#a78bfa",
     desc: "Proses mutasi stok sampel dari floor proof ke area marketing. Sampel yang telah jadi dan dilengkapi trimcard diserahkan ke tim marketing untuk proses pengiriman ke customer.",
     notes: ["Verifikasi kelengkapan sampel + trimcard sebelum mutasi", "Catat kuantitas sampel yang dimutasi", "Marketing konfirmasi penerimaan di sistem"],
     inputs: [{label: "Sampel + Trimcard di Floor Proof", type: "in"}],
     outputs: [{label: "Stock sampel berpindah ke area Marketing", type: "out"}],
     pic: "Admin / Tim Proof"
   },
-  21: {
-    num: "#21", title: "Input Pengiriman Sampel ke Customer", phase: "Pembuatan Sampel", phaseColor: "#34d399",
+  22: {
+    num: "#22", title: "Input Pengiriman Sampel ke Customer", phase: "Pembuatan Sampel", phaseColor: "#34d399",
     desc: "Proses pengiriman sampel dari marketing ke customer untuk dimintakan validasi. Sistem secara otomatis akan mencetak surat jalan dan mengurangi stok sampel di area marketing saat proses input dilakukan.",
     notes: ["⚠️ Input pengiriman → otomatis cetak surat jalan", "⚠️ Stok sampel di marketing otomatis berkurang", "Sertakan trimcard dalam pengiriman", "Catat ekspedisi dan nomor resi pengiriman"],
     inputs: [{label: "Sampel di area Marketing", type: "in"}, {label: "Data alamat pengiriman customer", type: "in"}],
     outputs: [{label: "Surat Jalan tercetak otomatis", type: "out"}, {label: "Stok sampel marketing berkurang", type: "out"}],
     pic: "Tim Marketing"
   },
-  22: {
-    num: "#22", title: "Input Penerimaan Sampel dari Customer", phase: "Pembuatan Sampel", phaseColor: "#34d399",
+  23: {
+    num: "#23", title: "Input Penerimaan Sampel dari Customer", phase: "Pembuatan Sampel", phaseColor: "#34d399",
     desc: "Proses penerimaan kembali sampel yang telah divalidasi oleh customer. Saat input penerimaan dilakukan, stok sampel di area marketing akan kembali muncul/bertambah beserta keterangan status validasi customer.",
     notes: ["Input segera setelah sampel diterima kembali", "⚠️ Stok sampel di marketing kembali muncul", "Catat komentar/feedback validasi customer", "Tandai status: Approved / Revisi / Rejected"],
     inputs: [{label: "Sampel kembali dari Customer", type: "in"}, {label: "Feedback validasi customer", type: "in"}],
     outputs: [{label: "Stok sampel di marketing aktif kembali", type: "out"}, {label: "Status validasi tercatat", type: "out"}],
     pic: "Tim Marketing"
   },
-  23: {
-    num: "#23", title: "Input Serah Terima Sampel Tervalidasi → Proof", phase: "Pembuatan Sampel", phaseColor: "#34d399",
-    desc: "Proses pengiriman kembali ke tim proof atas sampel yang telah divalidasi oleh customer. Meliputi semua sampel yang sudah dikembalikan customer PLUS 1 sampel yang dipegang tim marketing sebagai referensi. Stok berpindah dari area marketing ke floor proof.",
+  24: {
+    num: "#24", title: "Input Serah Terima Sampel Tervalidasi → Proof", phase: "Pembuatan Sampel", phaseColor: "#34d399",
+    desc: "Proses pengiriman kembali ke tim proof atas sampel yang telah divalidasi oleh customer. Meliputi semua sampel yang sudah dikembalikan customer PLUS 1 sampel yang dipegang tim marketing sebagai referensi.",
     notes: ["Semua sampel tervalidasi (dari customer + yg dipegang marketing) diserahkan ke Proof", "⚠️ Stok berpindah dari marketing ke Floor Proof", "Sertakan catatan hasil validasi customer", "Proof menerima sebagai referensi produksi massal"],
     inputs: [{label: "Sampel tervalidasi dari Customer", type: "in"}, {label: "Sampel referensi Marketing (1 pcs)", type: "in"}],
     outputs: [{label: "Stok sampel berpindah ke Floor Proof", type: "out"}],
     pic: "Tim Marketing → Tim Proof"
   },
-  24: {
-    num: "#24", title: "SPK — Surat Perintah Kerja", phase: "Produksi Massal", phaseColor: "#fbbf24",
-    desc: "Pembuatan Surat Perintah Kerja (SPK) berdasarkan sampel yang telah divalidasi oleh customer. SPK adalah dokumen resmi yang mengotorisasi dimulainya proses produksi massal dan menjadi acuan utama seluruh proses berikutnya.",
-    notes: ["SPK mencantumkan: kode order, quantity per ukuran, deadline, spesifikasi lengkap", "SPK diterbitkan setelah sampel mendapat persetujuan customer", "Distribusikan SPK ke semua tim terkait"],
-    inputs: [{label: "Sampel tervalidasi", type: "in"}, {label: "Data order customer (qty, size run, deadline)", type: "in"}],
+  25: {
+    num: "#25", title: "Sales Order", phase: "Sales Order", phaseColor: "#a78bfa",
+    desc: "Proses pembuatan dokumen Sales Order (SO) berdasarkan sampel yang telah divalidasi customer. Sales Order adalah dokumen komersial resmi yang mencatat kesepakatan jual-beli antara perusahaan dan customer, mencakup detail produk, harga, jumlah, dan syarat pengiriman yang telah disepakati kedua pihak. SO menjadi dasar penerbitan SPK produksi.",
+    notes: ["SO harus memuat: kode customer, tanggal, detail produk, qty per size, harga, deadline", "SO diterbitkan setelah sampel mendapat persetujuan resmi dari customer", "SO wajib ditandatangani oleh customer dan pihak berwenang perusahaan", "SO menjadi acuan resmi tagihan/invoice ke customer", "Pastikan data SO sinkron dengan data MAP yang telah divalidasi PPIC"],
+    inputs: [{label: "Sampel tervalidasi customer (#24)", type: "in"}, {label: "Kesepakatan harga & quantity customer", type: "in"}, {label: "Dokumen MAP Tervalidasi", type: "in"}],
+    outputs: [{label: "Dokumen Sales Order resmi", type: "out"}, {label: "SO sebagai dasar penerbitan SPK (#26)", type: "out"}],
+    pic: "Marketing / Sales"
+  },
+  26: {
+    num: "#26", title: "SPK — Surat Perintah Kerja", phase: "Produksi Massal", phaseColor: "#fbbf24",
+    desc: "Pembuatan Surat Perintah Kerja (SPK) berdasarkan Sales Order yang telah diterbitkan. SPK adalah dokumen resmi internal yang mengotorisasi dimulainya proses produksi massal dan menjadi acuan utama seluruh proses berikutnya.",
+    notes: ["SPK mencantumkan: kode order, quantity per ukuran, deadline, spesifikasi lengkap", "SPK diterbitkan berdasarkan Sales Order yang sudah disetujui", "Distribusikan SPK ke semua tim terkait"],
+    inputs: [{label: "Sales Order (#25)", type: "in"}, {label: "Data order customer (qty, size run, deadline)", type: "in"}],
     outputs: [{label: "Dokumen SPK resmi", type: "out"}, {label: "Instruksi produksi ke semua floor", type: "out"}],
     pic: "PPIC / Marketing"
   },
-  25: {
-    num: "#25", title: "Input Permintaan Bahan/Barang (Produksi Massal)", phase: "Produksi Massal", phaseColor: "#fbbf24",
-    desc: "Proses input permintaan kebutuhan bahan dan barang untuk produksi massal berdasarkan SPK yang telah diterbitkan. Meliputi bahan baku utama (kain), paper print, aksesoris, krah, dan semua material pendukung sesuai quantity produksi.",
-    notes: ["Hitung kebutuhan bahan berdasarkan quantity SPK + faktor waste", "Sertakan kode SPK pada setiap permintaan bahan", "Pastikan request mencakup semua item: kain, paper, aksesoris, krah"],
-    inputs: [{label: "Dokumen SPK", type: "in"}, {label: "BOM (Bill of Material) produksi massal", type: "in"}],
-    outputs: [{label: "Permintaan Bahan ke Gudang", type: "out"}],
-    pic: "PPIC / Tim Produksi"
-  },
-  26: {
-    num: "#26", title: "Input Realisasi Permintaan Bahan/Barang (Massal)", phase: "Produksi Massal", phaseColor: "#fbbf24",
-    desc: "Proses administrasi gudang dalam merealisasikan pengeluaran bahan/barang yang diminta untuk produksi massal. Verifikasi stok, pengeluaran bahan aktual, dan update sistem stok gudang.",
-    notes: ["Cek ketersediaan stok vs permintaan", "Jika stok kurang, koordinasi dengan purchasing untuk PR", "Update stok gudang setelah pengeluaran bahan"],
-    inputs: [{label: "Form Permintaan Bahan Massal (#25)", type: "in"}],
-    outputs: [{label: "Bahan keluar ke floor produksi massal", type: "out"}, {label: "Update stock gudang", type: "out"}],
-    pic: "Admin Gudang"
-  },
   27: {
-    num: "#27", title: "Pembedahan Sampel", phase: "Produksi Massal", phaseColor: "#fbbf24",
-    desc: "Proses review detail atas sampel yang telah divalidasi customer untuk memastikan tidak ada perubahan spesifikasi sebelum produksi massal dimulai. Mencakup pengecekan pola, ukuran, gambar/desain, bahan, dan spesifikasi teknis lainnya.",
-    notes: ["Bandingkan sampel dengan MAP secara mendetail", "Cek: pola, ukuran, desain, bahan, aksesoris, jahitan", "Dokumentasikan setiap temuan perubahan/revisi", "Keputusan: Ada revisi → kembali ke #05 / Tidak ada → lanjut #30"],
-    inputs: [{label: "Sampel tervalidasi customer", type: "in"}, {label: "Dokumen MAP original", type: "in"}],
-    outputs: [{label: "Laporan hasil pembedahan sampel", type: "out"}, {label: "Keputusan: Revisi / Tidak Ada Revisi", type: "out"}],
-    pic: "Tim Pola + Tim Proof + QC"
-  },
-  28: {
     num: "⬡", title: "Decision: Ada Revisi Pola/Ukuran?", phase: "Produksi Massal", phaseColor: "#fbbf24",
-    desc: "Titik keputusan (decision point) berdasarkan hasil pembedahan sampel. Jika ditemukan revisi pada pola atau ukuran yang diminta customer, proses kembali ke tahap Pembuatan Pola (#05). Jika tidak ada perubahan, pola sampel langsung digunakan dan lanjut ke Breakdown Size (#30).",
-    notes: ["YA — Ada revisi pola/ukuran → Kembali ke #05 (Pembuatan Pola)", "TIDAK — Tidak ada revisi → Lanjut ke #30 (Breakdown Size)", "Revisi selain pola (desain, warna) ditangani di tahap yang relevan", "Dokumentasikan keputusan ini dalam sistem"],
-    inputs: [{label: "Laporan Pembedahan Sampel (#27)", type: "in"}],
-    outputs: [{label: "YA → Kembali ke Pembuatan Pola (#05)", type: "warn"}, {label: "TIDAK → Lanjut Breakdown Size (#30)", type: "out"}],
+    desc: "Titik keputusan berdasarkan review sampel tervalidasi. Jika ditemukan revisi pada pola atau ukuran yang diminta customer, proses kembali ke tahap Pembuatan Pola (#07). Jika tidak ada perubahan, lanjut ke Breakdown Size (#28).",
+    notes: ["YA — Ada revisi pola/ukuran → Kembali ke #07 (Pembuatan Pola)", "TIDAK — Tidak ada revisi → Lanjut ke #28 (Breakdown Size)", "Revisi selain pola (desain, warna) ditangani di tahap yang relevan", "Dokumentasikan keputusan ini dalam sistem"],
+    inputs: [{label: "Sampel tervalidasi customer", type: "in"}, {label: "SPK (#26)", type: "in"}],
+    outputs: [{label: "YA → Kembali ke Pembuatan Pola (#07)", type: "warn"}, {label: "TIDAK → Lanjut Breakdown Size (#28)", type: "out"}],
     pic: "Tim Pola + QC"
   },
-  30: {
-    num: "#30", title: "Breakdown Size", phase: "Produksi Massal", phaseColor: "#fbbf24",
+  28: {
+    num: "#28", title: "Breakdown Size", phase: "Produksi Massal", phaseColor: "#fbbf24",
     desc: "Proses pembuatan pola dan layout pola untuk semua ukuran (size run) yang diminta customer dalam SPK. Setiap ukuran dibuat polanya masing-masing berdasarkan master pola sampel yang telah divalidasi.",
-    notes: ["Buat pola untuk seluruh size run (S, M, L, XL, XXL, dll.)", "Tetap terapkan allowance jahit 3cm untuk semua ukuran", "Layout mempertimbangkan efisiensi bahan massal", "Grading size harus proporsional dan konsisten"],
+    notes: ["Buat pola untuk seluruh size run (S, M, L, XL, XXL, dll.)", "Tetap terapkan allowance jahit 3cm untuk semua ukuran", "Grading size harus proporsional dan konsisten"],
     inputs: [{label: "Master pola sampel tervalidasi", type: "in"}, {label: "Data size run dari SPK", type: "in"}],
-    outputs: [{label: "Pola semua ukuran + Layout", type: "out"}],
+    outputs: [{label: "Data size run semua ukuran", type: "out"}],
     pic: "Tim Pola"
   },
+  29: {
+    num: "#29", title: "Pola Massal", phase: "Produksi Massal", phaseColor: "#fbbf24",
+    desc: "Proses pembuatan pola fisik untuk seluruh ukuran (size run) yang telah di-breakdown. Tim pola membuat master pola massal berdasarkan data breakdown size dan sampel tervalidasi, memastikan setiap ukuran memiliki pola yang akurat dan siap untuk proses layout.",
+    notes: ["Buat pola untuk setiap ukuran sesuai hasil breakdown size", "⚠️ WAJIB: Tetap terapkan allowance jahit 3cm di semua ukuran", "Verifikasi akurasi setiap pola vs standar ukuran", "Simpan semua pola dengan kode referensi yang jelas per ukuran"],
+    inputs: [{label: "Data Breakdown Size (#28)", type: "in"}, {label: "Master pola sampel tervalidasi", type: "in"}],
+    outputs: [{label: "Pola fisik semua ukuran siap layout", type: "out"}],
+    pic: "Tim Pola"
+  },
+  30: {
+    num: "#30", title: "Layout Pola Massal", phase: "Produksi Massal", phaseColor: "#fbbf24",
+    desc: "Proses penyusunan layout pola semua ukuran untuk produksi massal. Koordinasi antara tim pola dan tim cutting untuk merancang susunan pola yang efisien, meminimalkan waste material, dan memudahkan proses cutting massal.",
+    notes: ["⚠️ Layout massal SANGAT PENTING — volume besar, efisiensi bahan sangat berpengaruh ke cost", "Koordinasi tim pola dan tim cutting wajib dilakukan", "Pertimbangkan lebar kain dan efisiensi penggunaan per roll", "Minimalkan waste — setiap persen waste di produksi massal berdampak signifikan"],
+    inputs: [{label: "Pola fisik semua ukuran (#29)", type: "in"}, {label: "Info spesifikasi kain massal dari gudang", type: "in"}],
+    outputs: [{label: "File Layout Pola Massal semua ukuran siap cetak", type: "out"}],
+    pic: "Tim Pola + Tim Cutting"
+  },
   31: {
-    num: "#31", title: "Input LHK Pola (Massal)", phase: "Produksi Massal", phaseColor: "#a78bfa",
+    num: "#31", title: "Input LHK Pola Massal", phase: "Produksi Massal", phaseColor: "#a78bfa",
     desc: "Proses input administrasi LHK atas hasil pembuatan dan layouting pola untuk produksi massal. Digunakan untuk monitoring progress breakdown size dan tracking setiap ukuran yang telah selesai.",
     notes: ["Catat setiap ukuran yang selesai dibuat polanya", "Update progress SPK di sistem", "Sertakan informasi jumlah pola per ukuran"],
-    inputs: [{label: "Hasil breakdown size semua ukuran", type: "in"}],
+    inputs: [{label: "Hasil pola massal + layout semua ukuran", type: "in"}],
     outputs: [{label: "LHK Pola Massal tersimpan", type: "out"}],
     pic: "Admin / Tim Pola"
   },
@@ -1530,7 +1130,7 @@ const data = {
     pic: "Tim Pola → Tim Desain P5"
   },
   33: {
-    num: "#33", title: "Desain (Massal)", phase: "Produksi Massal", phaseColor: "#fbbf24",
+    num: "#33", title: "Desain Massal", phase: "Produksi Massal", phaseColor: "#fbbf24",
     desc: "Proses penempelan/penggabungan desain grafis pada pola semua ukuran yang telah dilayout untuk produksi massal. Tim desain P5 memastikan konsistensi desain di semua ukuran sesuai sampel yang divalidasi.",
     notes: ["Pastikan konsistensi desain di semua size", "Posisi desain harus sesuai dengan sampel tervalidasi", "Cek file desain sesuai standar resolusi cetak"],
     inputs: [{label: "File Pola + Layout semua size", type: "in"}, {label: "File desain final (referensi sampel)", type: "in"}],
@@ -1538,7 +1138,7 @@ const data = {
     pic: "Tim Desain Sublim (P5)"
   },
   34: {
-    num: "#34", title: "Input LHK Desain (Massal)", phase: "Produksi Massal", phaseColor: "#a78bfa",
+    num: "#34", title: "Input LHK Desain Massal", phase: "Produksi Massal", phaseColor: "#a78bfa",
     desc: "Proses input administrasi LHK atas hasil penempelan desain pada pola massal. Monitoring progress desain per ukuran.",
     notes: ["Catat jumlah file size yang selesai didesain", "Update progress SPK", "Pastikan semua ukuran tercatat"],
     inputs: [{label: "Hasil desain semua size", type: "in"}],
@@ -1546,221 +1146,227 @@ const data = {
     pic: "Admin / Tim Desain P5"
   },
   35: {
-    num: "#35", title: "Paperprint (Massal)", phase: "Produksi Massal", phaseColor: "#fbbf24",
+    num: "#35", title: "Input Permintaan Bahan/Barang (Produksi Massal)", phase: "Produksi Massal", phaseColor: "#fbbf24",
+    desc: "Proses input permintaan kebutuhan bahan dan barang untuk produksi massal berdasarkan SPK yang telah diterbitkan. Dilakukan setelah desain massal selesai sehingga kebutuhan bahan dapat dihitung lebih akurat berdasarkan layout final. Meliputi bahan baku utama (kain), paper print, aksesoris, krah, dan semua material pendukung sesuai quantity produksi.",
+    notes: ["Hitung kebutuhan bahan berdasarkan quantity SPK + faktor waste dari layout final", "Sertakan kode SPK pada setiap permintaan bahan", "Pastikan request mencakup semua item: kain, paper, aksesoris, krah", "Input setelah LHK Desain Massal selesai agar kebutuhan bahan akurat"],
+    inputs: [{label: "Dokumen SPK (#26)", type: "in"}, {label: "LHK Desain Massal (#34) — untuk hitung kebutuhan akurat", type: "in"}],
+    outputs: [{label: "Permintaan Bahan Massal ke Gudang", type: "out"}],
+    pic: "PPIC / Tim Produksi"
+  },
+  36: {
+    num: "#36", title: "Input Realisasi Permintaan Bahan/Barang (Massal)", phase: "Produksi Massal", phaseColor: "#fbbf24",
+    desc: "Proses administrasi gudang dalam merealisasikan pengeluaran bahan/barang yang diminta untuk produksi massal. Verifikasi stok, pengeluaran bahan aktual, dan update sistem stok gudang.",
+    notes: ["Cek ketersediaan stok vs permintaan", "Jika stok kurang, koordinasi dengan purchasing untuk PR", "Update stok gudang setelah pengeluaran bahan"],
+    inputs: [{label: "Form Permintaan Bahan Massal (#35)", type: "in"}],
+    outputs: [{label: "Bahan keluar ke floor produksi massal", type: "out"}, {label: "Update stock gudang", type: "out"}],
+    pic: "Admin Gudang"
+  },
+  37: {
+    num: "#37", title: "Paperprint Massal", phase: "Produksi Massal", phaseColor: "#fbbf24",
     desc: "Proses cetak pola semua ukuran yang telah dilayout dan diberi desain ke media kertas paper untuk produksi massal. Volume cetak lebih besar dibanding sampel, memerlukan manajemen roll paper yang ketat.",
     notes: ["Kelola roll paper print secara sistematis per ukuran/batch", "Cek konsistensi warna cetak vs standar sampel", "Lakukan pengecekan berkala selama proses cetak berlangsung"],
-    inputs: [{label: "File Pola + Desain semua size", type: "in"}, {label: "Kertas Paper Print (massal)", type: "in"}],
+    inputs: [{label: "File Pola + Desain semua size", type: "in"}, {label: "Kertas Paper Print (massal) dari gudang", type: "in"}],
     outputs: [{label: "Roll Paper Print Massal", type: "out"}],
     pic: "Tim Cetak / Floor Cetak"
   },
-  36: {
-    num: "#36", title: "Input LHK Paperprint (Massal)", phase: "Produksi Massal", phaseColor: "#a78bfa",
+  38: {
+    num: "#38", title: "Input LHK Paperprint Massal", phase: "Produksi Massal", phaseColor: "#a78bfa",
     desc: "Input administrasi LHK hasil cetak paperprint massal dengan tiga komponen wajib: Hasil cetak, Pemakaian bahan (kertas + tinta), dan BS.",
     notes: ["⚠️ WAJIB: Hasil + Pemakaian Bahan + BS", "Catat pemakaian tinta per warna per batch", "BS paperprint massal harus terdokumentasi"],
     inputs: [{label: "Data hasil cetak paperprint massal", type: "in"}],
     outputs: [{label: "LHK Paperprint Massal tersimpan", type: "out"}],
     pic: "Admin / Tim Cetak"
   },
-  37: {
-    num: "#37", title: "Input Mutasi Stock Paperprint → Sublim", phase: "Produksi Massal", phaseColor: "#a78bfa",
+  39: {
+    num: "#39", title: "Input Mutasi Stock Paperprint → Sublim", phase: "Produksi Massal", phaseColor: "#a78bfa",
     desc: "Proses mutasi stok hasil paperprint massal dari floor cetak ke floor sublim melalui sistem.",
     notes: ["Input mutasi sesuai perpindahan fisik", "Verifikasi jumlah roll/lembar sebelum mutasi", "Floor sublim konfirmasi penerimaan"],
     inputs: [{label: "Stock Paperprint Massal di Floor Cetak", type: "in"}],
     outputs: [{label: "Stock berpindah ke Floor Sublim (Massal)", type: "out"}],
     pic: "Admin Gudang / Floor"
   },
-  38: {
-    num: "#38", title: "Sublim (Massal)", phase: "Produksi Massal", phaseColor: "#fbbf24",
+  40: {
+    num: "#40", title: "Sublim Massal", phase: "Produksi Massal", phaseColor: "#fbbf24",
     desc: "Proses produksi sublim massal — kain polos di-press bersama paperprint menggunakan mesin sublim. Volume produksi lebih besar, memerlukan pengaturan antrian mesin dan monitoring konsistensi hasil.",
     notes: ["Atur antrian produksi per mesin secara efisien", "Monitor konsistensi suhu dan tekanan mesin", "Pastikan hasil sublim konsisten dengan standar sampel", "Catat penggunaan per mesin untuk tracking produktivitas"],
     inputs: [{label: "Kain Polos Massal (dari gudang)", type: "in"}, {label: "Paper Print Massal (dari floor cetak)", type: "in"}],
-    outputs: [{label: "Kain Sublim Massal (belum QC)", type: "out"}],
+    outputs: [{label: "Kain Sublim Massal (belum LHK)", type: "out"}],
     pic: "Tim Sublim / Floor Sublim"
   },
-  39: {
-    num: "#39", title: "QC Sublim (Massal)", phase: "Produksi Massal", phaseColor: "#fbbf24",
-    desc: "Pengecekan kualitas hasil sublim massal dengan kategorisasi OK, Toleransi, dan BS. QC memiliki pedoman baku untuk menghindari semua kasus NON-OK harus minta approval Marketing.",
-    notes: ["⚠️ Wajib ada pedoman QC baku dan tertulis", "Kategorikan: OK / Toleransi / BS — jangan semua ke Marketing", "Defect dalam batas toleransi tetap bisa lanjut", "Dokumentasi semua temuan QC per batch"],
-    inputs: [{label: "Kain Sublim Massal", type: "in"}, {label: "Pedoman QC Baku", type: "in"}],
-    outputs: [{label: "Kain OK → lanjut cutting", type: "out"}, {label: "BS Massal → dokumentasi", type: "out"}],
-    pic: "Tim QC"
-  },
-  40: {
-    num: "#40", title: "Input LHK Sublim (Massal)", phase: "Produksi Massal", phaseColor: "#a78bfa",
+  41: {
+    num: "#41", title: "Input LHK Sublim Massal", phase: "Produksi Massal", phaseColor: "#a78bfa",
     desc: "Input administrasi LHK produksi sublim massal. Wajib mencakup: Hasil OK, Pemakaian Bahan, dan BS.",
     notes: ["⚠️ WAJIB: Hasil + Pemakaian Bahan + BS", "Catat per batch/lot produksi", "Update progress SPK di sistem"],
-    inputs: [{label: "Data hasil QC sublim massal", type: "in"}],
+    inputs: [{label: "Data hasil sublim massal", type: "in"}],
     outputs: [{label: "LHK Sublim Massal tersimpan", type: "out"}],
     pic: "Admin / Tim Sublim"
   },
-  41: {
-    num: "#41", title: "Input Mutasi Stock Sublim → Cutting", phase: "Produksi Massal", phaseColor: "#a78bfa",
+  42: {
+    num: "#42", title: "Input Mutasi Stock Sublim → Cutting", phase: "Produksi Massal", phaseColor: "#a78bfa",
     desc: "Proses mutasi stok hasil sublim massal dari floor sublim ke floor cutting.",
-    notes: ["Hanya kain OK yang dimutasi ke cutting", "Catat kuantitas per roll/meter", "Floor cutting konfirmasi penerimaan"],
-    inputs: [{label: "Kain Sublim OK di Floor Sublim", type: "in"}],
+    notes: ["Catat kuantitas per roll/meter", "Floor cutting konfirmasi penerimaan", "Update sistem segera setelah perpindahan fisik"],
+    inputs: [{label: "Kain Sublim di Floor Sublim", type: "in"}],
     outputs: [{label: "Stock berpindah ke Floor Cutting", type: "out"}],
     pic: "Admin Gudang / Floor"
   },
-  42: {
-    num: "#42", title: "Cutting", phase: "Produksi Massal", phaseColor: "#fbbf24",
+  43: {
+    num: "#43", title: "Cutting", phase: "Produksi Massal", phaseColor: "#fbbf24",
     desc: "Proses pemotongan kain hasil sublim massal. Kain roll digelar di meja cutting, kemudian dipotong sesuai pola (marker) yang telah disiapkan oleh tim pola. Proses ini menghasilkan part-part komponen produk.",
     notes: ["Gelar kain sesuai standar panjang dan lapisan", "Gunakan marker/pola yang sudah disetujui", "Potong dengan presisi — ikuti garis pola", "Pisahkan hasil cutting per ukuran dan per komponen"],
     inputs: [{label: "Kain Sublim dari Floor Sublim", type: "in"}, {label: "Marker/Pola Massal", type: "in"}],
     outputs: [{label: "Part-part hasil cutting (badan, lengan, dll.)", type: "out"}],
     pic: "Tim Cutting / Floor Cutting"
   },
-  43: {
-    num: "#43", title: "QC Cutting", phase: "Produksi Massal", phaseColor: "#fbbf24",
-    desc: "Proses pengecekan kualitas hasil potongan untuk memastikan dimensi dan spesifikasi sesuai dengan standar dan spesifikasi yang ada di MAP.",
-    notes: ["Ukur dimensi potongan vs pola standar", "Cek kerapian garis potongan", "BS cutting dipisahkan dan didokumentasikan", "Verifikasi kelengkapan komponen per set produk"],
-    inputs: [{label: "Part hasil cutting", type: "in"}, {label: "Standar ukuran dari MAP", type: "in"}],
-    outputs: [{label: "Part OK → Numbering", type: "out"}, {label: "Part BS → dokumentasi", type: "out"}],
-    pic: "Tim QC / Tim Cutting"
-  },
   44: {
-    num: "#44", title: "Numbering", phase: "Produksi Massal", phaseColor: "#fbbf24",
-    desc: "Proses pemberian label numbering pada setiap part hasil cutting. Label ini memastikan setiap komponen dapat diidentifikasi ukuran, bundel, dan pasangan sewing-nya secara akurat.",
-    notes: ["Beri label pada SETIAP part: badan depan, belakang, lengan, dll.", "Sistem numbering harus konsisten dan mudah dibaca tim sewing", "Numbering membantu pengecekan kelengkapan saat sewing"],
-    inputs: [{label: "Part cutting OK", type: "in"}],
-    outputs: [{label: "Part bernomor siap kirim ke DC", type: "out"}],
-    pic: "Tim Cutting / Numbering"
-  },
-  45: {
-    num: "#45", title: "Input LHK Cutting", phase: "Produksi Massal", phaseColor: "#a78bfa",
+    num: "#44", title: "Input LHK Cutting", phase: "Produksi Massal", phaseColor: "#a78bfa",
     desc: "Input administrasi LHK hasil cutting. Wajib mencakup: Hasil cutting OK (per size), Pemakaian bahan, dan BS cutting.",
     notes: ["⚠️ WAJIB: Hasil + Pemakaian Bahan + BS", "Catat per size/ukuran", "BS harus dikategorikan (salah potong, cacat kain, dsb.)"],
-    inputs: [{label: "Data hasil cutting + QC", type: "in"}],
+    inputs: [{label: "Data hasil cutting", type: "in"}],
     outputs: [{label: "LHK Cutting tersimpan", type: "out"}],
     pic: "Admin / Tim Cutting"
   },
+  45: {
+    num: "#45", title: "QC Sublim (Post-Cutting)", phase: "Produksi Massal", phaseColor: "#fbbf24",
+    desc: "Proses pengecekan kualitas hasil sublim yang dilakukan setelah proses cutting. QC Sublim di tahap ini memastikan kualitas transfer warna dan desain pada setiap part hasil cutting sudah memenuhi standar sebelum masuk ke proses sewing. Memiliki kategorisasi baku: OK, Toleransi, dan BS.",
+    notes: ["⚠️ Wajib ada pedoman QC baku dan tertulis", "Kategorikan: OK / Toleransi / BS — jangan semua ke Marketing", "Defect dalam batas toleransi tetap bisa lanjut ke sewing", "Dokumentasi semua temuan QC per batch/lot"],
+    inputs: [{label: "Part hasil cutting (#43)", type: "in"}, {label: "Pedoman QC Sublim Baku", type: "in"}],
+    outputs: [{label: "Part OK → lanjut proses", type: "out"}, {label: "BS → dokumentasi & pisahkan", type: "out"}],
+    pic: "Tim QC"
+  },
   46: {
-    num: "#46", title: "Mutasi Hasil Cutting → DC", phase: "Produksi Massal", phaseColor: "#a78bfa",
-    desc: "Proses perpindahan stok hasil cutting ke DC (Distribution Center/gudang transit) sebagai staging area sebelum didistribusikan ke floor sewing.",
-    notes: ["Pisahkan per SPK dan per size", "Verifikasi kelengkapan bundle sebelum mutasi", "DC berfungsi sebagai staging area sewing"],
-    inputs: [{label: "Part Cutting Bernomor", type: "in"}],
+    num: "#46", title: "Input LHK QC Sublim", phase: "Produksi Massal", phaseColor: "#a78bfa",
+    desc: "Input administrasi LHK atas hasil QC Sublim post-cutting. Mencatat hasil OK, toleransi, dan BS beserta kategori jenis cacat.",
+    notes: ["⚠️ WAJIB: Catat hasil OK + Toleransi + BS", "Kategorikan jenis cacat sublim secara spesifik", "Data ini penting untuk evaluasi kualitas produksi sublim massal", "Update progress SPK di sistem"],
+    inputs: [{label: "Data hasil QC Sublim post-cutting", type: "in"}],
+    outputs: [{label: "LHK QC Sublim tersimpan", type: "out"}],
+    pic: "Admin / Tim QC"
+  },
+  47: {
+    num: "#47", title: "Mutasi Hasil Cutting → DC", phase: "Produksi Massal", phaseColor: "#a78bfa",
+    desc: "Proses perpindahan stok hasil cutting yang telah lolos QC Sublim ke DC (Distribution Center/gudang transit) sebagai staging area sebelum didistribusikan ke floor sewing.",
+    notes: ["Hanya part yang lolos QC Sublim yang dimutasi ke DC", "Pisahkan per SPK dan per size", "Verifikasi kelengkapan bundle sebelum mutasi"],
+    inputs: [{label: "Part Cutting OK (lolos QC Sublim)", type: "in"}],
     outputs: [{label: "Stock berpindah ke DC", type: "out"}],
     pic: "Admin Gudang / Floor"
   },
-  47: {
-    num: "#47", title: "Mutasi DC → Sewing", phase: "Produksi Massal", phaseColor: "#a78bfa",
+  48: {
+    num: "#48", title: "DC → Sewing", phase: "Produksi Massal", phaseColor: "#a78bfa",
     desc: "Proses pengiriman bundle dari DC ke floor sewing sesuai dengan yang sudah selesai di-plotting/dijadwalkan. Pengiriman ke sewing disesuaikan dengan kapasitas dan jadwal produksi sewing.",
     notes: ["Kirim sesuai plot jadwal sewing", "Verifikasi kelengkapan bundle per style per size", "Sewing konfirmasi penerimaan di sistem"],
     inputs: [{label: "Bundle di DC", type: "in"}, {label: "Plot jadwal sewing", type: "in"}],
     outputs: [{label: "Bundle siap di Floor Sewing", type: "out"}],
     pic: "Admin DC / PPIC"
   },
-  48: {
-    num: "#48", title: "Sewing", phase: "Produksi Massal", phaseColor: "#fbbf24",
+  49: {
+    num: "#49", title: "Sewing", phase: "Produksi Massal", phaseColor: "#fbbf24",
     desc: "Proses penjahitan part-part hasil cutting yang telah di-set (disiapkan) menjadi produk jadi. Tim sewing menjahit sesuai urutan operasi dan spesifikasi jahitan yang ada di MAP.",
-    notes: ["Ikuti urutan operasi jahit yang sudah ditetapkan", "Pastikan jenis dan spesifikasi benang sesuai MAP", "Monitor output per operator untuk efisiensi"], 
+    notes: ["Ikuti urutan operasi jahit yang sudah ditetapkan", "Pastikan jenis dan spesifikasi benang sesuai MAP", "Monitor output per operator untuk efisiensi"],
     inputs: [{label: "Bundle Part dari DC", type: "in"}, {label: "Aksesoris (krah, ritsleting, dll.)", type: "in"}],
     outputs: [{label: "Produk Jadi (belum QC)", type: "out"}],
     pic: "Tim Sewing / Floor Sewing"
   },
-  49: {
-    num: "#49", title: "QC Sewing", phase: "Produksi Massal", phaseColor: "#fbbf24",
+  50: {
+    num: "#50", title: "QC Sewing", phase: "Produksi Massal", phaseColor: "#fbbf24",
     desc: "Proses pengecekan kualitas hasil jahitan. Memastikan standar kerapian jahitan, kekuatan simpul, kelengkapan aksesoris, dan kesesuaian dengan spesifikasi MAP.",
     notes: ["Cek: rapi jahitan, kekuatan benang, kelengkapan aksesoris", "Verifikasi kesesuaian dengan sampel tervalidasi", "BS sewing dipisahkan, kategorikan jenis cacat"],
     inputs: [{label: "Produk hasil sewing", type: "in"}],
     outputs: [{label: "Produk OK → Lipat", type: "out"}, {label: "BS Sewing → dokumentasi + repair", type: "out"}],
     pic: "Tim QC"
   },
-  50: {
-    num: "#50", title: "Input LHK Sewing", phase: "Produksi Massal", phaseColor: "#a78bfa",
+  51: {
+    num: "#51", title: "Input LHK Sewing", phase: "Produksi Massal", phaseColor: "#a78bfa",
     desc: "Input administrasi LHK hasil sewing. Wajib mencakup: Hasil OK, Pemakaian bahan (benang, aksesoris), dan BS.",
     notes: ["⚠️ WAJIB: Hasil + Pemakaian Bahan + BS", "Catat per line/grup sewing", "Update progress SPK"],
     inputs: [{label: "Data hasil QC sewing", type: "in"}],
     outputs: [{label: "LHK Sewing tersimpan", type: "out"}],
     pic: "Admin / Tim Sewing"
   },
-  51: {
-    num: "#51", title: "Mutasi Hasil Sewing → Lipat", phase: "Produksi Massal", phaseColor: "#a78bfa",
+  52: {
+    num: "#52", title: "Mutasi Hasil Sewing → Lipat", phase: "Produksi Massal", phaseColor: "#a78bfa",
     desc: "Proses perpindahan stok produk OK hasil sewing dari floor sewing ke floor lipat.",
     notes: ["Hanya produk OK yang dimutasi", "Catat kuantitas per ukuran", "Floor lipat konfirmasi penerimaan"],
     inputs: [{label: "Produk OK di Floor Sewing", type: "in"}],
     outputs: [{label: "Stock berpindah ke Floor Lipat", type: "out"}],
     pic: "Admin Gudang / Floor"
   },
-  52: {
-    num: "#52", title: "Lipat", phase: "Produksi Massal", phaseColor: "#fbbf24",
+  53: {
+    num: "#53", title: "Lipat", phase: "Produksi Massal", phaseColor: "#fbbf24",
     desc: "Proses melipat produk jadi sesuai standar lipatan yang ditetapkan. Lipatan harus rapi, konsisten, dan memudahkan proses koli/packing selanjutnya.",
     notes: ["Lipat sesuai standar dimensi yang ditetapkan", "Pastikan lipatan rapi dan konsisten antar produk", "Pisahkan per ukuran untuk memudahkan koli"],
     inputs: [{label: "Produk jadi dari Floor Sewing", type: "in"}],
     outputs: [{label: "Produk terlipat siap koli", type: "out"}],
     pic: "Tim Lipat / Floor Lipat"
   },
-  53: {
-    num: "#53", title: "Input LHK Lipat", phase: "Produksi Massal", phaseColor: "#a78bfa",
+  54: {
+    num: "#54", title: "Input LHK Lipat", phase: "Produksi Massal", phaseColor: "#a78bfa",
     desc: "Input administrasi LHK hasil proses lipat. Mencatat jumlah produk yang telah dilipat per ukuran.",
     notes: ["Catat jumlah per ukuran/size", "Update progress SPK", "Verifikasi total sesuai dengan target SPK"],
     inputs: [{label: "Data hasil lipat", type: "in"}],
     outputs: [{label: "LHK Lipat tersimpan", type: "out"}],
     pic: "Admin / Tim Lipat"
   },
-  54: {
-    num: "#54", title: "Mutasi Hasil Lipat → Koli", phase: "Produksi Massal", phaseColor: "#a78bfa",
+  55: {
+    num: "#55", title: "Mutasi Hasil Lipat → Koli", phase: "Produksi Massal", phaseColor: "#a78bfa",
     desc: "Proses perpindahan stok produk terlipat dari floor lipat ke floor koli untuk proses packing.",
     notes: ["Verifikasi kuantitas sebelum mutasi", "Catat per size/ukuran", "Floor koli konfirmasi penerimaan"],
     inputs: [{label: "Produk terlipat di Floor Lipat", type: "in"}],
     outputs: [{label: "Stock berpindah ke Floor Koli", type: "out"}],
     pic: "Admin Gudang / Floor"
   },
-  55: {
-    num: "#55", title: "Koli / Packing", phase: "Finishing & Pengiriman", phaseColor: "#ff6b35",
+  56: {
+    num: "#56", title: "Koli / Packing", phase: "Finishing & Pengiriman", phaseColor: "#ff6b35",
     desc: "Proses packing produk ke dalam karton/koli sesuai dengan ketentuan packing yang berlaku. Produk dikemas dengan rapi, diberi label koli, dan dipersiapkan untuk masuk ke gudang barang jadi.",
     notes: ["Ikuti standar isi per koli (jumlah per ukuran per karton)", "Beri label koli: kode SPK, isi, ukuran, customer", "Pastikan koli tertutup rapat dan aman untuk pengiriman"],
     inputs: [{label: "Produk terlipat dari Floor Lipat", type: "in"}, {label: "Karton + label koli", type: "in"}],
     outputs: [{label: "Koli/karton siap kirim ke GBJ", type: "out"}],
     pic: "Tim Koli / Floor Koli"
   },
-  56: {
-    num: "#56", title: "Input LHK Koli", phase: "Finishing & Pengiriman", phaseColor: "#ff6b35",
+  57: {
+    num: "#57", title: "Input LHK Koli", phase: "Finishing & Pengiriman", phaseColor: "#ff6b35",
     desc: "Input administrasi LHK hasil proses koli. Mencatat jumlah koli, isi per koli, dan total quantity per ukuran yang telah dikemas.",
     notes: ["Catat: jumlah koli, qty per koli, total per size", "Verifikasi total sesuai target SPK", "LHK Koli sebagai dasar dokumen STBJ"],
     inputs: [{label: "Data hasil packing koli", type: "in"}],
     outputs: [{label: "LHK Koli tersimpan", type: "out"}],
     pic: "Admin / Tim Koli"
   },
-  57: {
-    num: "#57", title: "Input STBJ — Serah Terima Barang Jadi", phase: "Finishing & Pengiriman", phaseColor: "#ff6b35",
+  58: {
+    num: "#58", title: "Input STBJ — Serah Terima Barang Jadi", phase: "Finishing & Pengiriman", phaseColor: "#ff6b35",
     desc: "Proses serah terima dan perpindahan stok hasil koli ke Gudang Barang Jadi (GBJ). Input STBJ menandai bahwa tanggung jawab produk telah berpindah dari floor produksi ke tim gudang barang jadi.",
     notes: ["Verifikasi fisik barang dengan dokumen STBJ", "Gudang GBJ konfirmasi penerimaan dan update stok", "STBJ ditandatangani kedua belah pihak"],
-    inputs: [{label: "Koli dari Floor Koli", type: "in"}, {label: "Dokumen LHK Koli (#56)", type: "in"}],
+    inputs: [{label: "Koli dari Floor Koli", type: "in"}, {label: "Dokumen LHK Koli (#57)", type: "in"}],
     outputs: [{label: "Stock masuk Gudang Barang Jadi (GBJ)", type: "out"}, {label: "Dokumen STBJ tersimpan", type: "out"}],
     pic: "Tim Koli → Admin GBJ"
   },
-  58: {
-    num: "#58", title: "Input Jadwal Kirim", phase: "Finishing & Pengiriman", phaseColor: "#ff6b35",
+  59: {
+    num: "#59", title: "Input Jadwal Kirim", phase: "Finishing & Pengiriman", phaseColor: "#ff6b35",
     desc: "Proses input informasi barang yang siap dikirim pada hari tersebut. Tim marketing atau PPIC menginput jadwal pengiriman, mencakup kode SPK, customer tujuan, alamat, quantity, dan ekspedisi yang digunakan.",
     notes: ["Input jadwal kirim H-1 atau pagi hari pengiriman", "Sertakan: kode SPK, nama customer, alamat, qty, ekspedisi", "Jadwal kirim sebagai dasar pembuatan surat jalan"],
     inputs: [{label: "Data ready kirim dari GBJ", type: "in"}, {label: "Informasi pengiriman customer", type: "in"}],
     outputs: [{label: "Jadwal kirim tersimpan di sistem", type: "out"}],
     pic: "Marketing / PPIC"
   },
-  59: {
-    num: "#59", title: "Input Surat Jalan", phase: "Finishing & Pengiriman", phaseColor: "#ff6b35",
+  60: {
+    num: "#60", title: "Input Surat Jalan", phase: "Finishing & Pengiriman", phaseColor: "#ff6b35",
     desc: "Proses pembuatan surat jalan oleh tim delivery berdasarkan jadwal kirim yang telah diinput. Surat jalan merupakan dokumen resmi yang menyertai pengiriman barang ke customer.",
     notes: ["Surat jalan memuat: nomor SJ, tanggal, customer, alamat, isi pengiriman detail", "Cetak minimal 3 rangkap: arsip, customer, ekspedisi", "Verifikasi data sebelum surat jalan difinalisasi"],
-    inputs: [{label: "Data Jadwal Kirim (#58)", type: "in"}],
+    inputs: [{label: "Data Jadwal Kirim (#59)", type: "in"}],
     outputs: [{label: "Surat Jalan tercetak (3 rangkap)", type: "out"}],
     pic: "Tim Delivery / Ekspedisi"
   },
-  60: {
-    num: "#60", title: "Input Approval Surat Jalan + Scan Barcode", phase: "Finishing & Pengiriman", phaseColor: "#ff6b35",
+  61: {
+    num: "#61", title: "Input Approval Surat Jalan + Scan Barcode", phase: "Finishing & Pengiriman", phaseColor: "#ff6b35",
     desc: "Proses pengangkutan barang dari GBJ ke armada/truk ekspedisi sekaligus proses administrasi validasi pengeluaran barang. Setiap barang di-scan barcode-nya satu per satu sebagai bukti resmi bahwa barang tersebut telah keluar dari GBJ.",
     notes: ["⚠️ Scan barcode 1 per 1 pada setiap koli/karton yang diangkut", "Scan sebagai validasi resmi pengeluaran dari GBJ", "Barang yang sudah di-scan = resmi keluar dari stok GBJ", "Approval surat jalan oleh pihak berwenang sebelum armada bergerak"],
-    inputs: [{label: "Koli/Karton dari GBJ", type: "in"}, {label: "Surat Jalan (#59)", type: "in"}, {label: "Scanner Barcode", type: "in"}],
+    inputs: [{label: "Koli/Karton dari GBJ", type: "in"}, {label: "Surat Jalan (#60)", type: "in"}, {label: "Scanner Barcode", type: "in"}],
     outputs: [{label: "Stok GBJ berkurang (per scan)", type: "out"}, {label: "Surat jalan ter-approve", type: "out"}, {label: "Barang dalam perjalanan ke Customer", type: "out"}],
     pic: "Tim Delivery + Admin GBJ"
-  },
+  }
 };
 
 let current = null;
 
 function show(id) {
-  // deactivate all
   document.querySelectorAll('.node, .diamond-node').forEach(el => el.classList.remove('active'));
-  // activate clicked
   const el = document.getElementById('n' + id);
   if (el) el.classList.add('active');
   current = id;
@@ -1769,7 +1375,6 @@ function show(id) {
   if (!d) return;
 
   const phaseColor = d.phaseColor;
-
   const noteIcons = d.notes.map(n => {
     const isWarn = n.startsWith('⚠️');
     return `<li><span class="note-icon ${isWarn?'warn':''}">▸</span>${n}</li>`;
@@ -1783,12 +1388,10 @@ function show(id) {
     `<div class="input-chip"><div class="chip-dot out ${o.type==='warn'?'warn':''}"></div>${o.label}</div>`
   ).join('');
 
-
-
   const modalHtml = `
-    <div class="detail-header" style="display:flex;align-items:center;gap:14px;padding:16px 22px;border-bottom:1px solid var(--border);background:var(--surface2);">
+    <div class="detail-header">
       <span class="detail-num">${d.num}</span>
-      <span class="detail-title" style="flex:1;">${d.title}</span>
+      <span class="detail-title">${d.title}</span>
       <span class="detail-phase-badge" style="background:${phaseColor}22;color:${phaseColor};border:1px solid ${phaseColor}44">${d.phase}</span>
       <span style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;">PIC: ${d.pic}</span>
       <button class="modal-close-btn" onclick="closeDetailModal()" title="Tutup">✕</button>
@@ -1819,24 +1422,20 @@ function show(id) {
 }
 
 function closeDetailModal(event) {
-  // Tutup hanya jika klik overlay (bukan konten modal)
   if (event && event.target !== document.getElementById('detail-modal-overlay')) return;
   document.getElementById('detail-modal-overlay').classList.remove('open');
-  // Reset active node
-  document.querySelectorAll('.node.active').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.node.active, .diamond-node.active').forEach(n => n.classList.remove('active'));
   current = null;
 }
 
-// Keyboard ESC untuk tutup modal
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     document.getElementById('detail-modal-overlay').classList.remove('open');
-    document.querySelectorAll('.node.active').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.node.active, .diamond-node.active').forEach(n => n.classList.remove('active'));
     current = null;
   }
 });
 
-// Theme Toggle
 function toggleTheme() {
   const html = document.documentElement;
   const isLight = html.classList.toggle('light');
@@ -1845,7 +1444,6 @@ function toggleTheme() {
   try { localStorage.setItem('theme', isLight ? 'light' : 'dark'); } catch(e) {}
 }
 
-// Restore saved theme
 (function() {
   try {
     if (localStorage.getItem('theme') === 'light') {
@@ -1860,7 +1458,216 @@ function toggleTheme() {
   } catch(e) {}
 })();
 
-// Clock
+// ── EXPORT PDF ──
+function exportPDF() {
+  // Tutup modal jika terbuka
+  document.getElementById('detail-modal-overlay').classList.remove('open');
+
+  // Hitung skala agar muat 1 halaman landscape A4
+  const canvas = document.querySelector('.flow-canvas');
+  const canvasW = canvas.scrollWidth;
+  const canvasH = canvas.scrollHeight;
+  const pageW = 1122; // A4 landscape px @96dpi (~297mm)
+  const pageH = 794;  // A4 landscape px @96dpi (~210mm)
+  const marginPx = 24;
+  const scaleX = (pageW - marginPx * 2) / canvasW;
+  const scaleY = (pageH - marginPx * 2) / canvasH;
+  const scale = Math.min(scaleX, scaleY, 1).toFixed(4);
+
+  // Terapkan scale sementara
+  canvas.style.transform = `scale(${scale})`;
+  canvas.style.transformOrigin = 'top left';
+  canvas.style.width = (canvasW * scale) + 'px';
+  document.querySelector('.flow-wrapper').style.overflow = 'visible';
+
+  // Tambahkan judul cetak
+  const printTitle = document.createElement('div');
+  printTitle.id = 'print-title';
+  printTitle.style.cssText = 'display:none;font-family:serif;font-size:11px;font-weight:bold;text-align:center;padding:4px 0 2px;color:#000;border-bottom:1px solid #999;margin-bottom:6px;';
+  printTitle.innerHTML = 'ALUR PRODUKSI SUBLIM — KENCANA GROUP &nbsp;|&nbsp; REV 2.0 &nbsp;|&nbsp; ' + new Date().toLocaleDateString('id-ID', {day:'2-digit',month:'long',year:'numeric'});
+  document.querySelector('.flow-wrapper').prepend(printTitle);
+
+  const style = document.createElement('style');
+  style.id = 'print-inject';
+  style.textContent = `
+    @page { size: A4 landscape; margin: 6mm; }
+    #print-title { display: block !important; }
+  `;
+  document.head.appendChild(style);
+
+  window.print();
+
+  // Bersihkan setelah print
+  setTimeout(() => {
+    canvas.style.transform = '';
+    canvas.style.transformOrigin = '';
+    canvas.style.width = '';
+    document.querySelector('.flow-wrapper').style.overflow = '';
+    const t = document.getElementById('print-title');
+    if (t) t.remove();
+    const s = document.getElementById('print-inject');
+    if (s) s.remove();
+  }, 1000);
+}
+
+// ── EXPORT WORD ──
+function exportWord() {
+  // Bangun HTML yang bisa dibuka Word dan disimpan sebagai .doc
+  const BOM = '\uFEFF';
+
+  const phaseColor = (phase) => {
+    const map = {
+      'Pre-Produksi':'#0077CC','Pembuatan Sampel':'#16A34A',
+      'Sales Order':'#7C3AED','Produksi Massal':'#D97706','Finishing & Pengiriman':'#E05520'
+    };
+    return map[phase] || '#2E5596';
+  };
+  const phaseBg = (phase) => {
+    const map = {
+      'Pre-Produksi':'#E8F4FD','Pembuatan Sampel':'#DCFCE7',
+      'Sales Order':'#EDE9FE','Produksi Massal':'#FEF9C3','Finishing & Pengiriman':'#FFF0EB'
+    };
+    return map[phase] || '#F2F7FC';
+  };
+
+  let rows = '';
+  let lastPhase = null;
+  const today = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
+
+  Object.values(data).forEach(d => {
+    if (d.phase !== lastPhase) {
+      const pc = phaseColor(d.phase);
+      const pb = phaseBg(d.phase);
+      rows += `<tr><td colspan="8" style="background:${pb};border-top:3px solid ${pc};border-bottom:2px solid ${pc};padding:6px 10px;font-weight:bold;color:${pc};font-size:11pt;letter-spacing:1px">${d.phase.toUpperCase()}</td></tr>`;
+      lastPhase = d.phase;
+    }
+    const pc = phaseColor(d.phase);
+    const pb = phaseBg(d.phase);
+    const notes = d.notes.map(n=>`<li>${n}</li>`).join('');
+    const inputs = d.inputs.map(i=>`<li>${i.label||i}</li>`).join('');
+    const outputs = d.outputs.map(o=>`<li>${o.label||o}</li>`).join('');
+    rows += `<tr>
+      <td style="font-weight:bold;color:#2E75B6;white-space:nowrap">${d.num}</td>
+      <td style="font-weight:bold;color:#1F3864">${d.title}</td>
+      <td style="background:${pb};color:${pc};font-size:9pt">${d.phase}</td>
+      <td style="color:#5A6A7E;font-size:9pt">${d.pic}</td>
+      <td style="font-size:9pt">${d.desc}</td>
+      <td style="font-size:9pt"><ul style="margin:0;padding-left:16px">${notes}</ul></td>
+      <td style="font-size:9pt"><ul style="margin:0;padding-left:16px">${inputs}</ul></td>
+      <td style="font-size:9pt"><ul style="margin:0;padding-left:16px">${outputs}</ul></td>
+    </tr>`;
+  });
+
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
+    xmlns:w="urn:schemas-microsoft-com:office:word"
+    xmlns="http://www.w3.org/TR/REC-html40">
+  <head><meta charset="UTF-8">
+  <xml><w:WordDocument><w:View>Print</w:View><w:Zoom>90</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml>
+  <style>
+    @page { size: A4; margin: 1.5cm 1cm; }
+    body { font-family: Arial, sans-serif; font-size: 10pt; color: #1A2333; }
+    h1 { font-size: 18pt; color: #1F3864; text-align: center; margin: 0 0 4px 0; }
+    h2 { font-size: 13pt; color: #2E5596; text-align: center; margin: 0 0 16px 0; }
+    .meta { width:100%; border-collapse:collapse; margin-bottom: 24px; }
+    .meta td { border: 1px solid #AECBDF; padding: 5px 10px; font-size: 10pt; }
+    .meta .lbl { background: #D6E4F0; font-weight: bold; color: #1F3864; width: 140px; }
+    table.main { width:100%; border-collapse:collapse; }
+    table.main th { background:#2E5596; color:#fff; padding:6px 8px; font-size:9.5pt; border:1px solid #1F3864; text-align:left; }
+    table.main td { border:1px solid #CCCCCC; padding:5px 7px; vertical-align:top; }
+    table.main tr:nth-child(even) td { background: #F5F8FB; }
+    ul { margin: 0; padding-left: 16px; }
+    li { margin-bottom: 2px; }
+    .sig-table { width:100%; border-collapse:collapse; margin-top: 32px; }
+    .sig-table th { background:#D6E4F0; color:#1F3864; border:2px solid #2E5596; padding:8px; text-align:center; font-size:11pt; }
+    .sig-table .space { height:80px; border:1px solid #CCC; }
+    .sig-table .name { background:#F5F8FB; border:1px solid #CCC; padding:8px; text-align:center; font-size:9pt; color:#5A6A7E; }
+    .sig-table .role { background:#D6E4F0; border:2px solid #2E5596; padding:6px; text-align:center; font-weight:bold; color:#1F3864; }
+    hr { border:none; border-top:3px solid #2E75B6; margin:20px 0; }
+    .cover-footer { text-align:center; color:#888; font-size:9pt; margin-top:48px; border-top:1px solid #CCC; padding-top:10px; }
+    .page-break { page-break-before: always; }
+  </style></head>
+  <body>
+  <!-- COVER -->
+  <div style="text-align:center;padding:60px 0 40px">
+    <p style="font-size:11pt;color:#5A6A7E;margin:0 0 8px">STANDAR OPERASIONAL PROSEDUR</p>
+    <h1>KENCANA GROUP</h1>
+    <hr>
+    <h2>ALUR PRODUKSI SUBLIM</h2>
+    <table class="meta" style="width:420px;margin:32px auto">
+      <tr><td class="lbl">Nomor Dokumen</td><td>SOP-PROD-SUBLIM-001</td></tr>
+      <tr><td class="lbl">Versi</td><td>REV 2.0</td></tr>
+      <tr><td class="lbl">Tanggal Terbit</td><td>${today}</td></tr>
+      <tr><td class="lbl">Total Proses</td><td>61 Node / Proses</td></tr>
+      <tr><td class="lbl">Departemen</td><td>Produksi — PPIC — Marketing — QC — Gudang</td></tr>
+    </table>
+    <p class="cover-footer">DOKUMEN INI BERSIFAT RAHASIA — HANYA UNTUK PENGGUNAAN INTERNAL</p>
+  </div>
+
+  <!-- MAIN TABLE -->
+  <div class="page-break"></div>
+  <h2 style="margin-bottom:12px">DETAIL ALUR PROSES PRODUKSI SUBLIM</h2>
+  <table class="main">
+    <thead><tr>
+      <th style="width:48px">No</th>
+      <th style="width:130px">Judul Proses</th>
+      <th style="width:90px">Phase</th>
+      <th style="width:90px">PIC</th>
+      <th style="width:18%">Deskripsi Proses</th>
+      <th style="width:18%">Catatan Penting</th>
+      <th style="width:14%">Input / Dokumen Masuk</th>
+      <th style="width:14%">Output / Dokumen Keluar</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+
+  <!-- SIGNATURE PAGE -->
+  <div class="page-break"></div>
+  <h1 style="margin-bottom:8px">LEMBAR PERSETUJUAN DAN PENGESAHAN</h1>
+  <hr>
+  <p style="font-size:10pt;margin:8px 0 4px"><b>Nama Dokumen</b> &nbsp;: SOP Alur Produksi Sublim</p>
+  <p style="font-size:10pt;margin:4px 0"><b>Nomor Dokumen</b> : SOP-PROD-SUBLIM-001</p>
+  <p style="font-size:10pt;margin:4px 0"><b>Versi</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : REV 2.0</p>
+  <p style="font-size:10pt;margin:4px 0"><b>Tanggal</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : ${today}</p>
+  <p style="font-size:10pt;margin:4px 0 16px"><b>Departemen</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: Produksi — PPIC — Marketing — QC — Gudang</p>
+  <p style="font-size:10pt;color:#555;font-style:italic;margin-bottom:24px">Dokumen ini telah diperiksa dan disetujui oleh pihak-pihak yang bertanda tangan di bawah ini:</p>
+  <table class="sig-table">
+    <tr>
+      <th>Dibuat Oleh</th><th>Diperiksa Oleh</th><th>Disetujui Oleh</th>
+    </tr>
+    <tr>
+      <td class="space"></td><td class="space"></td><td class="space"></td>
+    </tr>
+    <tr>
+      <td class="name">Nama: ________________________<br>Tanggal: _____________________</td>
+      <td class="name">Nama: ________________________<br>Tanggal: _____________________</td>
+      <td class="name">Nama: ________________________<br>Tanggal: _____________________</td>
+    </tr>
+    <tr>
+      <td class="role">Tim PPIC</td>
+      <td class="role">Kepala Produksi</td>
+      <td class="role">Direktur</td>
+    </tr>
+  </table>
+  <div style="margin-top:32px;border-top:1px solid #DDD;padding-top:12px">
+    <p style="font-weight:bold;color:#1F3864;margin:0 0 8px">Catatan:</p>
+    <p style="font-size:9.5pt;color:#666;margin:4px 0">1. Dokumen ini berlaku sejak tanggal ditandatangani dan menggantikan semua versi sebelumnya.</p>
+    <p style="font-size:9.5pt;color:#666;margin:4px 0">2. Setiap perubahan pada SOP ini harus melalui proses review dan approval ulang.</p>
+    <p style="font-size:9.5pt;color:#666;margin:4px 0">3. Dokumen ini bersifat rahasia dan hanya untuk penggunaan internal perusahaan.</p>
+  </div>
+  </body></html>`;
+
+  const blob = new Blob([BOM + html], { type:'application/msword;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const tgl = new Date().toISOString().slice(0,10);
+  a.download = `SOP_Alur_Produksi_Sublim_KencanaGroup_${tgl}.doc`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function updateClock() {
   const now = new Date();
   document.getElementById('clock').textContent =
