@@ -3488,14 +3488,17 @@ document.body.classList.add('home-active');
   function applyZoom(){
     const tableWrap = document.getElementById('table-wrap');
     if(!tableWrap) return;
-    const scale = zoomLevel / 100;
-    tableWrap.style.transformOrigin = 'top left';
-    tableWrap.style.transform = `scale(${scale})`;
-    // Sesuaikan tinggi wrapper agar tidak overlap elemen bawah
-    const table = tableWrap.querySelector('table');
-    if(table){
-      const naturalHeight = table.offsetHeight * scale;
-      tableWrap.style.marginBottom = (naturalHeight - tableWrap.offsetHeight * scale) + 'px';
+    // Gunakan zoom CSS agar scrollbar tetap muncul
+    tableWrap.style.zoom = (zoomLevel / 100);
+    tableWrap.style.transform = '';
+    tableWrap.style.transformOrigin = '';
+    tableWrap.style.marginBottom = '';
+    // Update inner scroll bar width
+    const inner = document.getElementById('scroll-top-inner');
+    if(inner){
+      setTimeout(()=>{
+        inner.style.width = tableWrap.scrollWidth + 'px';
+      }, 50);
     }
     updateZoomLabel();
   }
