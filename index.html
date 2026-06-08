@@ -3411,6 +3411,454 @@ updateSopDeptFilter();
 </script>
 
 <script>
+  
+// ============================================================
+// HOME COMMAND CENTER — FUNCTIONS
+// ============================================================
+ 
+// STATUS PILL
+function hStatusPill(s){
+  const map={OPEN:'hsp-open',CLOSE:'hsp-close','IN PROGRESS':'hsp-inprog',MONEV:'hsp-monev',PENDING:'hsp-pending'};
+  return '<span class="h-status-pill '+(map[s]||'hsp-open')+'">'+s+'</span>';
+}
+ 
+// MODAL
+function hOpenModal(icon,title,badge,badgeStyle,bodyHtml){
+  document.getElementById('h-modal-icon').textContent=icon;
+  document.getElementById('h-modal-title').textContent=title;
+  const b=document.getElementById('h-modal-badge');
+  b.textContent=badge; b.style.cssText=badgeStyle;
+  document.getElementById('h-modal-body').innerHTML=bodyHtml;
+  document.getElementById('h-modal-detail').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function hCloseModal(){
+  document.getElementById('h-modal-detail').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') hCloseModal(); });
+ 
+// BUKA DETAIL STATISTIK
+function hOpenStatDetail(type, filter, title){
+  if(type==='temuan'){
+    const allRows=[];
+    DEPARTMENTS.forEach(function(dept){
+      (appData[dept]||[]).forEach(function(row){
+        allRows.push(Object.assign({},row,{_dept:dept}));
+      });
+    });
+    const today=new Date(); today.setHours(0,0,0,0);
+    let rows=allRows;
+    if(filter==='KRITIS'){
+      rows=allRows.filter(function(r){
+        if(!r.deadline) return false;
+        const parts=r.deadline.match(/(\d{1,2})-(\d{1,2})-(\d{4})/);
+        if(!parts) return false;
+        const dl=new Date(parts[3],parts[2]-1,parts[1]);
+        return dl<today && r.status!=='CLOSE';
+      });
+    } else if(filter!=='ALL'){
+      rows=allRows.filter(function(r){ return r.status===filter; });
+    }
+    const bodyHtml='<div class="h-modal-summary">'
+      +'<div class="h-modal-sum-card"><div class="h-modal-sum-num">'+rows.length+'</div><div class="h-modal-sum-lbl">Total</div></div>'
+      +'<div class="h-modal-sum-card"><div class="h-modal-sum-num" style="color:#059669;">'+rows.filter(function(r){return r.status==='CLOSE';}).length+'</div><div class="h-modal-sum-lbl">Close</div></div>'
+      +'<div class="h-modal-sum-card"><div class="h-modal-sum-num" style="color:#4F46E5;">'+rows.filter(function(r){return r.status==='IN PROGRESS';}).length+'</div><div class="h-modal-sum-lbl">In Progress</div></div>'
+      +'<div class="h-modal-sum-card"><div class="h-modal-sum-num" style="color:#D97706;">'+rows.filter(function(r){return r.status==='OPEN';}).length+'</div><div class="h-modal-sum-lbl">Open</div></div>'
+      +'</div>'
+      +'<div class="h-modal-table-wrap"><table class="h-modal-table">'
+      +'<thead><tr><th>No</th><th>Departemen</th><th>Temuan</th><th>PIC</th><th>Deadline</th><th>Status</th><th>%</th></tr></thead>'
+      +'<tbody>'+rows.map(function(r,i){
+        const pctColor=r.persentase>=70?'#059669':r.persentase>=40?'#D97706':'#DC2626';
+        return '<tr>'
+          +'<td style="text-align:center;font-weight:700;color:#94A3B8;">'+(i+1)+'</td>'
+          +'<td><span style="background:#F1F5F9;border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700;color:#374151;">'+r._dept+'</span></td>'
+          +'<td style="max-width:260px;">'+r.temuan+'</td>'
+          +'<td style="white-space:nowrap;">'+(r.pic||'-')+'</td>'
+          +'<td style="white-space:nowrap;font-size:11px;">'+(r.deadline||'-')+'</td>'
+          +'<td>'+hStatusPill(r.status)+'</td>'
+          +'<td style="font-weight:800;color:'+pctColor+';">'+(r.persentase||0)+'%</td>'
+          +'</tr>';
+      }).join('')+'</tbody></table></div>';
+    hOpenModal('📋',title,rows.length+' temuan','background:#DBEAFE;color:#1E40AF;',bodyHtml);
+ 
+  } else {
+    // NOTULEN
+    const nd=window.notulenData||[];
+    const allAg=[];
+    nd.forEach(function(m){
+      (m.agendas||[]).forEach(function(a){
+        allAg.push(Object.assign({},a,{_meeting:m.judul,_tanggal:m.tanggal}));
+      });
+    });
+    let rows=filter==='ALL'?allAg:allAg.filter(function(a){return a.status===filter;});
+    const bodyHtml='<div class="h-modal-summary">'
+      +'<div class="h-modal-sum-card"><div class="h-modal-sum-num">'+nd.length+'</div><div class="h-modal-sum-lbl">Meeting</div></div>'
+      +'<div class="h-modal-sum-card"><div class="h-modal-sum-num">'+rows.length+'</div><div class="h-modal-sum-lbl">Tindak Lanjut</div></div>'
+      +'</div>'
+      +'<div class="h-modal-table-wrap"><table class="h-modal-table">'
+      +'<thead><tr><th>No</th><th>Meeting</th><th>Tindak Lanjut</th><th>PIC</th><th>Deadline</th><th>Status</th></tr></thead>'
+      +'<tbody>'+rows.map(function(r,i){
+        return '<tr>'
+          +'<td style="text-align:center;font-weight:700;color:#94A3B8;">'+(i+1)+'</td>'
+          +'<td style="font-size:11px;color:#64748B;">'+(r._meeting||'-')+'</td>'
+          +'<td style="max-width:240px;">'+(r.agenda||'-')+'</td>'
+          +'<td>'+(r.pic||'-')+'</td>'
+          +'<td style="white-space:nowrap;font-size:11px;">'+(r.deadline||'-')+'</td>'
+          +'<td>'+hStatusPill(r.status)+'</td>'
+          +'</tr>';
+      }).join('')+'</tbody></table></div>';
+    hOpenModal('📝',title,rows.length+' item','background:#EDE9FE;color:#5B21B6;',bodyHtml);
+  }
+}
+ 
+// DETAIL DEPARTEMEN
+function hOpenDeptDetail(deptName){
+  const rows=appData[deptName]||[];
+  const snap=hGetSnapshot();
+  const snapPct=snap[deptName]!==undefined?snap[deptName]:null;
+  const nowPct=rows.length>0?Math.round(rows.reduce(function(s,r){return s+(r.persentase||0);},0)/rows.length):0;
+  const delta=snapPct!==null?nowPct-snapPct:null;
+  const dc=DEPT_COLORS[deptName]||{header:'#374151'};
+  let deltaHtml='';
+  if(delta!==null){
+    const dc2=delta>0?'#059669':delta<0?'#DC2626':'#64748B';
+    const ds=delta>0?'↑ +'+delta+'% dari minggu lalu':delta<0?'↓ '+delta+'% dari minggu lalu':'→ Sama dengan minggu lalu';
+    deltaHtml='<div class="h-modal-sum-card" style="background:'+dc2+'11;border-color:'+dc2+'33;">'
+      +'<div class="h-modal-sum-num" style="color:'+dc2+';font-size:16px;">'+nowPct+'%</div>'
+      +'<div class="h-modal-sum-lbl" style="color:'+dc2+';">'+ds+'</div></div>';
+  }
+  const bodyHtml='<div class="h-modal-summary">'
+    +'<div class="h-modal-sum-card"><div class="h-modal-sum-num">'+rows.length+'</div><div class="h-modal-sum-lbl">Total</div></div>'
+    +'<div class="h-modal-sum-card"><div class="h-modal-sum-num" style="color:#D97706;">'+rows.filter(function(r){return r.status==='OPEN';}).length+'</div><div class="h-modal-sum-lbl">Open</div></div>'
+    +'<div class="h-modal-sum-card"><div class="h-modal-sum-num" style="color:#4F46E5;">'+rows.filter(function(r){return r.status==='IN PROGRESS';}).length+'</div><div class="h-modal-sum-lbl">In Progress</div></div>'
+    +'<div class="h-modal-sum-card"><div class="h-modal-sum-num" style="color:#059669;">'+rows.filter(function(r){return r.status==='CLOSE';}).length+'</div><div class="h-modal-sum-lbl">Close</div></div>'
+    +deltaHtml
+    +'</div>'
+    +'<div class="h-modal-table-wrap"><table class="h-modal-table">'
+    +'<thead><tr><th>No</th><th>Temuan</th><th>PIC</th><th>Deadline</th><th>Status</th><th>%</th></tr></thead>'
+    +'<tbody>'+rows.map(function(r,i){
+      const pctColor=r.persentase>=70?'#059669':r.persentase>=40?'#D97706':'#DC2626';
+      return '<tr>'
+        +'<td style="text-align:center;font-weight:700;color:#94A3B8;">'+(i+1)+'</td>'
+        +'<td style="max-width:300px;">'+r.temuan+'</td>'
+        +'<td style="white-space:nowrap;">'+(r.pic||'-')+'</td>'
+        +'<td style="white-space:nowrap;font-size:11px;">'+(r.deadline||'-')+'</td>'
+        +'<td>'+hStatusPill(r.status)+'</td>'
+        +'<td style="font-weight:800;color:'+pctColor+';">'+(r.persentase||0)+'%</td>'
+        +'</tr>';
+    }).join('')+'</tbody></table></div>';
+  hOpenModal('📈','Detail: '+deptName,nowPct+'% progress','background:'+dc.header+'22;color:'+dc.header+';',bodyHtml);
+}
+ 
+// SNAPSHOT SYSTEM — simpan & ambil snapshot Sabtu
+function hSaveSnapshot(){
+  const snap={};
+  const today=new Date();
+  DEPARTMENTS.forEach(function(dept){
+    const rows=appData[dept]||[];
+    snap[dept]=rows.length>0?Math.round(rows.reduce(function(s,r){return s+(r.persentase||0);},0)/rows.length):0;
+  });
+  snap._savedAt=today.toISOString();
+  snap._week=hGetWeekKey(today);
+  try{ localStorage.setItem('h_snapshot_v1',JSON.stringify(snap)); }catch(e){}
+  if(window._isAdmin && window._fbSetDoc && window._fbDocRef){
+    window._fbSetDoc(window._fbDocRef(),{homeSnapshot:snap,savedAt:today.toISOString()},{merge:true}).catch(function(e){console.warn('Snapshot save error:',e);});
+  }
+  return snap;
+}
+function hGetWeekKey(date){
+  const d=new Date(date);
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate()-d.getDay());
+  return d.toISOString().slice(0,10);
+}
+function hGetSnapshot(){
+  try{
+    const r=localStorage.getItem('h_snapshot_v1');
+    if(r) return JSON.parse(r);
+  }catch(e){}
+  return {};
+}
+function hCheckAutoSnapshot(){
+  const today=new Date();
+  if(today.getDay()!==6) return; // bukan Sabtu
+  const snap=hGetSnapshot();
+  const thisWeek=hGetWeekKey(today);
+  if(snap._week===thisWeek) return; // sudah disimpan minggu ini
+  hSaveSnapshot();
+}
+ 
+// LOG AKTIVITAS
+var hActivityLog=[];
+function hLoadActivityLog(){
+  try{
+    const r=localStorage.getItem('h_activity_log_v1');
+    if(r) hActivityLog=JSON.parse(r);
+  }catch(e){ hActivityLog=[]; }
+}
+function hSaveActivityLog(){
+  try{ localStorage.setItem('h_activity_log_v1',JSON.stringify(hActivityLog.slice(0,100))); }catch(e){}
+}
+function hAddActivityLog(icon,type,text,dept){
+  const now=new Date();
+  const timeStr=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+  const dateStr=now.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});
+  const today=new Date(); today.setHours(0,0,0,0);
+  const period=now>=today?'hari':'minggu';
+  hActivityLog.unshift({icon:icon,type:type,text:text,dept:dept||null,time:timeStr+' — '+dateStr,period:period,ts:now.toISOString()});
+  hSaveActivityLog();
+}
+ 
+// PATCH saveData untuk tambah log otomatis
+(function(){
+  const _origSave=window.saveData;
+  if(typeof _origSave==='function'){
+    window.saveData=async function(){
+      hAddActivityLog('💾','edit','<strong>Data disimpan</strong> — Perubahan tersimpan ke Firebase oleh admin',null);
+      hRenderActivityList();
+      await _origSave.apply(this,arguments);
+    };
+  }
+})();
+ 
+// UPDATE STATS HOME dari data Firebase
+function hUpdateStats(){
+  const allRows=[];
+  DEPARTMENTS.forEach(function(dept){
+    (appData[dept]||[]).forEach(function(r){ allRows.push(Object.assign({},r,{_dept:dept})); });
+  });
+  const total=allRows.length;
+  const open=allRows.filter(function(r){return r.status==='OPEN';}).length;
+  const inprog=allRows.filter(function(r){return r.status==='IN PROGRESS';}).length;
+  const close=allRows.filter(function(r){return r.status==='CLOSE';}).length;
+  const monev=allRows.filter(function(r){return r.status==='MONEV';}).length;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const kritis=allRows.filter(function(r){
+    if(!r.deadline||r.status==='CLOSE') return false;
+    const parts=r.deadline.match(/(\d{1,2})-(\d{1,2})-(\d{4})/);
+    if(!parts) return false;
+    const dl=new Date(parts[3],parts[2]-1,parts[1]);
+    return dl<today;
+  }).length;
+  const pct=total>0?Math.round(allRows.reduce(function(s,r){return s+(r.persentase||0);},0)/total):0;
+ 
+  function hSetEl(id,val){ const e=document.getElementById(id); if(e) e.textContent=val; }
+  hSetEl('h-stat-total',total);
+  hSetEl('h-stat-open',open);
+  hSetEl('h-stat-inprog',inprog);
+  hSetEl('h-stat-close',close);
+  hSetEl('h-stat-monev',monev);
+  hSetEl('h-stat-kritis',kritis);
+  hSetEl('h-stat-pct',pct+'%');
+  const bar=document.getElementById('h-stat-bar');
+  if(bar) bar.style.width=pct+'%';
+ 
+  // Notulen stats
+  const nd=window.notulenData||[];
+  const allAg=nd.flatMap(function(m){return (m.agendas||[]);});
+  const nOpen=allAg.filter(function(a){return a.status==='OPEN';}).length;
+  const nInprog=allAg.filter(function(a){return a.status==='IN PROGRESS';}).length;
+  const nClose=allAg.filter(function(a){return a.status==='CLOSE';}).length;
+  const nPending=allAg.filter(function(a){return a.status==='PENDING';}).length;
+  const nPct=allAg.length>0?Math.round(nClose/allAg.length*100):0;
+  hSetEl('h-not-mtg',nd.length);
+  hSetEl('h-not-open',nOpen);
+  hSetEl('h-not-inprog',nInprog);
+  hSetEl('h-not-close',nClose);
+  hSetEl('h-not-pending',nPending);
+  hSetEl('h-not-pct',nPct+'%');
+  const nBar=document.getElementById('h-not-bar');
+  if(nBar) nBar.style.width=nPct+'%';
+ 
+  // Kritis list
+  hRenderKritis(allRows,today);
+  // Dept progress
+  hRenderDeptProgress();
+}
+ 
+// RENDER DEPT PROGRESS
+function hRenderDeptProgress(){
+  const snap=hGetSnapshot();
+  const el=document.getElementById('h-dept-list');
+  if(!el) return;
+  let naik=0,same=0,turun=0,totalPct=0;
+  el.innerHTML=DEPARTMENTS.map(function(dept){
+    const rows=appData[dept]||[];
+    const nowPct=rows.length>0?Math.round(rows.reduce(function(s,r){return s+(r.persentase||0);},0)/rows.length):0;
+    const lastPct=snap[dept]!==undefined?snap[dept]:nowPct;
+    const delta=nowPct-lastPct;
+    const deltaTxt=delta>0?'↑ +'+delta+'%':delta<0?'↓ '+delta+'%':'→ Sama';
+    const deltaCls=delta>0?'h-delta-up':delta<0?'h-delta-down':'h-delta-same';
+    const color=DEPT_COLORS[dept]?DEPT_COLORS[dept].header:'#64748B';
+    const pctColor=nowPct>=70?'#059669':nowPct>=40?'#D97706':'#DC2626';
+    if(delta>0) naik++; else if(delta<0) turun++; else same++;
+    totalPct+=nowPct;
+    return '<div class="h-dept-item" onclick="hOpenDeptDetail(\''+dept+'\')">'
+      +'<div class="h-dept-top">'
+      +'<div class="h-dept-name">'+dept+'</div>'
+      +'<div class="h-dept-right">'
+      +'<div class="h-dept-pct" style="color:'+pctColor+';">'+nowPct+'%</div>'
+      +'<div class="h-dept-delta '+deltaCls+'">'+deltaTxt+'</div>'
+      +'</div></div>'
+      +'<div class="h-bar-now-wrap"><div class="h-bar-now" style="width:'+nowPct+'%;background:'+color+';"></div></div>'
+      +'<div class="h-bar-last-wrap"><div class="h-bar-last" style="width:'+lastPct+'%;"></div></div>'
+      +'<div class="h-bar-labels">'
+      +'<span class="h-bar-lbl">Minggu lalu: '+lastPct+'%</span>'
+      +'<span class="h-bar-lbl" style="color:'+pctColor+';">Minggu ini: '+nowPct+'%</span>'
+      +'</div></div>';
+  }).join('');
+  const avg=DEPARTMENTS.length>0?Math.round(totalPct/DEPARTMENTS.length):0;
+  function hSetEl(id,val){ const e=document.getElementById(id); if(e) e.textContent=val; }
+  hSetEl('h-ds-naik',naik);
+  hSetEl('h-ds-same',same);
+  hSetEl('h-ds-turun',turun);
+  hSetEl('h-ds-avg',avg+'%');
+}
+ 
+// RENDER KRITIS
+function hRenderKritis(allRows,today){
+  const el=document.getElementById('h-kritis-list');
+  if(!el) return;
+  const kritisRows=allRows.filter(function(r){
+    if(!r.deadline||r.status==='CLOSE') return false;
+    const parts=r.deadline.match(/(\d{1,2})-(\d{1,2})-(\d{4})/);
+    if(!parts) return false;
+    const dl=new Date(parts[3],parts[2]-1,parts[1]);
+    return dl<today;
+  });
+  // Tambah yang deadlinenya <30 hari
+  const soon=allRows.filter(function(r){
+    if(!r.deadline||r.status==='CLOSE') return false;
+    const parts=r.deadline.match(/(\d{1,2})-(\d{1,2})-(\d{4})/);
+    if(!parts) return false;
+    const dl=new Date(parts[3],parts[2]-1,parts[1]);
+    const diff=(dl-today)/(1000*60*60*24);
+    return diff>=0 && diff<=30;
+  });
+  const shown=[...kritisRows,...soon].slice(0,6);
+  if(shown.length===0){
+    el.innerHTML='<div style="text-align:center;padding:20px;color:#94A3B8;font-size:12px;">✅ Tidak ada temuan kritis saat ini</div>';
+    return;
+  }
+  el.innerHTML=shown.map(function(r,i){
+    const parts=r.deadline.match(/(\d{1,2})-(\d{1,2})-(\d{4})/);
+    const dl=parts?new Date(parts[3],parts[2]-1,parts[1]):null;
+    const overdue=dl&&dl<today;
+    return '<div class="h-kritis-item '+(overdue?'':'h-warn')+'" onclick="hOpenKritisDetail('+i+',hShownKritis)">'
+      +'<div class="h-kritis-dot '+(overdue?'red':'yellow')+'"></div>'
+      +'<div style="flex:1;">'
+      +'<div class="h-kritis-text">'+r.temuan+'</div>'
+      +'<div class="h-kritis-meta">'+r._dept+' · PIC: '+(r.pic||'-')+' · Deadline: '+r.deadline+'</div>'
+      +'</div>'
+      +'<div class="h-kritis-badge '+(overdue?'overdue':'soon')+'">'+(overdue?'LEWAT':'SEGERA')+'</div>'
+      +'</div>';
+  }).join('');
+  window.hShownKritis=shown;
+}
+ 
+// DETAIL KRITIS
+function hOpenKritisDetail(idx,list){
+  const k=(list||[])[idx];
+  if(!k) return;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const parts=k.deadline?k.deadline.match(/(\d{1,2})-(\d{1,2})-(\d{4})/):null;
+  const dl=parts?new Date(parts[3],parts[2]-1,parts[1]):null;
+  const overdue=dl&&dl<today;
+  const bodyHtml='<div style="background:'+(overdue?'#FEF2F2':'#FFFBEB')+';border:1.5px solid '+(overdue?'#FECACA':'#FDE68A')+';border-radius:12px;padding:16px 18px;margin-bottom:14px;">'
+    +'<div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:8px;">'+k.temuan+'</div>'
+    +'<div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:#64748B;">'
+    +'<span>🏢 Departemen: <strong>'+k._dept+'</strong></span>'
+    +'<span>👤 PIC: <strong>'+(k.pic||'-')+'</strong></span>'
+    +'<span>📅 Deadline: <strong style="color:'+(overdue?'#DC2626':'#D97706')+';">'+k.deadline+'</strong></span>'
+    +'</div></div>'
+    +'<div style="font-size:12px;color:#64748B;background:#F8FAFC;border-radius:10px;padding:14px 16px;line-height:1.7;">'
+    +'<div style="font-weight:700;color:#374151;margin-bottom:6px;">💡 Saran Tindakan:</div>'
+    +(overdue?'⚠️ Temuan ini sudah melewati deadline. Segera koordinasikan dengan PIC dan laporkan ke owner untuk eskalasi.'
+            :'📌 Deadline temuan ini kurang dari 30 hari. Pastikan PIC sudah mengetahui dan progres berjalan sesuai rencana.')
+    +'</div>';
+  hOpenModal(overdue?'🔴':'🟡','Perhatian Segera',overdue?'DEADLINE LEWAT':'SEGERA','background:'+(overdue?'#FEE2E2':'#FEF3C7')+';color:'+(overdue?'#DC2626':'#D97706')+';',bodyHtml);
+}
+ 
+// RENDER ACTIVITY
+var hCurrentActFilter='semua';
+var hCurrentActList=[];
+function hFilterAct(f,el){
+  hCurrentActFilter=f;
+  document.querySelectorAll('.h-act-tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  hRenderActivityList();
+}
+function hRenderActivityList(){
+  let list=hActivityLog;
+  const now=new Date(); now.setHours(0,0,0,0);
+  const weekAgo=new Date(now); weekAgo.setDate(weekAgo.getDate()-7);
+  if(hCurrentActFilter==='hari') list=hActivityLog.filter(function(a){ return new Date(a.ts)>=now; });
+  if(hCurrentActFilter==='minggu') list=hActivityLog.filter(function(a){ return new Date(a.ts)>=weekAgo; });
+  hCurrentActList=list;
+  const el=document.getElementById('h-activity-list');
+  if(!el) return;
+  if(list.length===0){
+    el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:#94A3B8;font-size:13px;">Belum ada aktivitas pada periode ini.</div>';
+    return;
+  }
+  el.innerHTML=list.slice(0,8).map(function(a,i){
+    return '<div class="h-activity-item" onclick="hOpenActivityDetail('+i+')">'
+      +'<div class="h-act-icon '+(a.type||'edit')+'">'+a.icon+'</div>'
+      +'<div style="flex:1;">'
+      +'<div class="h-act-text">'+a.text+'</div>'
+      +'<div class="h-act-time">'+a.time+'</div>'
+      +'</div></div>';
+  }).join('');
+}
+ 
+// DETAIL AKTIVITAS
+function hOpenActivityDetail(idx){
+  const a=hCurrentActList[idx];
+  if(!a) return;
+  const deptRows=a.dept?(appData[a.dept]||[]):[];
+  const bodyHtml='<div style="background:#F8FAFC;border:1.5px solid #E2E8F0;border-radius:12px;padding:16px 18px;margin-bottom:14px;">'
+    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'
+    +'<div style="width:36px;height:36px;border-radius:9px;background:#DBEAFE;display:flex;align-items:center;justify-content:center;font-size:18px;">'+a.icon+'</div>'
+    +'<div><div style="font-size:13px;font-weight:700;color:#1E293B;">'+a.text.replace(/<[^>]*>/g,'')+'</div>'
+    +'<div style="font-size:11px;color:#94A3B8;margin-top:2px;">🕐 '+a.time+'</div></div></div>'
+    +(a.dept?'<div style="font-size:12px;color:#64748B;">🏢 Departemen: <strong style="color:#374151;">'+a.dept+'</strong></div>':'')
+    +'</div>'
+    +(deptRows.length>0
+      ?'<div style="font-size:12px;font-weight:700;color:#475569;margin-bottom:8px;">📋 Data Temuan Terkait — '+a.dept+'</div>'
+       +'<div class="h-modal-table-wrap"><table class="h-modal-table">'
+       +'<thead><tr><th>No</th><th>Temuan</th><th>Status</th><th>%</th></tr></thead>'
+       +'<tbody>'+deptRows.map(function(r,i){
+         const pctColor=r.persentase>=70?'#059669':r.persentase>=40?'#D97706':'#DC2626';
+         return '<tr><td style="text-align:center;font-weight:700;color:#94A3B8;">'+(i+1)+'</td>'
+           +'<td>'+r.temuan+'</td><td>'+hStatusPill(r.status)+'</td>'
+           +'<td style="font-weight:800;color:'+pctColor+';">'+(r.persentase||0)+'%</td></tr>';
+       }).join('')+'</tbody></table></div>'
+      :'<div style="text-align:center;padding:16px;color:#94A3B8;font-size:13px;">Tidak ada data temuan terkait.</div>');
+  hOpenModal(a.icon,'Detail Aktivitas',a.time,'background:#DBEAFE;color:#1E40AF;',bodyHtml);
+}
+ 
+// INIT HOME
+function hInitCommandCenter(){
+  hLoadActivityLog();
+  hCheckAutoSnapshot();
+  hUpdateStats();
+  hRenderActivityList();
+  // Refresh setiap 5 menit
+  setInterval(function(){
+    hUpdateStats();
+    hRenderActivityList();
+    hCheckAutoSnapshot();
+  }, 5*60*1000);
+}
+ 
+// Jalankan saat data Firebase sudah siap
+var _hOrigHideOverlay=window.hideLoadingOverlay;
+window.hideLoadingOverlay=function(){
+  if(_hOrigHideOverlay) _hOrigHideOverlay.apply(this,arguments);
+  setTimeout(hInitCommandCenter, 500);
+};
+  
 function goToDashboard(){
   // Sembunyikan SEMUA halaman lain dengan paksa
   const pgHome = document.getElementById('page-home');
