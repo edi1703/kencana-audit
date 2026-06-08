@@ -1976,9 +1976,12 @@ function renderPctCell(td, row){
     const n=parseInt(newVal,10);
     if(isNaN(n)||n<0||n>100){ showNotif("Nilai harus 0-100","error"); return; }
     pushUndo();
+    const oldPct=row.persentase||0;
     updateRowField(row.id,'persentase',n);
     row.persentase=n;
     renderPctCell(td,row);
+    hAddActivityLog('📊','edit','<strong>% Penyelesaian diperbarui</strong> — '+activeDept+' #'+(idx+1)+': <span style="color:#D97706;">'+oldPct+'%</span> → <span style="color:#059669;">'+n+'%</span>',activeDept);
+    hRenderActivityList();
     renderSidebar(); setUnsaved(true);
   };
 }
