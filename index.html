@@ -1906,16 +1906,21 @@ function renderTable(){
           if(s===row.status) opt.selected=true; sel.appendChild(opt);
         });
         sel.onchange=function(){
-          pushUndo();
-          updateRowField(row.id,'status',this.value);
-          const ns=STATUS_STYLES[this.value]||STATUS_STYLES['OPEN'];
-          this.style.background=ns.bg; this.style.color=ns.color; this.style.borderColor=ns.border;
-          if(this.value==='CLOSE') updateRowField(row.id,'persentase',100);
-          updateStats(); renderSidebar(); setUnsaved(true);
-          // re-render pct cell
-          const pctTd=tr.querySelector('[data-col="persentase"]');
-          if(pctTd) renderPctCell(pctTd,row);
-        };
+  const oldStatus=row.status||'OPEN';
+  const newStatus=this.value;
+  pushUndo();
+  updateRowField(row.id,'status',newStatus);
+  const ns=STATUS_STYLES[newStatus]||STATUS_STYLES['OPEN'];
+  this.style.background=ns.bg; this.style.color=ns.color; this.style.borderColor=ns.border;
+  if(newStatus==='CLOSE') updateRowField(row.id,'persentase',100);
+  if(oldStatus!==newStatus){
+    hAddActivityLog('🔄','edit','<strong>Status diperbarui</strong> — '+activeDept+' #'+(idx+1)+': <span style="color:#D97706;">'+oldStatus+'</span> → <span style="color:#059669;">'+newStatus+'</span>',activeDept);
+    hRenderActivityList();
+  }
+  updateStats(); renderSidebar(); setUnsaved(true);
+  const pctTd=tr.querySelector('[data-col="persentase"]');
+  if(pctTd) renderPctCell(pctTd,row);
+};
         td.appendChild(sel);
 
       } else if(col.type==='pct'){
