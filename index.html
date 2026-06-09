@@ -2765,6 +2765,8 @@ function addRow(){
   // Dynamically add ALL custom/extra fields (progres + kolom tambahan lain)
   COLS.filter(c=>!CORE_ROW_KEYS.includes(c.key)).forEach(c=>{ newRow[c.key]=''; });
   appData[activeDept].push(newRow);
+  hAddActivityLog('➕','add','<strong>Baris baru ditambahkan</strong> — Departemen <strong>'+activeDept+'</strong>',activeDept);
+  hRenderActivityList();
   updateStats(); renderSidebar(); renderTable(); setUnsaved(true);
   showNotif("Baris baru ditambahkan.","info");
   const wrap=document.getElementById('table-wrap'); wrap.scrollTop=wrap.scrollHeight;
@@ -2775,7 +2777,10 @@ function deleteRow(rowId){
   for(const dept of DEPARTMENTS){
     const rows=appData[dept]||[];
     const idx=rows.findIndex(r=>r.id===rowId);
-    if(idx>=0){ pushUndo(); rows.splice(idx,1); editingCell=null; updateStats(); renderSidebar(); renderTable(); setUnsaved(true); showNotif("Baris berhasil dihapus.","info"); return; }
+    if(idx>=0){ pushUndo();
+    hAddActivityLog('🗑️','edit','<strong>Baris dihapus</strong> — Departemen <strong>'+dept+'</strong>',dept);
+    hRenderActivityList();
+    rows.splice(idx,1); editingCell=null; updateStats(); renderSidebar(); renderTable(); setUnsaved(true); showNotif("Baris berhasil dihapus.","info"); return; }
   }
 }
 
