@@ -5240,7 +5240,8 @@ function saveNewFlow(){
   flowData = window.flowData;
   flowData.push(payload);
   window.flowData = flowData;
-
+  hAddActivityLog('🔄','add','<strong>Flow Bisnis baru ditambahkan</strong> — <strong>'+payload.nama+'</strong> ('+payload.kategori+')',null);
+  hRenderActivityList();
   _flowFileBuffer = null;
   document.getElementById('modal-add-flow').remove();
   saveFlowToFirebase();
@@ -5253,8 +5254,13 @@ function deleteFlow(id){
   if(!confirm('Hapus flow ini?')) return;
   window.flowData = window.flowData || [];
   flowData = window.flowData;
+  const flowDel=(window.flowData||[]).find(f=>f.id===id);
   flowData = flowData.filter(f=>f.id!==id);
   window.flowData = flowData;
+  if(flowDel){
+    hAddActivityLog('🗑️','edit','<strong>Flow Bisnis dihapus</strong> — <strong>'+(flowDel.nama||'-')+'</strong>',null);
+    hRenderActivityList();
+  }
   saveFlowToFirebase();
   renderFlowGrid();
   showNotif('Flow dihapus.','info');
