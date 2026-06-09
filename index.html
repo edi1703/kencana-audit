@@ -2558,6 +2558,10 @@ function finishEdit(){
   if(newVal!==oldVal){
     pushUndo();
     updateRowField(rowId,colKey,newVal);
+    const colLabel=COLS.find(c=>c.key===colKey);
+    const lblText=colLabel?colLabel.label:colKey;
+    hAddActivityLog('✏️','edit','<strong>'+lblText+' diperbarui</strong> — '+activeDept,activeDept);
+    hRenderActivityList();
     setUnsaved(true);
   }
 }
