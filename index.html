@@ -5667,19 +5667,26 @@ fileLink: document.getElementById('sop-crud-link').value.trim() || ''
     }
   } else {
     sopFullData.push(payload);
-    showNotif('✅ Dokumen berhasil ditambahkan!','success');
-  }
+      showNotif('✅ Dokumen berhasil ditambahkan!','success');
+      hAddActivityLog('📖','add','<strong>Dokumen SOP baru ditambahkan</strong> — <strong>'+payload.nama+'</strong> ('+payload.tipe+' · '+payload.divisi+')',null);
+      hRenderActivityList();
+    }
 
-  window.sopFullData = sopFullData;
-  saveSOPToFirebase();
-  closeModalSOP();
-  renderSOPGrid();
+    window.sopFullData = sopFullData;
+    saveSOPToFirebase();
+    closeModalSOP();
+    renderSOPGrid();
 }
 
 function deleteSOPFull(id){
   if(!window._isAdmin){ showNotif('⛔ Hanya admin.','error'); return; }
   if(!confirm('Hapus dokumen ini? Tindakan tidak bisa dibatalkan.')) return;
+  const sopDel=sopFullData.find(s=>s.id===id);
   sopFullData = sopFullData.filter(s=>s.id!==id);
+  if(sopDel){
+    hAddActivityLog('🗑️','edit','<strong>Dokumen SOP dihapus</strong> — <strong>'+(sopDel.nama||'-')+'</strong> ('+(sopDel.tipe||'-')+')',null);
+    hRenderActivityList();
+  }
   saveSOPToFirebase();
   renderSOPGrid();
   showNotif('Dokumen dihapus.','info');
