@@ -4588,8 +4588,16 @@ function updateAgendaField(mtgId,agId,field,val){
   if(!m) return;
   const ag=m.agendas.find(a=>a.id===agId);
   if(!ag) return;
+  const oldVal=ag[field];
   ag[field]=val;
   window.notulenData=notulenData;
+  if(field==='status' && oldVal!==val){
+    hAddActivityLog('🔄','notulen','<strong>Status tindak lanjut diperbarui</strong> — '+m.judul+': <span style="color:#D97706;">'+oldVal+'</span> → <span style="color:#059669;">'+val+'</span>',null);
+    hRenderActivityList();
+  } else if(field!=='status' && oldVal!==val){
+    hAddActivityLog('✏️','notulen','<strong>Tindak lanjut diedit</strong> — '+m.judul,null);
+    hRenderActivityList();
+  }
   saveNotulenData(); updateNotulenStats();
 }
 async function saveNotulenData(){
