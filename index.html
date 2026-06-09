@@ -4542,6 +4542,8 @@ function saveMeeting(){
     if(m){ m.tanggal=tanggal;m.waktu=waktu;m.judul=judul;m.lokasi=lokasi;m.pimpinan=pimpinan;m.peserta=peserta; }
   } else {
     notulenData.push({id:'mtg-'+Date.now(),tanggal,waktu,judul,lokasi,pimpinan,peserta,agendas:[],createdAt:new Date().toISOString()});
+  hAddActivityLog('📝','notulen','<strong>Meeting baru ditambahkan</strong> — <strong>'+judul+'</strong>',null);
+  hRenderActivityList();
   }
   window.notulenData=notulenData;
   closeModalMeeting();
@@ -4553,7 +4555,12 @@ function deleteMeeting(id){
   if(!window._isAdmin){ showNotif('⛔ Hanya admin.','error'); return; }
   if(!confirm('Hapus meeting ini beserta semua agenda?')) return;
   const idx=notulenData.findIndex(x=>x.id===id);
-  if(idx>=0){ notulenData.splice(idx,1); window.notulenData=notulenData; }
+  if(idx>=0){
+    const judulHapus=notulenData[idx].judul||'(tanpa judul)';
+    hAddActivityLog('🗑️','notulen','<strong>Meeting dihapus</strong> — <strong>'+judulHapus+'</strong>',null);
+    hRenderActivityList();
+    notulenData.splice(idx,1); window.notulenData=notulenData;
+  }
   saveNotulenData(); renderNotulenList();
   showNotif('Meeting dihapus.','info');
 }
@@ -4563,6 +4570,8 @@ function addAgenda(mtgId){
   if(!m) return;
   if(!m.agendas) m.agendas=[];
   m.agendas.push({id:'ag-'+Date.now(),agenda:'',pic:'',deadline:'',status:'OPEN',catatan:''});
+  hAddActivityLog('➕','notulen','<strong>Tindak lanjut baru ditambahkan</strong> — '+m.judul,null);
+  hRenderActivityList();
   window.notulenData=notulenData;
   saveNotulenData(); renderNotulenList();
 }
