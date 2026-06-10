@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flow Administrasi Garmen — CV. Kencana Print</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<!-- SheetJS for Excel export -->
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#F0F4FF;color:#1e293b;min-height:100vh;}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,#1D4ED8,#1e40af);padding:11px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 4px 16px rgba(29,78,216,0.3);}
+.hdr-left .hdr-title{font-size:15px;font-weight:800;color:#fff;}
+.hdr-left .hdr-sub{font-size:10px;color:rgba(255,255,255,0.7);margin-top:1px;}
+.hdr-right{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+.btn{border:none;border-radius:8px;padding:6px 13px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;transition:all 0.15s;display:flex;align-items:center;gap:5px;}
+.btn-zoom{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);}
+.btn-zoom:hover{background:rgba(255,255,255,0.25);}
+.btn-xl{background:#22C55E;color:#fff;}
+.btn-xl:hover{background:#16A34A;transform:translateY(-1px);}
+.btn-wd{background:#fff;color:#1D4ED8;}
+.btn-wd:hover{background:#DBEAFE;transform:translateY(-1px);}
+.btn-pdf{background:#F59E0B;color:#fff;}
+.btn-pdf:hover{background:#D97706;transform:translateY(-1px);}
+.zoom-lbl{font-size:11px;color:#fff;min-width:36px;text-align:center;}
+
+/* CANVAS */
+.canvas-wrap{overflow:auto;padding:24px 20px;background:linear-gradient(135deg,#EEF2FF,#F0F9FF 50%,#F0FDF4);}
+.flow-canvas{display:flex;flex-direction:column;align-items:center;min-width:1200px;gap:0;}
+
+/* LEGEND */
+.legend-bar{width:100%;max-width:1160px;background:#fff;border-radius:10px;padding:8px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border:1.5px solid #E2E8F0;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
+.legend-title{font-size:10px;font-weight:800;color:#64748B;white-space:nowrap;}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:#374151;font-weight:600;}
+.leg-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
+
+/* FASE HEADER */
+.fase-hdr{width:100%;max-width:1160px;border-radius:10px;padding:8px 16px;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+.fase-hdr-text{font-size:12px;font-weight:800;color:#fff;letter-spacing:0.5px;}
+.fase-hdr-line{flex:1;height:1.5px;background:rgba(255,255,255,0.3);}
+
+/* ROW */
+.flow-row{display:flex;align-items:center;justify-content:flex-start;gap:0;width:100%;max-width:1160px;flex-wrap:nowrap;}
+.flow-row-center{justify-content:center;}
+
+/* NODE */
+.node{position:relative;border-radius:11px;padding:10px 12px;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;min-width:138px;max-width:155px;text-align:center;flex-shrink:0;box-shadow:0 3px 10px rgba(0,0,0,0.1);}
+.node:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,0.15);}
+.node-icon{font-size:18px;margin-bottom:3px;display:block;}
+.node-title{font-size:10px;font-weight:800;line-height:1.3;}
+.node-dept{font-size:8.5px;font-weight:600;margin-top:2px;opacity:0.7;}
+
+/* Node colors */
+.n-sales{background:#FEE2E2;border:2px solid #FCA5A5;}.n-sales .node-title{color:#991B1B;}.n-sales .node-dept{color:#DC2626;}
+.n-mo{background:#FFE4E6;border:2px solid #FDA4AF;}.n-mo .node-title{color:#9F1239;}.n-mo .node-dept{color:#BE123C;}
+.n-acc{background:#D1FAE5;border:2px solid #6EE7B7;}.n-acc .node-title{color:#065F46;}.n-acc .node-dept{color:#059669;}
+.n-fin{background:#DCFCE7;border:2px solid #86EFAC;}.n-fin .node-title{color:#14532D;}.n-fin .node-dept{color:#16A34A;}
+.n-ppic{background:#DBEAFE;border:2px solid #93C5FD;}.n-ppic .node-title{color:#1E3A8A;}.n-ppic .node-dept{color:#1D4ED8;}
+.n-gdg{background:#D1FAE5;border:2px solid #86EFAC;}.n-gdg .node-title{color:#14532D;}.n-gdg .node-dept{color:#16A34A;}
+.n-pur{background:#F3E8FF;border:2px solid #D8B4FE;}.n-pur .node-title{color:#581C87;}.n-pur .node-dept{color:#7C3AED;}
+.n-prf{background:#FEF9C3;border:2px solid #FCD34D;}.n-prf .node-title{color:#78350F;}.n-prf .node-dept{color:#B45309;}
+.n-dec{background:#FEF3C7;border:2px solid #F59E0B;border-radius:6px;}.n-dec .node-title{color:#92400E;}.n-dec .node-dept{color:#B45309;}
+
+/* ARROWS */
+.arr-h{width:32px;height:2px;background:#94A3B8;position:relative;flex-shrink:0;}
+.arr-h::after{content:'▶';position:absolute;right:-7px;top:50%;transform:translateY(-50%);font-size:8px;color:#64748B;}
+.arr-h.grn{background:#22C55E;}.arr-h.grn::after{color:#16A34A;}
+.arr-h.blu{background:#3B82F6;}.arr-h.blu::after{color:#1D4ED8;}
+.arr-h-lbl{display:flex;flex-direction:column;align-items:center;width:32px;flex-shrink:0;}
+.arr-h-lbl-text{font-size:8px;font-weight:800;white-space:nowrap;margin-bottom:1px;}
+.arr-h-lbl-line{width:100%;height:2px;background:#94A3B8;position:relative;}
+.arr-h-lbl-line::after{content:'▶';position:absolute;right:-7px;top:50%;transform:translateY(-50%);font-size:8px;color:#64748B;}
+
+.arr-v-wrap{width:100%;max-width:1160px;display:flex;justify-content:center;}
+.arr-v{width:2px;height:18px;background:#94A3B8;position:relative;}
+.arr-v::after{content:'▼';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);font-size:8px;color:#64748B;}
+.arr-v.grn{background:#22C55E;}.arr-v.grn::after{color:#16A34A;}
+.arr-v.blu{background:#3B82F6;}.arr-v.blu::after{color:#1D4ED8;}
+
+.arr-v-banner{width:100%;max-width:1160px;border-radius:6px;padding:5px 14px;margin:3px 0;font-size:10px;font-weight:700;display:flex;align-items:center;gap:6px;}
+
+/* BRANCH */
+.branch-wrap{width:100%;max-width:1160px;display:flex;gap:14px;margin:2px 0;}
+.branch-col{display:flex;flex-direction:column;align-items:flex-start;gap:0;}
+.branch-col-center{align-items:center;}
+.branch-lbl{font-size:9px;font-weight:800;padding:3px 10px;border-radius:8px;margin-bottom:6px;white-space:nowrap;}
+
+/* MODAL */
+#modal{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+#modal.open{display:flex;}
+.mbox{background:#fff;border-radius:16px;width:min(740px,95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,0.2);border:1.5px solid #E2E8F0;animation:mup 0.3s cubic-bezier(.34,1.56,.64,1);}
+@keyframes mup{from{opacity:0;transform:translateY(16px) scale(0.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+.mhd{padding:14px 18px;border-bottom:1.5px solid #F1F5F9;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.mhd-icon{font-size:24px;}
+.mhd-title{font-size:14px;font-weight:800;color:#1E293B;flex:1;}
+.mhd-dept{font-size:10px;color:#64748B;margin-top:1px;}
+.mbtn-close{background:#F1F5F9;border:none;border-radius:7px;width:30px;height:30px;cursor:pointer;font-size:14px;color:#64748B;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mbtn-close:hover{background:#FEE2E2;color:#DC2626;}
+.mbody{padding:14px 18px;overflow-y:auto;flex:1;}
+.msec{margin-bottom:14px;}
+.msec-title{font-size:10px;font-weight:800;color:#64748B;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:6px;}
+.msec-title::after{content:'';flex:1;height:1px;background:#F1F5F9;}
+.mdesc{font-size:12px;color:#374151;line-height:1.7;}
+.mlist{list-style:none;display:flex;flex-direction:column;gap:4px;}
+.mlist li{display:flex;align-items:flex-start;gap:7px;font-size:11.5px;color:#374151;line-height:1.5;background:#F8FAFC;border-radius:6px;padding:6px 10px;}
+.mlist li::before{content:attr(data-icon);font-size:12px;flex-shrink:0;margin-top:1px;}
+.mbox-warn{background:#FEF2F2;border:1px solid #FECACA;border-radius:9px;padding:10px 13px;}
+.mbox-warn-t{font-size:10px;font-weight:800;color:#DC2626;margin-bottom:5px;}
+.mbox-warn ul{list-style:none;display:flex;flex-direction:column;gap:3px;}
+.mbox-warn ul li{font-size:11.5px;color:#7F1D1D;padding-left:14px;position:relative;line-height:1.5;}
+.mbox-warn ul li::before{content:'⚠';position:absolute;left:0;font-size:9px;}
+.mbox-sop{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:9px;padding:10px 13px;}
+.mbox-sop-t{font-size:10px;font-weight:800;color:#1D4ED8;margin-bottom:5px;}
+.mbox-sop ul{list-style:none;display:flex;flex-direction:column;gap:3px;}
+.mbox-sop ul li{font-size:11.5px;color:#1E3A8A;padding-left:14px;position:relative;line-height:1.5;}
+.mbox-sop ul li::before{content:'📋';position:absolute;left:0;font-size:9px;}
+.mbox-job{background:#F0FDF4;border:1px solid #BBF7D0;border-radius:9px;padding:10px 13px;}
+.mbox-job-t{font-size:10px;font-weight:800;color:#15803D;margin-bottom:5px;}
+.mbox-job ul{list-style:none;display:flex;flex-direction:column;gap:3px;}
+.mbox-job ul li{font-size:11.5px;color:#14532D;padding-left:14px;position:relative;line-height:1.5;}
+.mbox-job ul li::before{content:'👤';position:absolute;left:0;font-size:9px;}
+.mbox-jrn{background:#FFFBEB;border:1px solid #FDE68A;border-radius:9px;padding:10px 13px;}
+.mbox-jrn-t{font-size:10px;font-weight:800;color:#B45309;margin-bottom:5px;}
+.mbox-jrn ul{list-style:none;display:flex;flex-direction:column;gap:3px;}
+.mbox-jrn ul li{font-size:11.5px;color:#78350F;padding-left:14px;position:relative;line-height:1.5;}
+.mbox-jrn ul li::before{content:'📊';position:absolute;left:0;font-size:9px;}
+
+@media print{
+  .hdr,#modal{display:none!important;}
+  .canvas-wrap{padding:6px;overflow:visible;background:#fff!important;}
+  body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .node{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:none!important;}
+  .fase-hdr{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .arr-h{-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#666!important;}
+  .arr-h::after{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .arr-h.grn{background:#16A34A!important;}
+  .arr-h.blu{background:#1D4ED8!important;}
+  .arr-v{-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#666!important;}
+  .arr-v::after{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .arr-v.grn{background:#16A34A!important;}
+  .arr-v-banner{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .legend-bar,.branch-lbl{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-left">
+    <div class="hdr-title">🏭 Flow Administrasi Produksi Garmen — CV. Kencana Print</div>
+    <div class="hdr-sub">Fase 1: Penjualan & Order · Fase 2: MAP & Proses Sampel · Fase 3: SPK & Pengadaan Bahan · Klik node untuk detail</div>
+  </div>
+  <div class="hdr-right">
+    <button class="btn btn-zoom" onclick="zoom(-10)">−</button>
+    <span class="zoom-lbl" id="zlbl">100%</span>
+    <button class="btn btn-zoom" onclick="zoom(10)">+</button>
+    <button class="btn btn-zoom" onclick="zoomReset()">Reset</button>
+    <button class="btn btn-wd" onclick="exportWord()">📝 Export Word</button>
+    <button class="btn btn-pdf" onclick="window.print()">🖨️ Print / PDF</button>
+  </div>
+</div>
+
+<div class="canvas-wrap" id="cwrap">
+<div class="flow-canvas" id="fcanvas">
+
+<!-- LEGEND -->
+<div class="legend-bar">
+  <span class="legend-title">Keterangan:</span>
+  <div class="leg-item"><div class="leg-dot" style="background:#FEE2E2;border:1.5px solid #FCA5A5;"></div>Sales/Marketing</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#FFE4E6;border:1.5px solid #FDA4AF;"></div>Marketing Officer</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#D1FAE5;border:1.5px solid #6EE7B7;"></div>Accounting</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#DCFCE7;border:1.5px solid #86EFAC;"></div>Finance</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#DBEAFE;border:1.5px solid #93C5FD;"></div>PPIC</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#D1FAE5;border:1.5px solid #86EFAC;"></div>Gudang</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#F3E8FF;border:1.5px solid #D8B4FE;"></div>Purchasing</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#FEF9C3;border:1.5px solid #FCD34D;"></div>Tim Proof/Sampel</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:2px;"></div>◆ Decision</div>
+  <div class="leg-item" style="margin-left:auto;font-size:10px;color:#64748B;">💡 Klik node untuk detail lengkap</div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- FASE 1 -->
+<!-- ═══════════════════════════════════════ -->
+<div class="fase-hdr" style="background:linear-gradient(135deg,#DC2626,#B91C1C);">
+  <span class="fase-hdr-text">◀ FASE 1 — PENJUALAN & ORDER</span>
+  <div class="fase-hdr-line"></div>
+</div>
+
+<!-- F1 Row 1 -->
+<div class="flow-row">
+  <div class="node n-sales" onclick="openNode('customer')"><span class="node-icon">👤</span><div class="node-title">Customer Order</div><div class="node-dept">External</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-sales" onclick="openNode('sales_pl')"><span class="node-icon">💼</span><div class="node-title">Sales Lapangan Menanggapi & Cek PL</div><div class="node-dept">Sales Lapangan</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-sales" onclick="openNode('permintaan_harga')"><span class="node-icon">📝</span><div class="node-title">Input Permintaan Harga</div><div class="node-dept">Sales Lapangan</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-mo" onclick="openNode('cek_mo')"><span class="node-icon">🔍</span><div class="node-title">MO Cek & Koreksi Permintaan Harga</div><div class="node-dept">Marketing Officer</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-mo" onclick="openNode('validasi_mo')"><span class="node-icon">✅</span><div class="node-title">MO Validasi Permintaan Harga</div><div class="node-dept">Marketing Officer</div></div>
+</div>
+
+<div class="arr-v-banner" style="background:#F0FDF4;color:#059669;">▼ &nbsp;Sistem otomatis terkoneksi ke Accounting — Kalkulasi Harga</div>
+
+<!-- F1 Row 2 -->
+<div class="flow-row">
+  <div class="node n-acc" onclick="openNode('kalkulasi')"><span class="node-icon">🧮</span><div class="node-title">Accounting Input Kalkulasi Harga</div><div class="node-dept">Accounting</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-sales" onclick="openNode('notif_harga')"><span class="node-icon">🔔</span><div class="node-title">Sales/MO Ternotif Harga</div><div class="node-dept">Sales / MO</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-mo" onclick="openNode('penawaran')"><span class="node-icon">📄</span><div class="node-title">Input Penawaran (Harga + Ketentuan Biaya Sampel)</div><div class="node-dept">Sales / MO</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-mo" onclick="openNode('serahkan_penawaran')"><span class="node-icon">📨</span><div class="node-title">Penawaran Diserahkan ke Customer</div><div class="node-dept">Marketing</div></div>
+</div>
+
+<div class="arr-v-banner" style="background:#EFF6FF;color:#1D4ED8;">▼ &nbsp;Customer Setuju — Pilih salah satu:</div>
+
+<!-- F1 Branch: PO vs DP -->
+<div class="branch-wrap">
+  <div class="branch-col branch-col-center">
+    <div class="branch-lbl" style="background:#DCFCE7;color:#15803D;border:1px solid #86EFAC;">✅ ADA PO CUSTOMER</div>
+    <div class="node n-mo" onclick="openNode('po_customer')"><span class="node-icon">📋</span><div class="node-title">PO Customer Diterima MO</div><div class="node-dept">Marketing Officer</div></div>
+  </div>
+  <div style="display:flex;align-items:center;padding:0 8px;font-size:11px;color:#94A3B8;font-weight:700;margin-top:20px;">ATAU</div>
+  <div class="branch-col branch-col-center">
+    <div class="branch-lbl" style="background:#FEF9C3;color:#78350F;border:1px solid #FCD34D;">💳 TIDAK ADA PO — BAYAR DP</div>
+    <div class="node n-acc" onclick="openNode('invoice_performa')"><span class="node-icon">🧾</span><div class="node-title">Accounting Input Invoice Performa (Catat DP)</div><div class="node-dept">Accounting</div></div>
+  </div>
+</div>
+
+<div class="arr-v-banner" style="background:#FAF5FF;color:#7C3AED;">▼ &nbsp;Kedua jalur bertemu di Sales Order</div>
+
+<!-- SO Node -->
+<div class="flow-row flow-row-center">
+  <div class="node n-mo" style="min-width:200px;max-width:220px;" onclick="openNode('so')"><span class="node-icon">📋</span><div class="node-title">MO Buat Sales Order (SO)</div><div class="node-dept">Connect: Penawaran + PO Customer / Invoice Performa (DP)</div></div>
+</div>
+
+<div class="arr-v-banner" style="background:#FFF7ED;color:#C2410C;">▼ &nbsp;LANJUT FASE 2: MAP & Proses Sampel</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- FASE 2 -->
+<!-- ═══════════════════════════════════════ -->
+<div class="fase-hdr" style="background:linear-gradient(135deg,#C2410C,#9A3412);margin-top:8px;">
+  <span class="fase-hdr-text">◀ FASE 2 — MAP & PROSES SAMPEL</span>
+  <div class="fase-hdr-line"></div>
+</div>
+
+<!-- F2 Row 1 -->
+<div class="flow-row">
+  <div class="node n-ppic" onclick="openNode('map')"><span class="node-icon">🎨</span><div class="node-title">PPIC Buat MAP (Memo Approval Produk)</div><div class="node-dept">PPIC</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-prf" onclick="openNode('req_bahan')"><span class="node-icon">📦</span><div class="node-title">Tim Proof Request Bahan Sampel</div><div class="node-dept">Tim Proof</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-dec" onclick="openNode('cek_stok_s')"><span class="node-icon">◆</span><div class="node-title">Gudang Cek Stok Bahan</div><div class="node-dept">Gudang</div></div>
+</div>
+
+<div class="arr-v-banner" style="background:#F8FAFC;color:#475569;">▼ &nbsp;Cek Ketersediaan Stok:</div>
+
+<!-- F2 Branch: Stok Ready -->
+<div class="branch-wrap">
+  <div class="branch-col branch-col-center">
+    <div class="branch-lbl" style="background:#DCFCE7;color:#15803D;border:1px solid #86EFAC;">✅ STOK READY</div>
+    <div class="node n-gdg" onclick="openNode('realisasi')"><span class="node-icon">✅</span><div class="node-title">Gudang Realisasi Bahan ke Floor Proof</div><div class="node-dept">Gudang</div></div>
+  </div>
+  <div style="display:flex;align-items:center;padding:0 8px;font-size:11px;color:#94A3B8;font-weight:700;margin-top:20px;">ATAU</div>
+  <div class="branch-col branch-col-center">
+    <div class="branch-lbl" style="background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;">❌ STOK TIDAK READY — Beli Dulu</div>
+    <div class="flow-row" style="gap:0;">
+      <div class="node n-gdg" onclick="openNode('purchase_req')"><span class="node-icon">📝</span><div class="node-title">Gudang Buat Purchase Request + MKA</div><div class="node-dept">Gudang</div></div>
+      <div class="arr-h"></div>
+      <div class="node n-pur" onclick="openNode('minta_uang')"><span class="node-icon">💵</span><div class="node-title">Purchasing Minta Uang ke Finance</div><div class="node-dept">Purchasing</div></div>
+      <div class="arr-h"></div>
+      <div class="node n-fin" onclick="openNode('um_sampel')"><span class="node-icon">💰</span><div class="node-title">Finance Catat Uang Muka (Tunai)</div><div class="node-dept">Finance</div></div>
+    </div>
+    <div class="arr-v-wrap" style="margin:4px 0;"><div class="arr-v"></div></div>
+    <div class="flow-row" style="gap:0;">
+      <div class="node n-pur" onclick="openNode('beli_sampel')"><span class="node-icon">🛒</span><div class="node-title">Purchasing Beli Bahan + Buat Nota</div><div class="node-dept">Purchasing</div></div>
+      <div class="arr-h"></div>
+      <div class="node n-acc" onclick="openNode('penyelesaian_um')"><span class="node-icon">🧮</span><div class="node-title">Accounting Input Penyelesaian UM</div><div class="node-dept">Accounting</div></div>
+      <div class="arr-h"></div>
+      <div class="node n-gdg" onclick="openNode('mutasi_bahan')"><span class="node-icon">🔄</span><div class="node-title">Stok Bertambah → Mutasi ke Gudang</div><div class="node-dept">Gudang / Sistem</div></div>
+    </div>
+    <div class="arr-v-wrap" style="margin:4px 0;"><div class="arr-v grn"></div></div>
+    <div class="node n-gdg" onclick="openNode('realisasi')"><span class="node-icon">✅</span><div class="node-title">Gudang Realisasi Bahan ke Floor Proof</div><div class="node-dept">Gudang</div></div>
+  </div>
+</div>
+
+<div class="arr-v-banner" style="background:#DCFCE7;color:#059669;">▼ &nbsp;Kedua jalur bertemu — Bahan siap di Gudang → Realisasi ke Floor Proof</div>
+
+<!-- F2 Proof Process -->
+<div class="flow-row">
+  <div class="node n-prf" onclick="openNode('buat_pola')"><span class="node-icon">📐</span><div class="node-title">Tim Design & Pola Buat Pola sesuai MAP</div><div class="node-dept">Tim Proof</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-prf" onclick="openNode('lhk_pola')"><span class="node-icon">💻</span><div class="node-title">Input LHK Pola (Laporan Hasil Produksi)</div><div class="node-dept">Tim Pola</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-prf" onclick="openNode('proses_sampel')"><span class="node-icon">✂️</span><div class="node-title">Proses Sampel: Potong → Cetak/Bordir → Sewing → Finishing</div><div class="node-dept">Tim Proof</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-prf" onclick="openNode('bast_map')"><span class="node-icon">📋</span><div class="node-title">Input BAST MAP + Buat Trimcard → ke Gudang</div><div class="node-dept">Tim Proof</div></div>
+</div>
+
+<div class="arr-v-banner" style="background:#EFF6FF;color:#1D4ED8;">▼ &nbsp;Sampel selesai → Dimutasi ke MO (2 pcs/varian: 1 Customer, 1 Pegangan Marketing)</div>
+
+<!-- F2 Send Sample -->
+<div class="flow-row">
+  <div class="node n-prf" onclick="openNode('mutasi_mo')"><span class="node-icon">📤</span><div class="node-title">Sampel Dimutasi ke MO (2 pcs/varian)</div><div class="node-dept">Tim Proof → MO</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-mo" onclick="openNode('sj_map')"><span class="node-icon">🚚</span><div class="node-title">MO Buat SJ MAP → Kirim Sampel ke Customer</div><div class="node-dept">Marketing Officer</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-dec" onclick="openNode('penilaian')"><span class="node-icon">◆</span><div class="node-title">Customer Menilai Sampel — OK atau Revisi?</div><div class="node-dept">Customer</div></div>
+</div>
+
+<div class="arr-v-banner" style="background:#F8FAFC;color:#475569;">▼ &nbsp;Keputusan Customer:</div>
+
+<!-- F2 Branch: ACC vs Revisi -->
+<div class="branch-wrap">
+  <div class="branch-col branch-col-center">
+    <div class="branch-lbl" style="background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;">❌ TIDAK OK — REVISI</div>
+    <div class="node n-prf" onclick="openNode('revisi')"><span class="node-icon">🔄</span><div class="node-title">Revisi Sampel sesuai Feedback Customer</div><div class="node-dept">Tim Proof</div></div>
+    <div style="font-size:9px;color:#DC2626;font-weight:700;margin-top:6px;text-align:center;">↑ Ulangi proses sampel dari awal</div>
+  </div>
+  <div style="display:flex;align-items:center;padding:0 8px;font-size:11px;color:#94A3B8;font-weight:700;margin-top:20px;">ATAU</div>
+  <div class="branch-col branch-col-center">
+    <div class="branch-lbl" style="background:#DCFCE7;color:#15803D;border:1px solid #86EFAC;">✅ OK / ACC CUSTOMER</div>
+    <div class="node n-mo" onclick="openNode('validasi_sampel')"><span class="node-icon">✍️</span><div class="node-title">Customer Validasi + TTD di Sampel Fisik</div><div class="node-dept">Customer</div></div>
+    <div class="arr-v-wrap" style="margin:4px 0;"><div class="arr-v grn"></div></div>
+    <div class="node n-prf" onclick="openNode('arsip_sampel')"><span class="node-icon">🗄️</span><div class="node-title">Sampel Dikembalikan & Diarsip Tim Proof</div><div class="node-dept">Tim Proof</div></div>
+  </div>
+</div>
+
+<div class="arr-v-banner" style="background:#EFF6FF;color:#1D4ED8;">▼ &nbsp;LANJUT FASE 3: SPK & Pengadaan Bahan Produksi</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- FASE 3 -->
+<!-- ═══════════════════════════════════════ -->
+<div class="fase-hdr" style="background:linear-gradient(135deg,#1D4ED8,#1e40af);margin-top:8px;">
+  <span class="fase-hdr-text">◀ FASE 3 — SPK & PENGADAAN BAHAN PRODUKSI</span>
+  <div class="fase-hdr-line"></div>
+</div>
+
+<!-- F3 Row 1 -->
+<div class="flow-row">
+  <div class="node n-mo" onclick="openNode('validasi_so')"><span class="node-icon">✅</span><div class="node-title">SO Divalidasi untuk Terbit SPK</div><div class="node-dept">Marketing Officer</div></div>
+  <div class="arr-h blu"></div>
+  <div class="node n-ppic" onclick="openNode('spk')"><span class="node-icon">📝</span><div class="node-title">PPIC Buat SPK (Connect SO + Detail Lengkap)</div><div class="node-dept">PPIC</div></div>
+  <div class="arr-h blu"></div>
+  <div class="node n-ppic" onclick="openNode('terbit_spk')"><span class="node-icon">📤</span><div class="node-title">SPK Diterbitkan ke SEMUA Divisi Produksi (1 SPK)</div><div class="node-dept">PPIC → Semua Divisi</div></div>
+  <div class="arr-h blu"></div>
+  <div class="node n-dec" onclick="openNode('cek_stok_p')"><span class="node-icon">◆</span><div class="node-title">PPIC Cek Stok Bahan untuk Produksi</div><div class="node-dept">PPIC / Gudang</div></div>
+</div>
+
+<div class="arr-v-banner" style="background:#F8FAFC;color:#475569;">▼ &nbsp;Cek Ketersediaan Bahan Produksi:</div>
+
+<!-- F3 Branch: Stok Ready -->
+<div class="branch-wrap">
+  <div class="branch-col branch-col-center">
+    <div class="branch-lbl" style="background:#DCFCE7;color:#15803D;border:1px solid #86EFAC;">✅ STOK READY → Lanjut Produksi</div>
+    <div class="node n-gdg" onclick="openNode('lanjut_prod')"><span class="node-icon">🚀</span><div class="node-title">Bahan Siap → Lanjut ke Proses Produksi (Cutting)</div><div class="node-dept">Gudang → Produksi</div></div>
+  </div>
+  <div style="display:flex;align-items:center;padding:0 8px;font-size:11px;color:#94A3B8;font-weight:700;margin-top:20px;">ATAU</div>
+  <div class="branch-col branch-col-center">
+    <div class="branch-lbl" style="background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;">❌ STOK TIDAK READY — Beli Bahan</div>
+    <div class="flow-row" style="gap:0;">
+      <div class="node n-ppic" onclick="openNode('mkb')"><span class="node-icon">📊</span><div class="node-title">PPIC Buat MKB (Memo Kebutuhan Bahan) + Toleransi BS</div><div class="node-dept">PPIC</div></div>
+      <div class="arr-h"></div>
+      <div class="node n-pur" onclick="openNode('po_prod')"><span class="node-icon">🛒</span><div class="node-title">Purchasing Terbitkan PO ke Supplier</div><div class="node-dept">Purchasing</div></div>
+    </div>
+    <div class="arr-v-wrap" style="margin:4px 0;"><div class="arr-v"></div></div>
+    <div class="flow-row" style="gap:0;">
+      <div class="node n-gdg" onclick="openNode('bpb')"><span class="node-icon">📥</span><div class="node-title">Bahan Datang → Gudang Input BPB</div><div class="node-dept">Gudang</div></div>
+      <div class="arr-h"></div>
+      <div class="node n-dec" onclick="openNode('cek_bahan')"><span class="node-icon">◆</span><div class="node-title">Crosscheck Bahan vs Trimcard & Cek Kelunturan</div><div class="node-dept">Gudang / QC</div></div>
+    </div>
+    <div class="arr-v-wrap" style="margin:4px 0;"><div class="arr-v"></div></div>
+    <!-- Sub branch: OK vs Masalah -->
+    <div class="branch-wrap" style="gap:10px;">
+      <div class="branch-col branch-col-center">
+        <div class="branch-lbl" style="background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;font-size:8.5px;">❌ ADA MASALAH</div>
+        <div class="node n-gdg" style="min-width:120px;max-width:130px;" onclick="openNode('return_bahan')"><span class="node-icon">↩️</span><div class="node-title">Return ke Supplier</div><div class="node-dept">Gudang/Purchasing</div></div>
+      </div>
+      <div style="display:flex;align-items:center;font-size:10px;color:#94A3B8;font-weight:700;margin-top:18px;">ATAU</div>
+      <div class="branch-col branch-col-center">
+        <div class="branch-lbl" style="background:#DCFCE7;color:#15803D;border:1px solid #86EFAC;font-size:8.5px;">✅ TIDAK ADA MASALAH</div>
+        <div class="node n-gdg" style="min-width:120px;max-width:130px;" onclick="openNode('barcode')"><span class="node-icon">🏷️</span><div class="node-title">Barcode → Masuk Stok Sistem</div><div class="node-dept">Gudang</div></div>
+      </div>
+    </div>
+    <div class="arr-v-banner" style="background:#D1FAE5;color:#065F46;max-width:500px;margin:4px auto;">▼ &nbsp;Dokumen → Voucher → Bayar Supplier</div>
+    <div class="flow-row" style="gap:0;">
+      <div class="node n-gdg" style="min-width:120px;max-width:135px;" onclick="openNode('dok_bahan')"><span class="node-icon">📂</span><div class="node-title">Serahkan Dokumen ke Purchasing</div><div class="node-dept">Gudang → Purchasing</div></div>
+      <div class="arr-h"></div>
+      <div class="node n-acc" style="min-width:120px;max-width:135px;" onclick="openNode('voucher')"><span class="node-icon">🧾</span><div class="node-title">Accounting Input Voucher (3-way matching)</div><div class="node-dept">Accounting</div></div>
+      <div class="arr-h"></div>
+      <div class="node n-fin" style="min-width:120px;max-width:135px;" onclick="openNode('pengajuan')"><span class="node-icon">📋</span><div class="node-title">Pengajuan Pembayaran ke Finance</div><div class="node-dept">Finance</div></div>
+      <div class="arr-h"></div>
+      <div class="node n-fin" style="min-width:120px;max-width:135px;" onclick="openNode('outgoing')"><span class="node-icon">💸</span><div class="node-title">Proses Pembayaran / Outgoing ke Supplier</div><div class="node-dept">Finance</div></div>
+    </div>
+    <div class="arr-v-wrap" style="margin:4px 0;"><div class="arr-v grn"></div></div>
+    <div class="node n-gdg" onclick="openNode('lanjut_prod')"><span class="node-icon">🚀</span><div class="node-title">Bahan Siap → Lanjut ke Proses Produksi (Cutting)</div><div class="node-dept">Gudang → Produksi</div></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════ -->
+<!-- FASE 4A — CUTTING -->
+<!-- ═══════════════════════════════════════ -->
+<div class="fase-hdr" style="background:linear-gradient(135deg,#7C3AED,#6D28D9);margin-top:8px;">
+  <span class="fase-hdr-text">◀ FASE 4A — PERSIAPAN & PROSES CUTTING</span>
+  <div class="fase-hdr-line"></div>
+</div>
+
+<div class="flow-row">
+  <div class="node n-ppic" onclick="openNode('req_bahan_prod')"><span class="node-icon">📋</span><div class="node-title">Admin Cutting Buat Permintaan Bahan ke Gudang</div><div class="node-dept">Admin Produksi Cutting</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-gdg" onclick="openNode('realisasi_prod')"><span class="node-icon">🚚</span><div class="node-title">Gudang Realisasi → Bahan Geser ke Floor Cutting</div><div class="node-dept">Gudang → Floor Cutting</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-ppic" onclick="openNode('daily_plan')"><span class="node-icon">📅</span><div class="node-title">PPIC Buat Daily Plan Cutting</div><div class="node-dept">PPIC</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-ppic" onclick="openNode('proses_cutting')"><span class="node-icon">✂️</span><div class="node-title">Proses Cutting Dimulai</div><div class="node-dept">Produksi Cutting</div></div>
+</div>
+
+<div class="arr-v-banner" style="background:#FAF5FF;color:#7C3AED;">▼ &nbsp;Output cutting → Data & QC</div>
+
+<div class="flow-row">
+  <div class="node n-ppic" onclick="openNode('lhk_cutting')"><span class="node-icon">💻</span><div class="node-title">Operator Data Hasil → Admin Input LHK Cutting (Connect SPK)</div><div class="node-dept">Operator / Admin Cutting</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-ppic" onclick="openNode('numbering_qc')"><span class="node-icon">🔍</span><div class="node-title">Hasil Cutting → Numbering & QC Cutting</div><div class="node-dept">QC / Produksi Cutting</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-ppic" onclick="openNode('lhk_qc_cutting')"><span class="node-icon">💻</span><div class="node-title">Admin Input LHK QC Cutting + Rekonsiliasi Data + Input BS</div><div class="node-dept">Admin QC / Admin Cutting</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-gdg" onclick="openNode('return_sisa')"><span class="node-icon">↩️</span><div class="node-title">Return Sisa Bahan ke Gudang + Hitung Waste</div><div class="node-dept">Cutting → Gudang</div></div>
+</div>
+
+<div class="arr-v-banner" style="background:#F8FAFC;color:#475569;">▼ &nbsp;Routing selanjutnya berdasarkan SPK:</div>
+
+<div class="branch-wrap">
+  <div class="branch-col branch-col-center">
+    <div class="branch-lbl" style="background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;">🖨️ ADA PROSES CETAK/BORDIR</div>
+    <div class="node n-ppic" onclick="openNode('proses_cetak_bordir')"><span class="node-icon">🖨️</span><div class="node-title">Proses Cetak/Bordir + LHK + QC Cetak/Bordir</div><div class="node-dept">Produksi Cetak/Bordir</div></div>
+    <div class="arr-v-wrap" style="margin:4px 0;"><div class="arr-v"></div></div>
+    <div class="node n-ppic" onclick="openNode('mutasi_dc_wip')"><span class="node-icon">📤</span><div class="node-title">Mutasi ke DC WIP</div><div class="node-dept">Cetak/Bordir → DC WIP</div></div>
+  </div>
+  <div style="display:flex;align-items:center;padding:0 8px;font-size:11px;color:#94A3B8;font-weight:700;margin-top:20px;">ATAU</div>
+  <div class="branch-col branch-col-center">
+    <div class="branch-lbl" style="background:#DCFCE7;color:#15803D;border:1px solid #86EFAC;">✅ TIDAK ADA CETAK/BORDIR</div>
+    <div class="node n-gdg" onclick="openNode('mutasi_dc_wip')"><span class="node-icon">📤</span><div class="node-title">Mutasi Langsung ke DC WIP</div><div class="node-dept">Cutting → DC WIP</div></div>
+  </div>
+</div>
+
+<div class="arr-v-banner" style="background:#E0E7FF;color:#3730A3;">▼ &nbsp;MASUK DC WIP (Distribution Center WIP)</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- FASE 4B — DC WIP -->
+<!-- ═══════════════════════════════════════ -->
+<div class="fase-hdr" style="background:linear-gradient(135deg,#0891B2,#0E7490);margin-top:4px;">
+  <span class="fase-hdr-text">◀ FASE 4B — DC WIP (DISTRIBUTION CENTER)</span>
+  <div class="fase-hdr-line"></div>
+</div>
+
+<div class="flow-row">
+  <div class="node n-gdg" onclick="openNode('terima_dc_wip')"><span class="node-icon">📥</span><div class="node-title">DC WIP Terima Barang — Cek QTY Fisik vs Sistem</div><div class="node-dept">DC WIP</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-gdg" onclick="openNode('qc_dc_wip')"><span class="node-icon">🔍</span><div class="node-title">Cek Kualitas (Safety Net dari QC Cutting/Cetak)</div><div class="node-dept">QC DC WIP</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-dec" onclick="openNode('dc_wip')"><span class="node-icon">◆</span><div class="node-title">Ada Temuan? Selisih QTY / BS / Rusak?</div><div class="node-dept">DC WIP</div></div>
+</div>
+
+<div class="arr-v-banner" style="background:#F8FAFC;color:#475569;">▼</div>
+
+<div class="branch-wrap">
+  <div class="branch-col branch-col-center">
+    <div class="branch-lbl" style="background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;">❌ ADA TEMUAN</div>
+    <div class="node n-ppic" onclick="openNode('koordinasi_dc')"><span class="node-icon">📞</span><div class="node-title">Koordinasi Admin Cutting / Cetak/Bordir — Sesuaikan + Buatkan Pengganti</div><div class="node-dept">DC WIP → Cutting / Cetak/Bordir</div></div>
+    <div class="arr-v-wrap" style="margin:4px 0;"><div class="arr-v grn"></div></div>
+    <div style="font-size:9px;color:#15803D;font-weight:700;">↓ Setelah diselesaikan</div>
+  </div>
+  <div style="display:flex;align-items:center;padding:0 8px;font-size:11px;color:#94A3B8;font-weight:700;margin-top:20px;">ATAU</div>
+  <div class="branch-col branch-col-center">
+    <div class="branch-lbl" style="background:#DCFCE7;color:#15803D;border:1px solid #86EFAC;">✅ TIDAK ADA TEMUAN</div>
+    <div style="font-size:9px;color:#15803D;font-weight:700;margin-bottom:6px;">Lanjut SET Komponen ↓</div>
+  </div>
+</div>
+
+<div class="arr-v-banner" style="background:#EFF6FF;color:#1D4ED8;">▼ &nbsp;SET Komponen + Request Aksesoris ke Gudang</div>
+
+<div class="flow-row">
+  <div class="node n-gdg" onclick="openNode('setting_komponen')"><span class="node-icon">⚙️</span><div class="node-title">DC WIP SET Komponen (Badan Depan, Belakang, Lengan, Kerah, dll)</div><div class="node-dept">DC WIP</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-gdg" onclick="openNode('req_aksesoris')"><span class="node-icon">📦</span><div class="node-title">Admin DC WIP Request Aksesoris ke Gudang Bahan</div><div class="node-dept">DC WIP → Gudang</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-gdg" onclick="openNode('set_lengkap')"><span class="node-icon">✅</span><div class="node-title">Semua Komponen + Aksesoris ter-SET Lengkap</div><div class="node-dept">DC WIP</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-gdg" onclick="openNode('mutasi_sewing')"><span class="node-icon">📤</span><div class="node-title">Mutasi ke Sewing dari DC WIP</div><div class="node-dept">DC WIP → Sewing</div></div>
+</div>
+
+<div class="arr-v-banner" style="background:#FFF0F5;color:#9D174D;">▼ &nbsp;MASUK SEWING</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- FASE 4C — SEWING -->
+<!-- ═══════════════════════════════════════ -->
+<div class="fase-hdr" style="background:linear-gradient(135deg,#BE185D,#9D174D);margin-top:4px;">
+  <span class="fase-hdr-text">◀ FASE 4C — SEWING</span>
+  <div class="fase-hdr-line"></div>
+</div>
+
+<div class="flow-row">
+  <div class="node n-prf" onclick="openNode('qc_pre_sewing')"><span class="node-icon">🔍</span><div class="node-title">QC Pre-Sewing: Cek QTY & Kelengkapan SET dari DC WIP</div><div class="node-dept">QC / Admin Sewing</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-dec" onclick="openNode('dec_sewing_ok')"><span class="node-icon">◆</span><div class="node-title">SET & QTY Lengkap dan Benar?</div><div class="node-dept">QC Sewing</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-prf" onclick="openNode('koordinasi_sewing')"><span class="node-icon">📞</span><div class="node-title">Koordinasi DC WIP jika Ada Temuan</div><div class="node-dept">Sewing → DC WIP</div></div>
+</div>
+
+<div class="arr-v-banner" style="background:#FFF0F5;color:#9D174D;">▼ &nbsp;Semua OK → Proses Sewing dimulai</div>
+
+<div class="flow-row">
+  <div class="node n-prf" onclick="openNode('proses_sewing')"><span class="node-icon">🧵</span><div class="node-title">Proses Sewing</div><div class="node-dept">Operator Sewing</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-prf" onclick="openNode('qc_sewing')"><span class="node-icon">🔍</span><div class="node-title">QC In-Process Sewing</div><div class="node-dept">QC Sewing</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-prf" onclick="openNode('lhk_sewing')"><span class="node-icon">💻</span><div class="node-title">Admin Input LHK Sewing (Connect SPK)</div><div class="node-dept">Admin Sewing</div></div>
+</div>
+
+<div class="arr-v-banner" style="background:#FFF7ED;color:#C2410C;">▼ &nbsp;Selesai Sewing → Finishing (Lipat & Koli)</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- FASE 4D — FINISHING -->
+<!-- ═══════════════════════════════════════ -->
+<div class="fase-hdr" style="background:linear-gradient(135deg,#D97706,#B45309);margin-top:4px;">
+  <span class="fase-hdr-text">◀ FASE 4D — FINISHING (LIPAT & KOLI)</span>
+  <div class="fase-hdr-line"></div>
+</div>
+
+<div class="flow-row">
+  <div class="node n-prf" onclick="openNode('proses_lipat')"><span class="node-icon">👕</span><div class="node-title">Proses Lipat</div><div class="node-dept">Operator Finishing</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-prf" onclick="openNode('qc_lipat')"><span class="node-icon">🔍</span><div class="node-title">QC Lipat ⭐ (Rekomendasi)</div><div class="node-dept">QC</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-prf" onclick="openNode('lhk_lipat')"><span class="node-icon">💻</span><div class="node-title">Admin Input LHK Lipat (Connect SPK)</div><div class="node-dept">Admin Finishing</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-prf" onclick="openNode('proses_koli')"><span class="node-icon">📦</span><div class="node-title">Proses Koli (Packing per Dus)</div><div class="node-dept">Operator Finishing</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-prf" onclick="openNode('qc_koli')"><span class="node-icon">🔍</span><div class="node-title">QC Koli ⭐ (Rekomendasi)</div><div class="node-dept">QC</div></div>
+  <div class="arr-h"></div>
+  <div class="node n-prf" onclick="openNode('lhk_koli')"><span class="node-icon">💻</span><div class="node-title">Admin Input LHK Koli (Connect SPK)</div><div class="node-dept">Admin Finishing</div></div>
+</div>
+
+<div class="arr-v-banner" style="background:#DCFCE7;color:#15803D;">▼ &nbsp;Produksi selesai → STBJ & Pengiriman</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- FASE 4E — STBJ & PENGIRIMAN -->
+<!-- ═══════════════════════════════════════ -->
+<div class="fase-hdr" style="background:linear-gradient(135deg,#15803D,#14532D);margin-top:4px;">
+  <span class="fase-hdr-text">◀ FASE 4E — STBJ, PENGIRIMAN & PENAGIHAN</span>
+  <div class="fase-hdr-line"></div>
+</div>
+
+<div class="flow-row">
+  <div class="node n-gdg" onclick="openNode('stbj')"><span class="node-icon">📋</span><div class="node-title">Admin Finishing Input STBJ + Jadwal Kirim</div><div class="node-dept">Admin Finishing</div></div>
+  <div class="arr-h grn"></div>
+  <div class="node n-gdg" onclick="openNode('surat_jalan')"><span class="node-icon">🚚</span><div class="node-title">Delivery Buat Surat Jalan (Connect: SPK + SO)</div><div class="node-dept">Delivery / Gudang BJ</div></div>
+  <div class="arr-h grn"></div>
+  <div class="node n-gdg" onclick="openNode('validasi_keluar')"><span class="node-icon">🔍</span><div class="node-title">Validasi Gudang BJ: Fisik vs Surat Jalan</div><div class="node-dept">Gudang Barang Jadi</div></div>
+  <div class="arr-h grn"></div>
+  <div class="node n-gdg" onclick="openNode('kirim_customer')"><span class="node-icon">🚛</span><div class="node-title">Barang Dikirim ke Customer</div><div class="node-dept">Delivery</div></div>
+</div>
+
+<div class="arr-v-banner" style="background:#EFF6FF;color:#1D4ED8;">▼ &nbsp;Setelah SJ diterbitkan → SPK bisa di-close (tidak perlu tunggu bayar)</div>
+
+<div class="flow-row flow-row-center" style="margin-bottom:6px;">
+  <div class="node" style="background:#DBEAFE;border:2px solid #3B82F6;border-radius:50px;min-width:150px;text-align:center;padding:10px;cursor:pointer;" onclick="openNode('spk_close')"><span class="node-icon">✅</span><div class="node-title" style="color:#1E3A8A;">SPK CLOSE</div><div class="node-dept" style="color:#1D4ED8;">PPIC / Kepala Produksi</div></div>
+</div>
+
+<div class="arr-v-banner" style="background:#DCFCE7;color:#15803D;">▼ &nbsp;Surat Jalan kembali + TTD Customer → Proses Penagihan</div>
+
+<div class="flow-row">
+  <div class="node n-acc" onclick="openNode('invoice_penjualan')"><span class="node-icon">🧾</span><div class="node-title">Terbitkan Invoice Penjualan → Tagih ke Customer</div><div class="node-dept">Finance / Accounting</div></div>
+  <div class="arr-h grn"></div>
+  <div class="node n-fin" onclick="openNode('incoming_payment')"><span class="node-icon">💰</span><div class="node-title">Customer Bayar → Input Incoming Payment</div><div class="node-dept">Finance</div></div>
+  <div class="arr-h grn"></div>
+  <div class="node" style="background:#DCFCE7;border:2px solid #22C55E;border-radius:50px;min-width:130px;text-align:center;padding:10px;cursor:pointer;" onclick="openNode('so_close')"><span class="node-icon">📁</span><div class="node-title" style="color:#14532D;">SO CLOSE</div><div class="node-dept" style="color:#16A34A;">Finance / Marketing</div></div>
+</div>
+
+<div style="background:#DCFCE7;border:1.5px solid #86EFAC;border-radius:10px;padding:10px 16px;margin:12px 0;max-width:1160px;width:100%;">
+  <div style="font-size:10px;font-weight:800;color:#15803D;margin-bottom:6px;">📌 CATATAN PENTING — Berlaku di Seluruh Fase Produksi:</div>
+  <div style="font-size:10px;color:#14532D;line-height:1.7;">
+    • <strong>Setiap LHK WAJIB terkoneksi dengan nomor SPK</strong> di sistem<br>
+    • <strong>LHK Proses Sampel WAJIB terkoneksi dengan MAP</strong> (bukan hanya SPK)<br>
+    • <strong>SPK WAJIB terkoneksi dengan SO</strong> di sistem<br>
+    • <strong>BS Recording per proses</strong> (Cutting, Cetak, Bordir, Sewing, Lipat, Koli) harus diinput di setiap LHK<br>
+    • <strong>QC di setiap proses (IPQC)</strong> adalah rekomendasi audit untuk standar kualitas lebih baik<br>
+    • <strong>SPK Close ≠ SO Close</strong>: SPK Close setelah SJ terbit, SO Close setelah bayar lunas
+  </div>
+</div>
+
+<div style="height:24px;"></div>
+</div><!-- end fcanvas -->
+</div><!-- end cwrap -->
+
+<!-- MODAL -->
+<div id="modal" onclick="if(event.target===this)closeNode()">
+  <div class="mbox">
+    <div class="mhd">
+      <div class="mhd-icon" id="m-icon">📋</div>
+      <div style="flex:1;"><div class="mhd-title" id="m-title">Title</div><div class="mhd-dept" id="m-dept">Dept</div></div>
+      <button class="mbtn-close" onclick="closeNode()">✕</button>
+    </div>
+    <div class="mbody" id="m-body"></div>
+  </div>
+</div>
+
+<script>
+// ── ZOOM ──
+let zl=100;
+function zoom(d){zl=Math.min(200,Math.max(40,zl+d));document.getElementById('fcanvas').style.zoom=zl/100;document.getElementById('zlbl').textContent=zl+'%';}
+function zoomReset(){zl=100;document.getElementById('fcanvas').style.zoom=1;document.getElementById('zlbl').textContent='100%';}
+document.getElementById('cwrap').addEventListener('wheel',function(e){if(!e.ctrlKey&&!e.metaKey)return;e.preventDefault();zoom(e.deltaY<0?10:-10);},{passive:false});
+
+// ── NODE DATA ──
+const N={
+  customer:{icon:'👤',title:'Customer Order',dept:'External',
+    desc:'Proses bisnis garmen dimulai dari permintaan order customer kepada tim Marketing CV. Kencana Print melalui Sales Lapangan.',
+    poin:['Customer menghubungi melalui sales representative, telepon, WhatsApp, atau kunjungan langsung','Customer menyampaikan kebutuhan: jenis produk, estimasi jumlah, spesifikasi kasar','Tim Sales mencatat dan merespons setiap inquiry'],
+    warning:['Jangan memberikan komitmen harga sebelum ada perhitungan resmi dari Accounting','Setiap inquiry harus dicatat dan ditindaklanjuti dalam 1x24 jam'],
+    sop:['Sales wajib mencatat setiap inquiry di log/sistem','Respons pertama ke customer maksimal 1x24 jam'],
+    jobdesk:['Sales Lapangan: menerima dan merespons inquiry customer'],jurnal:[]},
+
+  sales_pl:{icon:'💼',title:'Sales Lapangan Menanggapi & Cek PL',dept:'Sales Lapangan',
+    desc:'Sales lapangan menanggapi permintaan customer dengan mengacu Price List (PL) standar perusahaan sebagai acuan harga awal.',
+    poin:['PL (Price List) adalah daftar harga standar yang ditetapkan perusahaan','Sales menggunakan PL sebagai acuan awal sebelum negosiasi','Jika ada negosiasi di luar PL, sales input Permintaan Harga di sistem'],
+    warning:['Sales TIDAK BOLEH memberikan harga di luar PL tanpa persetujuan MO','PL harus selalu update dan disosialisasikan ke seluruh sales'],
+    sop:['Sales mengacu PL terlebih dahulu sebelum negosiasi','Jika ada negosiasi, wajib input Permintaan Harga di sistem'],
+    jobdesk:['Sales Lapangan: mengacu PL, merespons customer, input Permintaan Harga jika ada negosiasi'],jurnal:[]},
+
+  permintaan_harga:{icon:'📝',title:'Input Permintaan Harga',dept:'Sales Lapangan',
+    desc:'Jika terjadi negosiasi harga yang tidak bisa diselesaikan dengan PL standar, Sales lapangan menginput Permintaan Harga di sistem untuk diproses MO dan Accounting.',
+    poin:['Permintaan Harga berisi: spesifikasi produk, estimasi qty, target harga customer, catatan negosiasi','Input dilakukan di sistem agar bisa dimonitor oleh MO','Menjadi dasar kalkulasi harga oleh Accounting'],
+    warning:['Permintaan Harga tidak lengkap akan memperlambat proses kalkulasi','Jangan berikan harga perkiraan ke customer sebelum ada kalkulasi resmi Accounting'],
+    sop:['Diinput lengkap di sistem pada hari yang sama','MO harus mengecek dalam 1x24 jam setelah diinput'],
+    jobdesk:['Sales Lapangan: menginput Permintaan Harga di sistem dengan lengkap dan akurat'],jurnal:[]},
+
+  cek_mo:{icon:'🔍',title:'MO Cek & Koreksi Permintaan Harga',dept:'Marketing Officer',
+    desc:'Marketing Officer memeriksa Permintaan Harga yang diinput Sales untuk memastikan kelengkapan dan ketepatan data sebelum diteruskan ke Accounting.',
+    poin:['MO memeriksa: kelengkapan spesifikasi, kewajaran estimasi harga, data customer','Jika ada yang kurang tepat, MO melakukan koreksi','MO berperan sebagai quality control data sebelum ke Accounting'],
+    warning:['Kesalahan data di tahap ini berdampak pada kalkulasi harga yang salah','Jangan memvalidasi data yang tidak lengkap atau meragukan'],
+    sop:['MO memeriksa Permintaan Harga maksimal 1x24 jam setelah diinput Sales','Koreksi didokumentasikan di sistem dengan catatan alasan'],
+    jobdesk:['Marketing Officer: review, koreksi, dan meneruskan Permintaan Harga ke Accounting'],jurnal:[]},
+
+  validasi_mo:{icon:'✅',title:'MO Validasi Permintaan Harga',dept:'Marketing Officer',
+    desc:'Setelah dicek dan dikoreksi, MO memberikan validasi resmi sehingga sistem otomatis meneruskan ke Accounting untuk proses kalkulasi harga.',
+    poin:['Validasi MO menandakan data sudah lengkap dan siap dikalkulasi','Sistem otomatis terkoneksi ke modul kalkulasi Accounting setelah validasi','MO bertanggung jawab penuh atas kebenaran data yang divalidasi'],
+    warning:['Validasi tergesa-gesa tanpa pengecekan teliti akan menyebabkan kalkulasi yang salah'],
+    sop:['Validasi hanya dilakukan jika data sudah lengkap dan benar','Setelah validasi, notifikasi otomatis ke Accounting'],
+    jobdesk:['Marketing Officer: memberikan validasi resmi di sistem'],jurnal:[]},
+
+  kalkulasi:{icon:'🧮',title:'Accounting Input Kalkulasi Harga',dept:'Accounting',
+    desc:'Accounting menerima Permintaan Harga yang sudah divalidasi MO dan menginput kalkulasi harga resmi di sistem mencakup biaya bahan, proses produksi, overhead, dan margin.',
+    poin:['Kalkulasi mencakup: biaya bahan baku, biaya proses (cutting/jahit/finishing), overhead, packaging, margin','Hasil kalkulasi menjadi dasar harga jual resmi yang diteruskan ke Sales/MO','Koordinasi dengan PPIC untuk data biaya produksi jika diperlukan'],
+    warning:['Kalkulasi tidak akurat bisa menyebabkan perusahaan rugi atau harga tidak kompetitif','Selalu gunakan data biaya aktual yang ter-update, bukan data lama'],
+    sop:['Kalkulasi diselesaikan maksimal 2 hari kerja setelah Permintaan Harga diterima','Hasil kalkulasi otomatis notifikasi ke Sales/MO via sistem'],
+    jobdesk:['Staff Accounting: menghitung dan menginput kalkulasi harga','Manager Accounting: review kalkulasi untuk order besar'],jurnal:[]},
+
+  notif_harga:{icon:'🔔',title:'Sales/MO Ternotif Harga',dept:'Sales / MO',
+    desc:'Setelah Accounting menginput kalkulasi, sistem otomatis mengirimkan notifikasi ke Sales dan MO bahwa harga sudah siap untuk dijadikan dasar penawaran ke customer.',
+    poin:['Notifikasi diterima Sales Lapangan dan MO secara bersamaan via sistem','Sales/MO melihat hasil kalkulasi dan menentukan strategi penawaran','Jika harga terlalu tinggi, bisa koordinasi dengan Accounting untuk review ulang'],
+    warning:['Sales TIDAK BOLEH memberikan harga berbeda dari hasil kalkulasi tanpa approval MO/Manager'],
+    sop:['Sales/MO merespons notifikasi dan menindaklanjuti dalam 1x24 jam'],
+    jobdesk:['Sales Lapangan: menerima notifikasi dan menyiapkan penawaran','Marketing Officer: review dan approve strategi penawaran'],jurnal:[]},
+
+  penawaran:{icon:'📄',title:'Input Penawaran (Harga + Ketentuan Biaya Sampel)',dept:'Sales / MO',
+    desc:'Sales atau MO menginput penawaran resmi di sistem berdasarkan hasil kalkulasi. Penawaran diserahkan ke customer dan WAJIB mencantumkan ketentuan biaya sampel.',
+    poin:['Penawaran mencantumkan: harga per pcs, minimum order, lead time, syarat pembayaran','PENTING: Ketentuan biaya sampel WAJIB dicantumkan untuk menghindari dispute di kemudian hari','Penawaran menggunakan template resmi perusahaan','Penawaran berlaku X hari sesuai kebijakan perusahaan'],
+    warning:['Penawaran yang sudah dikirim ke customer tidak boleh diubah sepihak','Ketentuan biaya sampel yang tidak dicantumkan akan menjadi sumber konflik','Penawaran expired harus dibuatkan revisi baru sebelum digunakan lagi'],
+    sop:['Penawaran harus menggunakan template resmi perusahaan','MO review dan approve sebelum dikirim ke customer','Diinput di sistem sebelum diserahkan ke customer'],
+    jobdesk:['Sales/MO: menginput dan menyiapkan penawaran resmi','Marketing Manager: approve untuk order besar'],jurnal:[]},
+
+  serahkan_penawaran:{icon:'📨',title:'Penawaran Diserahkan ke Customer',dept:'Marketing',
+    desc:'Penawaran resmi diserahkan kepada customer sebagai acuan harga dan syarat order. Sales melakukan follow-up aktif setelah penawaran dikirim.',
+    poin:['Penawaran diserahkan via email, WhatsApp resmi, atau tatap muka','Sales melakukan follow-up secara aktif setelah penawaran dikirim','Catat tanggal pengiriman penawaran untuk monitoring follow-up'],
+    warning:['Jangan biarkan penawaran tanpa follow-up lebih dari 3 hari kerja'],
+    sop:['Follow-up pertama dilakukan 2 hari setelah penawaran dikirim','Maksimal 3x follow-up dalam 14 hari'],
+    jobdesk:['Sales Lapangan: menyerahkan penawaran dan follow-up aktif ke customer'],jurnal:[]},
+
+  po_customer:{icon:'📋',title:'PO Customer Diterima MO',dept:'Marketing Officer',
+    desc:'Customer korporat menerbitkan Purchase Order (PO) resmi sebagai bukti komitmen pembelian. MO menerima dan memverifikasi PO sebelum diproses ke Sales Order.',
+    poin:['PO customer berisi: nomor PO, detail produk, qty, harga, dan syarat pengiriman','MO mencocokkan data PO dengan penawaran yang sudah disepakati','PO disimpan dan di-attach ke Sales Order di sistem'],
+    warning:['Jika ada perbedaan PO vs penawaran (harga/qty/spesifikasi) HARUS dikonfirmasi ulang ke customer','CATATAN KHUSUS: Customer VIP tanpa PO hanya boleh dengan approval tertulis Direksi — ini BUKAN prosedur standar dan harus dimonitor ketat oleh Finance'],
+    sop:['MO memverifikasi kesesuaian PO dengan penawaran','PO di-scan dan di-upload ke sistem sebagai lampiran SO'],
+    jobdesk:['Marketing Officer: menerima, memverifikasi, dan mengarsip PO customer'],jurnal:[]},
+
+  invoice_performa:{icon:'🧾',title:'Accounting Input Invoice Performa (Catat DP)',dept:'Accounting',
+    desc:'Jika customer tidak menerbitkan PO, customer wajib membayar Down Payment (DP). Accounting menginput Invoice Performa sebagai dokumen resmi pencatatan DP.',
+    poin:['Invoice Performa adalah dokumen tagihan DP sebelum produksi dimulai','DP minimal sesuai kebijakan perusahaan (umumnya 50% dari nilai order)','Invoice Performa terkoneksi dengan Sales Order di sistem','Pembayaran DP dikonfirmasi Finance sebelum SO diproses'],
+    warning:['Produksi TIDAK BOLEH dimulai sebelum DP diterima dan dikonfirmasi Finance','Invoice Performa yang belum dibayar harus segera di-follow up Marketing'],
+    sop:['Invoice Performa diterbitkan segera setelah deal dikonfirmasi customer','Pembayaran DP dikonfirmasi Finance dan dicatat di sistem'],
+    jobdesk:['Accounting: membuat dan menginput Invoice Performa','Finance: mengkonfirmasi penerimaan DP','Marketing: follow-up pembayaran DP ke customer'],
+    jurnal:['Debit: Kas/Bank','Kredit: Uang Muka Penjualan']},
+
+  so:{icon:'📋',title:'MO Buat Sales Order (SO)',dept:'Marketing Officer',
+    desc:'Sales Order adalah dokumen komitmen bisnis resmi yang dibuat MO setelah PO diterima atau DP terkonfirmasi. SO terkoneksi dengan Penawaran, PO Customer, dan Invoice Performa.',
+    poin:['SO berisi: nama customer, spesifikasi, qty, harga, deadline pengiriman','SO terkoneksi dengan: Penawaran + PO Customer + Invoice Performa (DP)','SO menjadi trigger PPIC untuk membuat MAP','Nomor SO menjadi referensi di seluruh proses produksi'],
+    warning:['DILARANG mengubah data SO (QTY/bahan) setelah ada transaksi berjalan','Pembatalan SO wajib disertai berita acara disetujui Direksi','SO tanpa PO/DP yang valid adalah temuan audit serius'],
+    sop:['SO hanya dibuat setelah PO diterima atau DP terkonfirmasi','Diapprove Marketing Manager untuk order di atas nilai tertentu'],
+    jobdesk:['Marketing Officer: membuat SO di sistem dengan data lengkap','Marketing Manager: approve SO','PPIC: menerima notifikasi SO untuk memulai proses MAP'],jurnal:[]},
+
+  map:{icon:'🎨',title:'PPIC Buat MAP (Memo Approval Produk)',dept:'PPIC',
+    desc:'MAP adalah dokumen spesifikasi teknis produk yang menjadi acuan pembuatan sampel dan produksi massal. MAP seharusnya dibuat PPIC (bukan MO) karena PPIC memahami detail teknis produksi.',
+    poin:['MAP mencakup: jenis bahan, warna, desain/artwork, ukuran size run, aksesoris lengkap','Menjadi acuan Tim Proof dalam pembuatan sampel','Menjadi standar QC produksi massal','Setiap perubahan spesifikasi dibuatkan MAP baru/revisi dengan approval'],
+    warning:['KONDISI SAAT INI: MAP masih dibuat MO — perlu diperbaiki segera','REKOMENDASI AUDIT: MAP seharusnya dibuat PPIC yang memahami kapasitas dan spesifikasi teknis','DILARANG mengubah spesifikasi bahan/desain setelah MAP disetujui tanpa persetujuan ulang customer','MAP outstanding >3 bulan harus segera diselesaikan atau di-close'],
+    sop:['MAP dibuat PPIC berdasarkan data SO yang sudah diterima','Diapprove Manager Produksi sebelum diteruskan ke Tim Proof','Semua spesifikasi WAJIB tercantum lengkap — tidak boleh ada yang kosong'],
+    jobdesk:['PPIC: membuat MAP dengan spesifikasi teknis lengkap','Manager Produksi: review dan approve MAP','Tim Proof: menerima MAP sebagai acuan pembuatan sampel'],jurnal:[]},
+
+  req_bahan:{icon:'📦',title:'Tim Proof Request Bahan Sampel',dept:'Tim Proof',
+    desc:'Tim Proof mengajukan permintaan bahan yang dibutuhkan untuk pembuatan sampel berdasarkan spesifikasi MAP kepada gudang.',
+    poin:['Permintaan mencakup: bahan baku utama, bahan pendukung, dan aksesoris','Jumlah sesuai kebutuhan sampel (biasanya 2 pcs per varian)','Permintaan diajukan ke gudang melalui dokumen/sistem resmi'],
+    warning:['Jangan mengambil bahan tanpa dokumen permintaan resmi','Spesifikasi bahan harus persis sesuai MAP — tidak boleh diganti tanpa persetujuan'],
+    sop:['Permintaan bahan diajukan secara resmi ke gudang via sistem','Gudang merespons dalam 1 hari kerja'],
+    jobdesk:['Tim Proof: mengajukan permintaan bahan ke gudang sesuai spesifikasi MAP'],jurnal:[]},
+
+  cek_stok_s:{icon:'◆',title:'Gudang Cek Stok Bahan',dept:'Gudang',
+    desc:'Gudang memeriksa ketersediaan bahan yang diminta Tim Proof. Jika stok tersedia, langsung direalisasi. Jika tidak tersedia, perlu proses pembelian.',
+    poin:['Pengecekan dilakukan di sistem dan konfirmasi fisik','Stok yang tersedia adalah stok yang belum dialokasikan ke order lain','Hasil pengecekan dikomunikasikan ke Tim Proof'],
+    warning:['Data stok sistem dan fisik harus selalu sinkron','Hindari mengambil bahan yang sudah dialokasikan ke SPK lain tanpa persetujuan PPIC'],
+    sop:['Pengecekan di sistem dilakukan terlebih dahulu','Konfirmasi fisik jika data sistem meragukan','Hasil pengecekan didokumentasikan sebelum proses selanjutnya'],
+    jobdesk:['Admin Gudang: cek stok di sistem','Staff Gudang: konfirmasi fisik jika perlu'],jurnal:[]},
+
+  realisasi:{icon:'✅',title:'Gudang Realisasi Bahan ke Floor Proof',dept:'Gudang',
+    desc:'Gudang mengeluarkan bahan yang dibutuhkan dan menyerahkan ke Floor Proof. Setiap pengeluaran bahan harus tercatat di sistem.',
+    poin:['Pengeluaran bahan dicatat di sistem dengan referensi nomor MAP','Bahan diserahkan ke Floor Proof dengan dokumen serah terima','Stok gudang otomatis berkurang di sistem setelah dicatat'],
+    warning:['Pengeluaran bahan TANPA dokumen resmi adalah temuan audit serius'],
+    sop:['Semua pengeluaran bahan wajib melalui sistem','Tanda tangan serah terima antara gudang dan penerima wajib ada'],
+    jobdesk:['Staff Gudang: menyiapkan dan menyerahkan bahan','Admin Gudang: mencatat pengeluaran di sistem'],
+    jurnal:['Debit: Biaya Sampel (saat bahan digunakan)','Kredit: Persediaan Bahan']},
+
+  purchase_req:{icon:'📝',title:'Gudang Buat Purchase Request + MKA',dept:'Gudang',
+    desc:'Jika bahan tidak tersedia, gudang membuat Purchase Request untuk bahan baku utama dan MKA (Memo Kebutuhan Aksesoris) untuk aksesoris yang dibutuhkan sampel.',
+    poin:['Purchase Request berisi: spesifikasi bahan, jumlah kebutuhan sampel, referensi MAP','MKA khusus untuk aksesoris: kancing, resleting, label, tag, benang, dll','Dokumen diteruskan ke Purchasing untuk proses pembelian'],
+    warning:['Spesifikasi di Purchase Request HARUS sama persis dengan yang tertulis di MAP','Jangan mengganti spesifikasi bahan tanpa persetujuan PPIC/Marketing'],
+    sop:['Purchase Request dan MKA diinput di sistem','Purchasing merespons dalam 1 hari kerja'],
+    jobdesk:['Admin Gudang: membuat Purchase Request dan MKA','PPIC: memverifikasi spesifikasi kebutuhan bahan'],jurnal:[]},
+
+  minta_uang:{icon:'💵',title:'Purchasing Minta Uang ke Finance',dept:'Purchasing',
+    desc:'Untuk pembelian bahan sampel yang biasanya tunai (tanpa PO formal), Purchasing mengajukan permintaan uang tunai ke Finance.',
+    poin:['Pembelian sampel umumnya dalam jumlah kecil dan dilakukan tunai','Purchasing mengajukan kebutuhan dana ke Finance dengan estimasi biaya','Finance menyiapkan uang tunai dan mencatat sebagai uang muka'],
+    warning:['Pembelian TANPA bukti (nota) TIDAK DIPERBOLEHKAN meskipun tunai','Uang muka harus diselesaikan (dipertanggungjawabkan) dengan nota dalam waktu yang ditentukan'],
+    sop:['Pengajuan uang muka disertai rincian kebutuhan pembelian','Batas waktu pertanggungjawaban uang muka maksimal 3 hari kerja setelah pembelian'],
+    jobdesk:['Purchasing: mengajukan kebutuhan dana ke Finance','Finance: menyetujui dan menyiapkan uang muka'],
+    jurnal:['Debit: Uang Muka Pembelian','Kredit: Kas']},
+
+  um_sampel:{icon:'💰',title:'Finance Catat Uang Muka (Tunai)',dept:'Finance',
+    desc:'Finance mencatat pengeluaran uang tunai sebagai uang muka yang diberikan kepada Purchasing untuk pembelian bahan sampel.',
+    poin:['Pencatatan dilakukan di sistem pada hari yang sama','Uang muka tercatat atas nama Purchasing yang bertanggung jawab','Uang muka harus diselesaikan (di-clear) setelah ada nota pembelian'],
+    warning:['Uang muka yang tidak diselesaikan tepat waktu harus segera ditagihkan ke Purchasing yang bersangkutan'],
+    sop:['Setiap pemberian uang muka wajib dicatat di sistem','Monitoring uang muka outstanding dilakukan setiap minggu oleh Finance'],
+    jobdesk:['Finance: mencatat uang muka di sistem dan memonitor penyelesaiannya'],
+    jurnal:['Debit: Uang Muka Pembelian','Kredit: Kas']},
+
+  beli_sampel:{icon:'🛒',title:'Purchasing Beli Bahan + Buat Nota',dept:'Purchasing',
+    desc:'Purchasing membeli bahan sampel sesuai spesifikasi yang diminta, lalu mengumpulkan nota pembelian sebagai bukti pengeluaran dana.',
+    poin:['Pembelian harus sesuai spesifikasi di Purchase Request/MKA','Nota pembelian dikumpulkan untuk semua item yang dibeli','Purchasing bertanggung jawab atas kesesuaian spesifikasi bahan yang dibeli'],
+    warning:['Bahan yang dibeli HARUS sesuai spesifikasi MAP — jangan mengganti meskipun lebih murah tanpa persetujuan','Nota yang hilang harus segera dilaporkan dan dibuatkan pengganti'],
+    sop:['Simpan semua nota pembelian','Serahkan nota ke Accounting dalam 1 hari kerja setelah pembelian'],
+    jobdesk:['Purchasing: membeli bahan dan mengumpulkan nota pembelian'],jurnal:[]},
+
+  penyelesaian_um:{icon:'🧮',title:'Accounting Input Penyelesaian Uang Muka',dept:'Accounting',
+    desc:'Accounting menerima nota dari Purchasing dan menginput penyelesaian uang muka. Proses ini otomatis menambah stok di gudang Purchasing.',
+    poin:['Nota pembelian diverifikasi kesesuaiannya dengan uang muka yang diberikan','Penyelesaian UM diinput di sistem — stok otomatis bertambah di gudang Purchasing','Jika ada sisa uang muka, dikembalikan ke Finance. Jika kurang, Purchasing mengajukan tambahan'],
+    warning:['Nota yang tidak valid atau mencurigakan harus diverifikasi ke Purchasing terlebih dahulu','Jangan menginput penyelesaian UM tanpa nota yang sah'],
+    sop:['Penyelesaian UM diinput di sistem pada hari yang sama nota diterima','Selisih uang muka diselesaikan pada hari yang sama'],
+    jobdesk:['Accounting: memverifikasi nota dan menginput penyelesaian UM di sistem'],
+    jurnal:['Debit: Persediaan Bahan (stok bertambah)','Kredit: Uang Muka Pembelian (UM diselesaikan)']},
+
+  mutasi_bahan:{icon:'🔄',title:'Stok Bertambah → Mutasi ke Gudang',dept:'Gudang / Sistem',
+    desc:'Setelah penyelesaian UM diinput, sistem secara otomatis mencatat stok di gudang Purchasing, kemudian stok dimutasi ke gudang induk.',
+    poin:['Proses mutasi dilakukan by sistem — otomatis setelah penyelesaian UM diinput','Stok berpindah dari gudang Purchasing ke gudang induk','Setelah di gudang induk, bahan siap direalisasi ke Floor Proof'],
+    warning:['Pastikan lokasi gudang yang dituju sudah benar sebelum mutasi diinput di sistem'],
+    sop:['Mutasi dilakukan segera setelah penyelesaian UM diinput','Admin Gudang memverifikasi fisik bahan setelah mutasi'],
+    jobdesk:['Sistem: mutasi otomatis','Admin Gudang: verifikasi fisik bahan yang diterima'],
+    jurnal:['Debit: Persediaan Bahan Gudang Induk','Kredit: Persediaan Bahan Gudang Purchasing']},
+
+  buat_pola:{icon:'📐',title:'Tim Design & Pola Buat Pola sesuai MAP',dept:'Tim Proof',
+    desc:'Tim Design dan Pola membuat pola teknis garmen berdasarkan spesifikasi MAP. Pola ini menjadi template pemotongan bahan untuk produksi sampel.',
+    poin:['Pola dibuat untuk setiap ukuran dalam size run','Detail pola: lingkar dada, panjang baju, lebar bahu, panjang lengan, dll','Margin jahitan (seam allowance) sudah diperhitungkan dalam pola','Pola harus mempertimbangkan: jenis bahan, arah serat kain, shrinkage'],
+    warning:['Pola tidak akurat → produk tidak sesuai ukuran yang diinginkan customer','Pola harus divalidasi dengan mengukur ulang sebelum digunakan untuk cutting'],
+    sop:['Pola dibuat oleh pattern maker yang berpengalaman','Pola divalidasi dengan mengukur ulang sebelum digunakan','Pola disimpan sebagai dokumen standar untuk order serupa'],
+    jobdesk:['Pattern Maker: membuat pola teknis sesuai MAP','Kepala Tim Proof: review dan validasi pola','Designer: memberikan input spesifikasi desain'],jurnal:[]},
+
+  lhk_pola:{icon:'💻',title:'Input LHK Pola (Laporan Hasil Produksi)',dept:'Tim Pola',
+    desc:'Setelah pola selesai, Tim Pola menginput LHK (Laporan Hasil Kerja) Pola di sistem sebagai dokumentasi progress produksi sampel.',
+    poin:['LHK Pola mencatat: jumlah pola yang dibuat, ukuran, tanggal selesai, nama pembuat','LHK menjadi bukti progress produksi sampel','Data LHK digunakan PPIC untuk monitoring produksi'],
+    warning:['LHK yang tidak diinput → data progress tidak akurat di sistem'],
+    sop:['LHK diinput di sistem pada hari yang sama pola selesai dibuat','PPIC memonitor LHK setiap hari'],
+    jobdesk:['Admin Tim Proof: menginput LHK Pola di sistem','PPIC: memonitor progress melalui data LHK'],jurnal:[]},
+
+  proses_sampel:{icon:'✂️',title:'Proses Sampel: Potong → Cetak/Bordir → Sewing → Finishing',dept:'Tim Proof',
+    desc:'Tim Proof menjalankan proses pembuatan sampel secara lengkap. Dibuat 2 pcs per varian: 1 untuk customer, 1 pegangan Marketing.',
+    poin:['Cutting: pemotongan bahan sesuai pola yang sudah dibuat','Cetak/Bordir: jika customer meminta motif cetak atau bordir','Sewing: penjahitan semua part menjadi produk jadi','Finishing: obras, pasang aksesoris, trimming, setrika','2 pcs per varian: 1 untuk customer, 1 untuk pegangan Marketing'],
+    warning:['Sampel harus persis sesuai spesifikasi MAP — tidak boleh ada improvisasi tanpa persetujuan','Kualitas sampel mencerminkan standar produksi massal — harus terbaik'],
+    sop:['QC internal dilakukan sebelum sampel diserahkan ke MO','Dokumen proses sampel disimpan sebagai referensi'],
+    jobdesk:['Operator Proof: cutting, jahit, dan finishing sampel','QC Tim Proof: memastikan kualitas sebelum diserahkan ke MO'],
+    jurnal:['Debit: Biaya Sampel','Kredit: Persediaan Bahan (bahan yang digunakan)']},
+
+  bast_map:{icon:'📋',title:'Input BAST MAP + Buat Trimcard → ke Gudang',dept:'Tim Proof',
+    desc:'Setelah sampel selesai, Tim Proof menginput BAST MAP di sistem dan membuat Trimcard sebagai standar penilaian bahan yang diserahkan ke gudang.',
+    poin:['BAST MAP di-link ke nomor MAP di sistem sebagai bukti sampel selesai','Trimcard: kartu standar berisi contoh bahan, warna, aksesoris yang digunakan di sampel','Trimcard diserahkan ke gudang sebagai standar penilaian bahan incoming','Trimcard juga digunakan sebagai acuan QC bahan untuk order serupa ke depan'],
+    warning:['BAST MAP dan Trimcard WAJIB dibuat sebelum sampel diserahkan ke MO','Trimcard yang tidak dibuat akan menyulitkan QC penerimaan bahan produksi massal'],
+    sop:['BAST MAP diinput di sistem pada hari sampel selesai','Trimcard dibuat dengan contoh bahan fisik dari sampel yang dibuat'],
+    jobdesk:['Admin Tim Proof: menginput BAST MAP di sistem','Tim Proof: membuat Trimcard dengan contoh bahan fisik','Kepala Gudang: menerima dan menyimpan Trimcard'],jurnal:[]},
+
+  mutasi_mo:{icon:'📤',title:'Sampel Dimutasi ke MO (2 pcs/varian)',dept:'Tim Proof → MO',
+    desc:'Sampel yang sudah jadi dimutasi ke tim MO. Setiap varian dibuat 2 pcs: satu untuk dikirim ke customer dan satu sebagai pegangan Marketing.',
+    poin:['2 pcs per varian: 1 untuk customer, 1 untuk pegangan Marketing','Mutasi dicatat di sistem dengan referensi nomor MAP','Sampel pegangan Marketing berfungsi sebagai backup jika sampel customer tidak kembali'],
+    warning:['JANGAN kirim semua sampel ke customer — harus ada 1 pcs yang dipegang Marketing','Kehilangan sampel harus dilaporkan segera ke MO dan Management'],
+    sop:['Mutasi sampel ke MO dicatat di sistem','Serah terima dilakukan dengan penandatanganan dokumen resmi'],
+    jobdesk:['Tim Proof: menyerahkan sampel ke MO','Marketing Officer: menerima dan menyimpan sampel pegangan Marketing'],jurnal:[]},
+
+  sj_map:{icon:'🚚',title:'MO Buat SJ MAP → Kirim Sampel ke Customer',dept:'Marketing Officer',
+    desc:'MO membuat Surat Jalan MAP sebagai dokumen pengiriman sampel ke customer. Satu pcs dikirim ke customer, satu pcs tetap di Marketing.',
+    poin:['Surat Jalan MAP mencantumkan: nomor MAP, nama customer, detail sampel yang dikirim','Surat Jalan dikirim bersama sampel ke customer','Customer menandatangani tanda terima sebagai bukti sampel sudah diterima','Konfirmasi penerimaan sampel oleh customer dalam 1x24 jam'],
+    warning:['JANGAN kirim sampel tanpa Surat Jalan — akan menyulitkan penelusuran','Pastikan sampel dikemas dengan baik agar tidak rusak saat pengiriman'],
+    sop:['Surat Jalan MAP dicetak dari sistem sebelum pengiriman','Konfirmasi penerimaan sampel oleh customer dalam 1x24 jam'],
+    jobdesk:['Marketing Officer: membuat dan mencetak Surat Jalan MAP','Sales/Marketing: mengkoordinasikan pengiriman ke customer'],jurnal:[]},
+
+  penilaian:{icon:'◆',title:'Customer Menilai Sampel — OK atau Revisi?',dept:'Customer',
+    desc:'Customer memeriksa sampel yang diterima dan memberikan penilaian apakah sudah sesuai atau masih perlu revisi.',
+    poin:['Customer memeriksa: model, ukuran, warna, kualitas bahan, kualitas jahitan, aksesoris','Feedback customer diberikan secara tertulis (email/WA/form)','Jika ada revisi, detail revisi harus dijelaskan dengan jelas dan tertulis'],
+    warning:['Sales harus aktif meminta feedback dari customer, jangan menunggu terlalu lama','Sampel yang tidak dikembalikan ke perusahaan harus segera di-follow up'],
+    sop:['Follow-up penilaian sampel dilakukan maksimal 5 hari kerja setelah sampel diterima customer','Feedback customer dicatat di sistem sebagai dokumen resmi'],
+    jobdesk:['Sales Lapangan/MO: aktif follow-up penilaian sampel ke customer'],jurnal:[]},
+
+  revisi:{icon:'🔄',title:'Revisi Sampel sesuai Feedback Customer',dept:'Tim Proof',
+    desc:'Tim Proof melakukan revisi sampel sesuai keterangan yang diberikan customer. Ada ketentuan batas revisi berdasarkan memo internal perusahaan.',
+    poin:['Revisi dilakukan sesuai detail feedback customer yang tertulis','KETENTUAN REVISI (sesuai memo internal):','  • Revisi karena kesalahan CUSTOMER: maksimal 2x gratis, lebih dari 2x dikenakan biaya','  • Revisi karena kesalahan PERUSAHAAN: tidak dikenakan biaya berapapun jumlah revisinya','Biaya revisi ditagihkan melalui invoice tambahan jika melewati batas'],
+    warning:['Pastikan penyebab revisi (kesalahan siapa) didokumentasikan dengan jelas','Biaya revisi yang tidak ditagihkan merugikan perusahaan','JANGAN melakukan revisi tanpa instruksi tertulis dari customer'],
+    sop:['Setiap revisi dicatat di sistem dengan keterangan penyebab','Biaya revisi dikomunikasikan ke customer sebelum revisi dimulai (jika berbayar)','Form revisi ditandatangani customer sebelum proses revisi berjalan'],
+    jobdesk:['Tim Proof: melakukan revisi sesuai instruksi','MO/Sales: mengkomunikasikan ketentuan biaya revisi ke customer','Finance: menerbitkan invoice tambahan jika revisi berbayar'],jurnal:[]},
+
+  validasi_sampel:{icon:'✍️',title:'Customer Validasi + TTD di Sampel Fisik',dept:'Customer',
+    desc:'Setelah customer setuju, customer memberikan validasi dengan menandatangani langsung di produk sampel fisik sebagai bukti persetujuan resmi.',
+    poin:['Customer menandatangani langsung di sampel fisik sebagai tanda persetujuan resmi','Sampel yang sudah di-TTD menjadi standar acuan produksi massal','Sampel harus dikembalikan ke perusahaan setelah di-TTD untuk diarsip Tim Proof','Jika sampel customer tidak kembali: sampel Marketing yang di-TTD dan dikirim ke Tim Proof sebagai acuan'],
+    warning:['JANGAN mulai produksi massal sebelum ada sampel yang di-TTD customer','Sampel yang hilang (tidak dikembalikan) harus segera ditangani dan dilaporkan'],
+    sop:['Sales memastikan sampel dikembalikan dalam kondisi baik dengan TTD customer','Sampel yang di-TTD diserahkan ke Tim Proof untuk diarsip'],
+    jobdesk:['Sales/MO: memastikan customer menandatangani sampel dan mengembalikannya','Tim Proof: menerima dan mengarsip sampel yang sudah di-TTD'],jurnal:[]},
+
+  arsip_sampel:{icon:'🗄️',title:'Sampel Dikembalikan & Diarsip Tim Proof',dept:'Tim Proof',
+    desc:'Sampel yang sudah divalidasi customer dikembalikan ke perusahaan dan diarsip oleh Tim Proof sebagai standar referensi produksi massal.',
+    poin:['Sampel diarsip dengan label: nomor MAP, customer, tanggal ACC','Menjadi standar referensi selama proses produksi massal berlangsung','Jika sampel customer tidak kembali: sampel Marketing (1 pcs) yang di-TTD customer, kemudian dikirim ke Tim Proof','Sampel disimpan minimal sampai order selesai dikirim ke customer'],
+    warning:['Sampel yang tidak diarsip dengan benar menyulitkan resolusi dispute kualitas dengan customer'],
+    sop:['Sampel diterima, dilabeli, dan disimpan di tempat arsip khusus','Sistem diupdate bahwa sampel sudah diarsip dan status MAP menjadi ACC'],
+    jobdesk:['Tim Proof: menerima, melabeli, dan mengarsip sampel','Admin Produksi: mengupdate status MAP di sistem menjadi ACC'],jurnal:[]},
+
+  validasi_so:{icon:'✅',title:'SO Divalidasi untuk Terbit SPK',dept:'Marketing Officer',
+    desc:'Setelah sampel di-ACC customer, SO divalidasi MO untuk dibuatkan SPK. Validasi ini menandakan spesifikasi produk sudah final dan produksi massal siap dimulai.',
+    poin:['Validasi SO dilakukan setelah ada bukti sampel ACC (BAST MAP + sampel ber-TTD)','Setelah SO divalidasi, PPIC bisa menerbitkan SPK','Status SO berubah dari "Pending Sampel" menjadi "Siap Produksi" di sistem'],
+    warning:['SO TIDAK BOLEH divalidasi untuk SPK jika sampel belum ACC customer secara resmi','Validasi SO yang tergesa-gesa sebelum sampel ACC adalah risiko audit serius'],
+    sop:['MO memvalidasi SO di sistem dengan melampirkan bukti ACC sampel','PPIC menerima notifikasi validasi SO dan segera memproses SPK'],
+    jobdesk:['Marketing Officer: memvalidasi SO setelah sampel ACC','PPIC: menerima notifikasi dan memproses SPK'],jurnal:[]},
+
+  spk:{icon:'📝',title:'PPIC Buat SPK (Surat Perintah Kerja)',dept:'PPIC',
+    desc:'SPK adalah dokumen perintah kerja yang mencakup seluruh detail teknis produksi massal. 1 SPK berlaku untuk semua divisi produksi sekaligus.',
+    poin:['IDENTITAS SPK: Nomor SPK, tanggal terbit, deadline per tahap dan deadline akhir, referensi SO & MAP','SPESIFIKASI PRODUK: Jenis produk, jenis & kode bahan utama, gramatur (gsm), lebar kain, komposisi, warna per varian','BAHAN PENDUKUNG: furing, kain keras, bahan pelapis','AKSESORIS LENGKAP: kancing (jenis/ukuran/warna/jumlah), resleting, label brand/size/care, hang tag, benang (warna/jenis/nomor)','SPESIFIKASI JAHITAN: jenis obras, jenis stitch, SPI (stitches per inch), teknik jahit khusus','CETAK/BORDIR (jika ada): posisi, ukuran artwork, jenis cetak, warna tinta/benang','SIZE RUN & QTY: ukuran XS/S/M/L/XL/XXL, qty per ukuran, total qty, warna per ukuran','STANDAR QC: toleransi ukuran per bagian (±cm), BS rate maksimal yang diizinkan','PACKING: cara lipat, packing per pcs (plastik/polybag), isi per dus, penandaan dus','TARGET PRODUKSI per tahap: Cutting, Cetak/Bordir, Jahit, Finishing'],
+    warning:['SPK TIDAK BOLEH diubah setelah ada transaksi produksi berjalan','SO TIDAK BOLEH divalidasi untuk SPK jika sampel belum ACC resmi','SPK outstanding >3 bulan harus segera ditangani dan diselesaikan'],
+    sop:['SPK diterbitkan maksimal 1x24 jam setelah SO divalidasi','Direview Manager Produksi sebelum diterbitkan ke semua divisi','PPIC wajib memonitor status SPK setiap hari'],
+    jobdesk:['PPIC Staff: membuat SPK dengan data lengkap','Kepala PPIC/Manager Produksi: review dan approve SPK','Marketing: memastikan spesifikasi di SPK sesuai keinginan customer'],jurnal:[]},
+
+  terbit_spk:{icon:'📤',title:'SPK Diterbitkan ke SEMUA Divisi Produksi',dept:'PPIC → Semua Divisi',
+    desc:'1 SPK diterbitkan ke semua divisi produksi sekaligus (Cutting, Cetak, Bordir jika ada, Jahit, Finishing). Bukan terbit bertahap per divisi.',
+    poin:['1 SPK berlaku untuk seluruh proses produksi — bukan terbit bertahap','Setiap divisi menerima copy SPK sesuai bagian mereka','PPIC mengawal pelaksanaan SPK setiap hari','SPK menjadi acuan monitoring produksi real-time'],
+    warning:['Pastikan semua divisi menerima dan memahami isi SPK sebelum mulai produksi','SPK yang tidak dimengerti harus dikonfirmasi ke PPIC, bukan diasumsikan sendiri'],
+    sop:['Distribusi SPK ke semua divisi pada hari yang sama SPK diterbitkan','Kepala setiap divisi mengkonfirmasi penerimaan SPK ke PPIC','Briefing SPK dilakukan sebelum produksi dimulai'],
+    jobdesk:['PPIC: mendistribusikan SPK ke semua divisi','Kepala Divisi: menerima, mempelajari, dan mengkonfirmasi SPK','Admin Produksi: mencatat distribusi SPK di sistem'],jurnal:[]},
+
+  cek_stok_p:{icon:'◆',title:'PPIC Cek Stok Bahan untuk Produksi',dept:'PPIC / Gudang',
+    desc:'PPIC melakukan pengecekan stok bahan yang dibutuhkan untuk produksi massal berdasarkan perhitungan BOM. Dilakukan bersamaan atau segera setelah SPK diterbitkan.',
+    poin:['PPIC menghitung kebutuhan bahan berdasarkan SPK dan BOM (toleransi BS sudah diperhitungkan)','Pengecekan di sistem dan konfirmasi fisik dengan gudang','Jika stok cukup: langsung proses produksi','Jika tidak cukup: proses MKB dan pembelian bahan'],
+    warning:['JANGAN mulai cutting sebelum kepastian stok bahan tersedia','Keterlambatan pengecekan stok akan menghambat seluruh jadwal produksi'],
+    sop:['Cek stok dilakukan bersamaan dengan penerbitan SPK','PPIC berkoordinasi dengan gudang untuk konfirmasi fisik ketersediaan bahan'],
+    jobdesk:['PPIC: melakukan pengecekan kebutuhan vs stok','Admin Gudang: konfirmasi ketersediaan fisik bahan'],jurnal:[]},
+
+  lanjut_prod:{icon:'🚀',title:'Bahan Siap → Lanjut ke Proses Produksi',dept:'Gudang → Produksi',
+    desc:'Semua bahan sudah tersedia di gudang dan siap didistribusikan ke divisi produksi pertama (Cutting) sesuai jadwal SPK.',
+    poin:['Bahan didistribusikan ke divisi Cutting sebagai tahap pertama produksi massal','PPIC memastikan semua bahan dan aksesoris sudah tersedia sebelum cutting dimulai','Distribusi bahan ke cutting disertai dokumen MPPB (Memo Permintaan Pengeluaran Bahan)'],
+    warning:['JANGAN mulai cutting jika masih ada bahan yang belum tersedia','Pastikan semua aksesoris (tidak hanya bahan utama) sudah tersedia'],
+    sop:['PPIC melakukan final check ketersediaan semua bahan dan aksesoris','Distribusi bahan ke cutting disertai dokumen MPPB'],
+    jobdesk:['PPIC: final check dan koordinasi distribusi bahan','Gudang: menyiapkan bahan untuk didistribusikan ke produksi cutting'],jurnal:[]},
+
+  mkb:{icon:'📊',title:'PPIC Buat MKB (Memo Kebutuhan Bahan)',dept:'PPIC',
+    desc:'MKB adalah dokumen perhitungan kebutuhan bahan produksi massal yang dibuat PPIC. MKB menjadi dasar Purchasing menerbitkan PO ke supplier.',
+    poin:['MKB berisi: spesifikasi bahan, jumlah kebutuhan + toleransi BS, referensi SPK','PERHITUNGAN (backward): Target finishing → + toleransi BS → kebutuhan jahit → + toleransi → kebutuhan cutting → + toleransi → kebutuhan bahan total (meter/kg)','STRATEGI 2 TAHAP: MKB Awal (setelah SO terbit) = estimasi/reservasi bahan; MKB Final (setelah sampel ACC) = fix untuk penerbitan PO resmi','Strategi 2 tahap: lead time tidak terlalu panjang dan aman jika customer minta ganti bahan'],
+    warning:['KONDISI SAAT INI: MKB masih dibuat Purchasing — perlu diperbaiki segera','REKOMENDASI AUDIT: MKB seharusnya dibuat PPIC yang mengetahui detail stok dan kebutuhan lapangan','Toleransi BS terlalu kecil: risiko kekurangan bahan di tengah produksi','Toleransi BS terlalu besar: pemborosan modal perusahaan'],
+    sop:['MKB dibuat PPIC berdasarkan data historis BS rate per jenis produk','Direview Kepala PPIC sebelum diserahkan ke Purchasing','Data historis BS rate wajib dipelihara sebagai referensi kalkulasi'],
+    jobdesk:['PPIC Staff: menghitung dan membuat MKB','Kepala PPIC: review dan approve MKB','Purchasing: menerima MKB sebagai dasar penerbitan PO'],jurnal:[]},
+
+  po_prod:{icon:'🛒',title:'Purchasing Terbitkan PO ke Supplier',dept:'Purchasing',
+    desc:'Berdasarkan MKB yang dibuat PPIC, Purchasing menerbitkan Purchase Order (PO) resmi ke supplier untuk pembelian bahan produksi massal.',
+    poin:['PO mencantumkan: spesifikasi bahan (sesuai MKB & Trimcard), jumlah, harga, deadline pengiriman','Supplier dipilih berdasarkan: kualitas, harga kompetitif, lead time, dan track record','Lead time supplier harus diperhitungkan dalam jadwal produksi SPK','PO diapprove Manager Purchasing sebelum dikirim ke supplier'],
+    warning:['PO TANPA DASAR MKB yang valid tidak boleh diterbitkan','Spesifikasi di PO harus 100% sama dengan MKB dan Trimcard','Jangan ganti supplier tanpa persetujuan PPIC dan Management'],
+    sop:['PO diterbitkan berdasarkan MKB yang sudah diapprove','PO diapprove Manager Purchasing sebelum dikirim ke supplier','Monitoring kedatangan bahan berdasarkan lead time di PO'],
+    jobdesk:['Purchasing Staff: membuat PO berdasarkan MKB','Manager Purchasing: review dan approve PO','PPIC: memverifikasi kesesuaian spesifikasi di PO dengan MKB'],jurnal:[]},
+
+  bpb:{icon:'📥',title:'Bahan Datang → Gudang Input BPB',dept:'Gudang',
+    desc:'Saat bahan dari supplier tiba, gudang melakukan penerimaan dan menginput BPB (Bukti Penerimaan Bahan/Barang) di sistem sebagai pencatatan resmi.',
+    poin:['BPB berisi: tanggal terima, nama supplier, nomor PO referensi, spesifikasi dan jumlah bahan','BPB diinput di sistem pada hari yang sama bahan datang','BPB menjadi dasar update stok gudang di sistem','BPB juga menjadi salah satu dokumen lampiran untuk Accounting membuat Voucher'],
+    warning:['BPB TIDAK BOLEH diinput sebelum pemeriksaan fisik bahan selesai','Jangan menerima bahan yang tidak ada PO-nya tanpa persetujuan Management'],
+    sop:['Pemeriksaan fisik wajib dilakukan sebelum BPB diinput','BPB diinput di sistem pada hari yang sama','Distribusi BPB: 1 untuk gudang, 1 untuk Accounting'],
+    jobdesk:['Staff Gudang: menerima bahan dan melakukan pengecekan awal','Admin Gudang: menginput BPB di sistem','Kepala Gudang: supervisi penerimaan bahan'],jurnal:[]},
+
+  cek_bahan:{icon:'◆',title:'Crosscheck Bahan vs Trimcard & Cek Kelunturan',dept:'Gudang / QC',
+    desc:'Gudang melakukan pemeriksaan menyeluruh terhadap bahan yang datang mengacu pada Trimcard sebagai standar.',
+    poin:['Cek kesesuaian Trimcard: warna, jenis bahan, tekstur, gramatur','Cek cacat: lubang, noda, ketidakseragaman warna pada bahan','Cek kelunturan warna — WAJIB untuk warna hitam dan putih (rendam contoh kain dalam air)','Cek kelengkapan dokumen: faktur supplier, surat jalan, sertifikat jika diperlukan','Standar penerimaan: bahan harus sesuai 100% dengan Trimcard'],
+    warning:['Bahan tidak sesuai Trimcard HARUS di-return meskipun ada tekanan deadline produksi','Kelunturan yang tidak terdeteksi akan merusak kualitas produk jadi','Dokumen tidak lengkap akan menghambat proses pembuatan Voucher di Accounting'],
+    sop:['Pemeriksaan mengacu Trimcard yang sudah disimpan di gudang','Cek kelunturan untuk semua warna gelap dan warna putih','Temuan ketidaksesuaian dicatat di form QC penerimaan'],
+    jobdesk:['Staff Gudang/QC: pemeriksaan bahan vs Trimcard','Kepala Gudang: keputusan final accept/reject bahan','Admin Gudang: mendokumentasikan hasil pemeriksaan'],jurnal:[]},
+
+  return_bahan:{icon:'↩️',title:'Return Bahan ke Supplier',dept:'Gudang / Purchasing',
+    desc:'Bahan yang tidak memenuhi standar (tidak sesuai Trimcard, cacat, atau bermasalah) dikembalikan ke supplier disertai dokumen resmi.',
+    poin:['Dokumen return: Surat Return Bahan/Retur Pembelian dengan keterangan alasan return','Bahan return dicatat di sistem sebagai retur pembelian','Supplier wajib mengganti dengan bahan yang sesuai standar','Monitoring status penggantian bahan oleh Purchasing'],
+    warning:['JANGAN menerima kompensasi harga lebih murah sebagai pengganti return — standar kualitas tidak bisa dikompromikan','Return yang tidak didokumentasikan akan menyulitkan klaim ke supplier'],
+    sop:['Surat return diterbitkan oleh gudang dan disetujui Kepala Gudang','Supplier dikonfirmasi dan diberi deadline penggantian bahan'],
+    jobdesk:['Gudang: membuat dokumen return dan mengembalikan bahan ke supplier','Purchasing: berkoordinasi dengan supplier untuk penggantian bahan cepat'],
+    jurnal:['Debit: Hutang Dagang (jika sudah tercatat)','Kredit: Persediaan Bahan (retur pembelian)']},
+
+  barcode:{icon:'🏷️',title:'Barcode → Masuk Stok Sistem',dept:'Gudang',
+    desc:'Bahan yang sudah lolos pemeriksaan diberi label barcode dan dimasukkan ke dalam stok sistem. Ditempatkan sesuai lokasi yang ditetapkan di gudang.',
+    poin:['Setiap item bahan diberi barcode untuk identifikasi dan tracking','Barcode mencantumkan: kode bahan, warna, jumlah, tanggal masuk','Penempatan bahan di rak/lokasi sesuai sistem penataan gudang','Stok sistem terupdate secara real-time setelah barcode di-scan'],
+    warning:['Bahan tanpa barcode tidak boleh ada di gudang — akan menyulitkan tracking','Penempatan bahan yang tidak sesuai lokasi menyebabkan kesulitan saat pengambilan'],
+    sop:['Barcode dicetak dan ditempel segera setelah bahan lolos QC','Bahan ditempatkan di lokasi yang sudah ditetapkan','Stok diverifikasi ulang setelah semua bahan masuk'],
+    jobdesk:['Admin Gudang: mencetak dan menempelkan barcode, menginput ke sistem','Staff Gudang: menempatkan bahan di lokasi yang benar sesuai sistem'],
+    jurnal:['Debit: Persediaan Bahan Gudang','Kredit: Hutang Dagang (belum diakui / dicatat sementara)']},
+
+  dok_bahan:{icon:'📂',title:'Serahkan Dokumen ke Purchasing',dept:'Gudang → Purchasing',
+    desc:'Gudang mengumpulkan dan memeriksa kelengkapan dokumen atas kedatangan bahan, kemudian menyerahkannya ke Purchasing untuk digabungkan dengan dokumen PO.',
+    poin:['Dokumen yang dikumpulkan: BPB, faktur/invoice supplier, surat jalan supplier, sertifikat jika ada','Gudang memverifikasi kesesuaian dokumen dengan bahan yang diterima','Dokumen diserahkan ke Purchasing untuk dilampirkan bersama dokumen PO','Kelengkapan dokumen menjadi syarat Accounting membuat Voucher'],
+    warning:['Dokumen tidak lengkap akan menghambat proses pembayaran ke supplier','Faktur yang tidak sesuai PO (harga/qty berbeda) harus dikonfirmasi ke supplier sebelum diproses'],
+    sop:['Pemeriksaan kelengkapan dokumen dilakukan saat penerimaan bahan','Dokumen diserahkan ke Purchasing pada hari yang sama bahan diterima'],
+    jobdesk:['Admin Gudang: mengumpulkan dan menyerahkan dokumen ke Purchasing','Purchasing: menerima, melengkapi dengan dokumen PO, dan menyerahkan ke Accounting'],jurnal:[]},
+
+  voucher:{icon:'🧾',title:'Accounting Input Voucher (3-way matching)',dept:'Accounting',
+    desc:'Accounting menerima paket dokumen dari Purchasing (BPB + faktur supplier + PO) dan menginput Voucher/Invoice Pembelian di sistem. Ini pencatatan resmi hutang ke supplier.',
+    poin:['Voucher berisi: data supplier, nomor PO, detail bahan, nilai pembelian, tanggal jatuh tempo','3-way matching WAJIB dilakukan: PO vs BPB vs Faktur Supplier (jumlah dan harga harus sama)','Voucher menjadi dasar pencatatan hutang dagang di sistem akuntansi','Voucher diapprove Manager Accounting sebelum diteruskan ke Finance'],
+    warning:['Voucher TIDAK BOLEH diinput jika ada ketidaksesuaian 3-way matching','Faktur supplier yang tidak ada PO-nya tidak boleh diproses tanpa approval Management'],
+    sop:['3-way matching dilakukan sebelum Voucher diinput','Voucher diinput di sistem pada hari dokumen diterima dari Purchasing','Voucher diapprove Manager Accounting sebelum diteruskan ke Finance'],
+    jobdesk:['Staff Accounting: melakukan 3-way matching dan menginput Voucher','Manager Accounting: approve Voucher','Finance: menerima Voucher sebagai dasar pengajuan pembayaran'],
+    jurnal:['Debit: Persediaan Bahan','Kredit: Hutang Dagang']},
+
+  pengajuan:{icon:'📋',title:'Pengajuan Pembayaran ke Finance',dept:'Finance',
+    desc:'Accounting atau Purchasing mengajukan permintaan pembayaran ke Finance berdasarkan Voucher yang sudah diapprove. Finance memverifikasi dan menjadwalkan pembayaran.',
+    poin:['Pengajuan disertai: Voucher yang sudah diapprove, copy faktur, jadwal jatuh tempo','Finance memverifikasi kelengkapan dokumen dan ketersediaan dana','Pembayaran dijadwalkan sesuai: jatuh tempo, prioritas, dan ketersediaan kas','Approval pembayaran oleh Manager Finance/Direktur sesuai nilai transaksi'],
+    warning:['Pembayaran yang terlambat dari jatuh tempo dapat merusak hubungan dengan supplier','Pembayaran tanpa Voucher yang valid TIDAK DIPERBOLEHKAN'],
+    sop:['Pengajuan pembayaran diajukan minimal 3 hari sebelum jatuh tempo','Finance memproses sesuai jadwal dan prioritas pembayaran'],
+    jobdesk:['Accounting/Purchasing: mengajukan permintaan pembayaran','Finance Manager: mereview dan menjadwalkan pembayaran','Direktur: approve pembayaran di atas nilai tertentu'],jurnal:[]},
+
+  outgoing:{icon:'💸',title:'Proses Pembayaran / Outgoing ke Supplier',dept:'Finance',
+    desc:'Finance melakukan transfer pembayaran ke supplier. Pembayaran dicatat di sistem dan bukti transfer disimpan sebagai dokumen.',
+    poin:['Pembayaran dilakukan via transfer bank ke rekening supplier yang sudah terverifikasi','Bukti transfer (konfirmasi bank) disimpan sebagai dokumen audit','Konfirmasi pembayaran dikirimkan ke supplier','Hutang dagang di sistem otomatis terlunasi setelah pembayaran diinput'],
+    warning:['Verifikasi rekening supplier sebelum transfer — jangan transfer ke rekening yang tidak terverifikasi','Simpan bukti transfer dengan baik sebagai dokumen pendukung audit'],
+    sop:['Transfer dilakukan sesuai jadwal yang sudah disetujui Manager Finance/Direktur','Bukti transfer diupload ke sistem pada hari yang sama','Konfirmasi pembayaran dikirim ke supplier segera setelah transfer'],
+    jobdesk:['Finance Staff: melakukan transfer dan mencatat di sistem','Finance Manager: verifikasi final sebelum transfer dilakukan'],
+    jurnal:['Debit: Hutang Dagang','Kredit: Kas/Bank']}
+};
+
+// ── FASE 4 NODES ──
+Object.assign(N,{
+  req_bahan_prod:{icon:'📋',title:'Admin Prod. Cutting Buat Permintaan Bahan',dept:'Admin Produksi Cutting',
+    desc:'Admin Produksi Cutting membuat permintaan bahan ke gudang sesuai kebutuhan SPK yang akan dijalankan.',
+    poin:['Permintaan bahan merujuk ke nomor SPK yang dijalankan','Jumlah sesuai kebutuhan aktual cutting hari itu berdasarkan daily plan','Permintaan mencakup bahan utama dan pendukung sesuai SPK','Sistem mencatat perpindahan bahan dari gudang ke floor produksi'],
+    warning:['Permintaan bahan WAJIB merujuk ke nomor SPK','Jangan mengambil bahan melebihi kebutuhan SPK'],
+    sop:['Permintaan diinput di sistem dengan referensi nomor SPK','Gudang merespons dan merealisasi sesuai jadwal'],
+    jobdesk:['Admin Produksi Cutting: membuat permintaan bahan di sistem','Kepala Cutting: memverifikasi kebutuhan bahan sesuai SPK'],
+    jurnal:['Debit: Persediaan BDP Cutting','Kredit: Persediaan Bahan Gudang Induk']},
+
+  realisasi_prod:{icon:'🚚',title:'Gudang Realisasi - Bahan Geser ke Floor Cutting',dept:'Gudang - Floor Produksi',
+    desc:'Gudang merealisasi permintaan bahan dan memindahkan bahan secara fisik maupun sistem ke floor produksi cutting.',
+    poin:['Perpindahan bahan dicatat di sistem (mutasi gudang ke WIP cutting)','Fisik bahan dipindahkan ke area floor produksi cutting','Serah terima bahan disertai dokumen resmi','Stok gudang berkurang, stok WIP cutting bertambah di sistem'],
+    warning:['Perpindahan bahan tanpa pencatatan sistem adalah temuan audit serius','Pastikan jumlah fisik sesuai dengan yang tercatat di sistem'],
+    sop:['Realisasi bahan dicatat di sistem bersamaan dengan perpindahan fisik','Dokumen serah terima ditandatangani kedua pihak'],
+    jobdesk:['Staff Gudang: menyiapkan dan menyerahkan bahan','Admin Gudang: mencatat mutasi di sistem','Admin Cutting: menerima dan memverifikasi bahan'],
+    jurnal:[]},
+
+  daily_plan:{icon:'📅',title:'PPIC Buat Daily Plan Cutting',dept:'PPIC',
+    desc:'PPIC membuat rencana harian (daily plan) untuk tim cutting yang menentukan SPK mana yang harus dikerjakan dan diselesaikan terlebih dahulu.',
+    poin:['Daily plan menentukan prioritas SPK yang dikerjakan hari itu','Pertimbangan: deadline SPK, ketersediaan bahan, kapasitas mesin','Daily plan dikomunikasikan ke kepala cutting setiap pagi','PPIC memonitor realisasi daily plan vs target setiap hari'],
+    warning:['SPK dengan deadline terdekat harus diprioritaskan','Daily plan yang tidak diikuti menyebabkan keterlambatan pengiriman','PPIC harus segera eskalasi jika SPK tidak bisa memenuhi target'],
+    sop:['Daily plan dibuat PPIC setiap hari sebelum shift cutting dimulai','Kepala cutting mengkonfirmasi penerimaan daily plan','Realisasi vs target dilaporkan ke PPIC setiap akhir shift'],
+    jobdesk:['PPIC: membuat dan mendistribusikan daily plan cutting','Kepala Cutting: menerima dan melaksanakan daily plan','Admin Cutting: monitoring dan melaporkan realisasi'],
+    jurnal:[]},
+
+  proses_cutting:{icon:'✂️',title:'Proses Cutting Dimulai',dept:'Produksi Cutting',
+    desc:'Tim cutting menjalankan proses pemotongan bahan sesuai daily plan dan SPK. Output berupa komponen/part garmen dalam satuan pcs.',
+    poin:['Cutting mengacu pola dan marker yang disiapkan sesuai SPK','Operator WAJIB menggunakan APD: sarung tangan anti-cut, masker','Output dicatat per komponen: badan depan, badan belakang, lengan, kerah, dll','Sisa bahan (waste/afval) dipisahkan dan didata'],
+    warning:['WAJIB pakai sarung tangan anti-cut selama operasi mesin cutting','Mesin cutting yang rusak atau tidak aman TIDAK BOLEH dioperasikan','Afval/sisa bahan HARUS didata'],
+    sop:['Briefing K3 setiap shift sebelum memulai pekerjaan','Pemeriksaan kondisi mesin sebelum dioperasikan','Afval didata dan dilaporkan ke gudang/PPIC'],
+    jobdesk:['Operator Cutting: mengoperasikan mesin sesuai SOP','Kepala Shift Cutting: memastikan keselamatan dan kualitas','Safety Officer: inspeksi K3 berkala'],
+    jurnal:[]},
+
+  lhk_cutting:{icon:'💻',title:'Operator Data Hasil - Admin Input LHK Cutting',dept:'Operator / Admin Cutting',
+    desc:'Operator cutting mendata jumlah komponen/part yang dihasilkan, kemudian admin cutting menginput di LHK Cutting di sistem yang terkoneksi dengan SPK.',
+    poin:['Operator mendata hasil per komponen dalam satuan pcs','Data diserahkan ke admin cutting di akhir shift atau per lot','Admin input LHK Cutting di sistem - WAJIB terkoneksi dengan nomor SPK','LHK mencatat: jumlah per komponen, tanggal, shift, nama operator'],
+    warning:['LHK yang tidak terkoneksi dengan SPK menyebabkan data produksi tidak akurat','Data operator yang tidak diserahkan tepat waktu menghambat input sistem'],
+    sop:['Operator mendata hasil setiap lot/bundle yang selesai','Admin input LHK di sistem pada hari yang sama','LHK WAJIB terkoneksi dengan nomor SPK dan MAP jika proses sampel'],
+    jobdesk:['Operator Cutting: mendata hasil produksi per komponen','Admin Cutting: menginput LHK Cutting di sistem dengan referensi SPK'],
+    jurnal:[]},
+
+  numbering_qc:{icon:'🔍',title:'Hasil Cutting - Numbering & QC Cutting',dept:'QC / Produksi Cutting',
+    desc:'Fisik hasil cutting dipindahkan ke area numbering dan QC Cutting untuk memastikan konsistensi warna dan kualitas potongan.',
+    poin:['Numbering: pemberian nomor per lembar dalam satu bundle untuk konsistensi shade warna','QC Cutting memeriksa: akurasi pemotongan, presisi ukuran, kesesuaian jumlah','Sampling QC minimal 10-20% dari total bundle','QC Officer mengisi form QC Cutting'],
+    warning:['Bundle yang tidak bernomor berisiko perbedaan shade warna pada produk jadi','Bundle yang tidak lolos QC TIDAK BOLEH dilanjutkan ke proses berikutnya','Masalah kualitas berulang harus segera dieskalasi ke management'],
+    sop:['Numbering dilakukan sebelum bundle meninggalkan area cutting','QC dilakukan sebelum bundle dipindahkan ke proses selanjutnya','Form QC harus diisi dan ditandatangani QC Officer'],
+    jobdesk:['Operator Numbering: melakukan numbering per bundle','QC Inspector: melakukan pemeriksaan dan pengisian form QC','Kepala Cutting: menerima laporan QC dan tindak lanjut'],
+    jurnal:[]},
+
+  lhk_qc_cutting:{icon:'💻',title:'Admin Input LHK QC Cutting + Rekonsiliasi Data',dept:'Admin QC / Admin Cutting',
+    desc:'Hasil QC Cutting diinput di sistem sebagai LHK QC Cutting, lalu direkonsiliasi dengan data operator. BS wajib diinput.',
+    poin:['LHK QC mencatat: qty lolos QC, qty BS, jenis cacat BS - WAJIB terkoneksi SPK','Data QC dibandingkan dengan data operator cutting - harus klop','Jika ada selisih: segera lakukan penyesuaian administrasi','Jika ada BS: input qty dan kategori BS di sistem agar hitungan klop','BS Rate Cutting = BS Cutting dibagi Total Input Cutting kali 100%'],
+    warning:['Selisih antara data operator dan QC HARUS segera diselesaikan','BS yang tidak diinput di sistem menyebabkan data stok tidak akurat','Jangan menutup LHK jika masih ada selisih yang belum diselesaikan'],
+    sop:['LHK QC diinput di sistem pada hari yang sama','Jika ada selisih: koordinasi admin cutting dan QC untuk penyesuaian','BS diinput dengan kategori jelas: cacat bahan, cacat pola, cacat cutting, dll'],
+    jobdesk:['Admin QC: menginput LHK QC Cutting di sistem','Admin Cutting: melakukan rekonsiliasi data operator vs QC','Kepala PPIC: monitoring data BS rate untuk evaluasi'],
+    jurnal:['Debit: Biaya BS Cutting jika dicatat sebagai biaya','Kredit: Persediaan BDP Cutting']},
+
+  return_sisa:{icon:'↩️',title:'Return Sisa Bahan ke Gudang + Hitung Waste',dept:'Cutting - Gudang',
+    desc:'Sisa bahan yang tidak terpakai setelah cutting dikembalikan ke gudang dengan administrasi lengkap untuk perhitungan waste aktual.',
+    poin:['Sisa bahan yang bisa dipakai dikembalikan ke gudang','Dokumen return mencantumkan: jenis bahan, jumlah, referensi SPK','Perhitungan Waste: Bahan Keluar Gudang dikurangi Return Bahan = Aktual Pemakaian','Aktual Pemakaian vs Standar Pemakaian = Waste/Selisih','Rekomendasi: Tambahkan BS recording per proses di setiap LHK untuk data yang lebih komprehensif'],
+    warning:['Return bahan TANPA dokumen adalah temuan audit serius','Sisa bahan yang tidak dikembalikan menyebabkan data waste tidak akurat','Solusi Waste: Input BS per proses di LHK sehingga BS Rate per proses bisa dimonitor dan Direksi bisa menetapkan kebijakan toleransi BS per proses'],
+    sop:['Semua sisa bahan dikembalikan ke gudang dengan dokumen return resmi','Return bahan dicatat di sistem dengan referensi SPK','Gudang memverifikasi fisik bahan yang dikembalikan'],
+    jobdesk:['Admin Cutting: membuat dokumen return bahan','Staff Cutting: mengembalikan sisa bahan ke gudang','Admin Gudang: menerima dan mencatat return bahan di sistem'],
+    jurnal:['Debit: Persediaan Bahan Gudang (bahan kembali)','Kredit: Persediaan BDP Cutting']},
+
+  cetak_bordir:{icon:'🖨️',title:'Proses Cetak/Bordir + LHK + QC Cetak/Bordir',dept:'Produksi Cetak/Bordir',
+    desc:'Part cutting yang memerlukan cetak/bordir diproses di divisi Cetak/Bordir. Setelah selesai, dilakukan QC dan input LHK sebelum dimutasi ke DC WIP.',
+    poin:['Cetak: DTF, sablon, printing digital sesuai spesifikasi MAP','Bordir: sulaman sesuai desain yang diapprove di MAP','LHK Cetak/Bordir diinput di sistem - WAJIB terkoneksi dengan SPK','QC Cetak/Bordir: cek kualitas (warna, posisi, ukuran, ketajaman)','Part baru dimutasi ke DC WIP setelah lolos QC'],
+    warning:['Kesalahan setting cetak/bordir bisa merusak ratusan pcs sekaligus','LHK yang tidak terkoneksi SPK menyebabkan data produksi tidak akurat'],
+    sop:['Test cetak/bordir pada sampel kain sebelum produksi massal','QC dilakukan setelah setiap batch','LHK diinput di sistem pada hari yang sama'],
+    jobdesk:['Operator Cetak/Bordir: menjalankan proses sesuai spesifikasi','QC Cetak/Bordir: pemeriksaan kualitas hasil','Admin Cetak/Bordir: input LHK di sistem dengan referensi SPK'],
+    jurnal:['Debit: Persediaan BDP Cetak/Bordir','Kredit: Persediaan BSJ Cutting di WIP']},
+
+  dc_wip:{icon:'🏭',title:'DC WIP: Cek QTY & Kualitas + SET Komponen',dept:'DC WIP',
+    desc:'DC WIP adalah gate utama sebelum masuk Sewing. Fungsi: (1) cek QTY fisik vs sistem, (2) cek kualitas sebagai safety net, (3) SET komponen dan request aksesoris.',
+    poin:['Cek QTY fisik vs inputan mutasi di sistem - harus sama','Cek kualitas sebagai safety net kelolosan dari QC sebelumnya','Jika ada temuan (selisih qty/BS/rusak): koordinasi segera dengan Admin Cutting, sesuaikan administrasi, buatkan pengganti SEBELUM masuk Sewing','SET komponen: menggabungkan semua part menjadi 1 set lengkap per pcs','Request aksesoris ke gudang bahan sesuai kebutuhan SPK'],
+    warning:['Jangan loloskan part yang qty-nya tidak sesuai sistem','Temuan barang rusak/BS di DC WIP harus ditangani segera - buatkan pengganti SEBELUM masuk Sewing','DC WIP adalah kunci utama kualitas sebelum Sewing'],
+    sop:['Pengecekan qty fisik vs sistem WAJIB dilakukan saat penerimaan','Temuan dilaporkan ke Admin Cutting (part dari cutting) atau Admin Cetak/Bordir (part dari cetak/bordir) dan PPIC dalam 1x24 jam','Checklist kelengkapan SET harus diisi dan ditandatangani sebelum dikirim ke Sewing'],
+    jobdesk:['Admin DC WIP: pengecekan qty, kualitas, dan melakukan setting komponen','QC DC WIP: pemeriksaan kualitas sebagai safety net','Admin Cutting: menerima dan menindaklanjuti temuan untuk part dari proses cutting','Admin Cetak/Bordir: menerima dan menindaklanjuti temuan untuk part yang sudah melalui cetak/bordir','PPIC: koordinasi antar divisi jika ada temuan'],
+    jurnal:['Debit: Persediaan BSJ di DC WIP','Kredit: Persediaan BDP Cutting / BDP Cetak']},
+
+  setting_dc:{icon:'⚙️',title:'DC WIP SET Komponen + Request Aksesoris',dept:'DC WIP',
+    desc:'DC WIP melakukan penge-SET-an komponen garmen menjadi 1 set lengkap per pcs, termasuk semua aksesoris.',
+    poin:['SET = 1 bundle lengkap berisi semua komponen untuk 1 pcs produk jadi','Komponen: badan depan, badan belakang, lengan kanan/kiri, kerah, manset, saku, dll','Request aksesoris ke gudang: kancing, resleting, benang, label, dll','Semua aksesoris ikut di-SET bersama komponen kain','Setting dilakukan per ukuran dan per warna sesuai SPK'],
+    warning:['SET yang tidak lengkap menghambat proses Sewing','Aksesoris yang tidak sesuai spesifikasi SPK TIDAK BOLEH digunakan'],
+    sop:['Checklist kelengkapan SET harus diisi dan ditandatangani sebelum dikirim ke Sewing','Request aksesoris ke gudang disertai referensi nomor SPK'],
+    jobdesk:['Admin DC WIP: melakukan setting dan request aksesoris','Staff DC WIP: menyiapkan dan mengecek kelengkapan setiap SET','Admin Gudang: merealisasi request aksesoris dari DC WIP'],
+    jurnal:[]},
+
+  mutasi_sewing:{icon:'📤',title:'Semua SET Lengkap - Mutasi ke Sewing',dept:'DC WIP - Sewing',
+    desc:'Setelah semua komponen ter-SET lengkap, DC WIP memutasikan ke Sewing disertai dokumen serah terima.',
+    poin:['Mutasi dicatat di sistem: stok berpindah dari DC WIP ke WIP Sewing','Dokumen serah terima mencantumkan: jumlah SET per ukuran/warna, referensi SPK','Sewing menerima dan memverifikasi jumlah SET yang diterima'],
+    warning:['Mutasi tanpa dokumen serah terima adalah temuan audit'],
+    sop:['Mutasi di sistem dilakukan bersamaan dengan pengiriman fisik','Dokumen serah terima ditandatangani DC WIP dan penerima Sewing'],
+    jobdesk:['Admin DC WIP: mutasi di sistem dan dokumen serah terima','Admin Sewing: menerima dan memverifikasi jumlah SET'],
+    jurnal:['Debit: Persediaan WIP Sewing','Kredit: Persediaan BSJ di DC WIP']},
+
+  qc_pre_sewing:{icon:'🔍',title:'QC Pre-Sewing: Cek QTY & Kelengkapan SET',dept:'QC / Admin Sewing',
+    desc:'Sebelum proses Sewing dimulai, dilakukan QC Pre-Sewing untuk memastikan jumlah SET dan kelengkapan komponen sudah benar.',
+    poin:['Cek QTY: jumlah SET yang diterima vs dokumen mutasi dari DC WIP','Cek kelengkapan: semua komponen dalam SET sudah lengkap termasuk aksesoris','Cek kualitas: tidak ada komponen cacat/rusak yang lolos dari proses sebelumnya','Jika ada temuan: koordinasi segera dengan DC WIP untuk perbaikan'],
+    warning:['Jangan mulai Sewing jika QTY atau kelengkapan SET belum sesuai','Temuan di QC Pre-Sewing yang tidak ditangani akan mengganggu produktivitas Sewing'],
+    sop:['QC Pre-Sewing dilakukan sebelum mesin Sewing dinyalakan','Temuan dilaporkan ke DC WIP dan PPIC dalam 1x2 jam'],
+    jobdesk:['QC Inspector Sewing: melakukan pemeriksaan pre-sewing','Admin Sewing: melaporkan temuan ke DC WIP dan PPIC'],
+    jurnal:[]},
+
+  proses_sewing:{icon:'🧵',title:'Proses Sewing + QC In-Process + LHK Sewing',dept:'Produksi Sewing',
+    desc:'Proses penjahitan garmen dari komponen yang sudah ter-SET. Dilakukan QC selama proses berjalan dan diinput LHK Sewing di sistem.',
+    poin:['Sewing mengikuti spesifikasi jahitan di SPK: jenis obras, stitch, SPI, teknik khusus','QC In-Process Sewing: pengecekan kualitas jahitan secara berkala','Sampling QC setiap 50-100 pcs atau setiap jam','LHK Sewing diinput di sistem - WAJIB terkoneksi dengan nomor SPK','BS Sewing diinput di sistem dengan kategori yang jelas'],
+    warning:['Kesalahan jahitan massal yang tidak terdeteksi lebih awal = biaya rework tinggi','LHK yang tidak terkoneksi SPK menyebabkan data produksi tidak akurat'],
+    sop:['QC In-Process dilakukan setiap 50-100 pcs','LHK Sewing diinput setiap akhir shift','BS yang ditemukan diinput segera di sistem dengan kategori cacat'],
+    jobdesk:['Operator Sewing: menjahit sesuai spesifikasi SPK','QC Sewing: pemeriksaan in-process secara berkala','Admin Sewing: input LHK Sewing di sistem dengan referensi SPK'],
+    jurnal:['Debit: Persediaan BDP Sewing','Kredit: Persediaan WIP Sewing']},
+
+  proses_lipat:{icon:'👕',title:'Proses Lipat + QC Lipat + LHK Lipat',dept:'Finishing - Lipat',
+    desc:'Produk dari Sewing masuk ke proses Lipat. QC Lipat (rekomendasi baru) dan LHK Lipat dilakukan di tahap ini.',
+    poin:['Proses lipat: melipat produk sesuai standar yang ditetapkan','QC Lipat: cek kualitas produk - jahitan final, obras, kelengkapan aksesoris, kebersihan','LHK Lipat diinput di sistem - WAJIB terkoneksi dengan SPK','BS Lipat diinput di sistem untuk data BS rate per proses'],
+    warning:['REKOMENDASI AUDIT: QC Lipat saat ini belum ada - sangat disarankan untuk diterapkan','QC di setiap proses (IPQC - In-Process Quality Control) adalah standar industri garmen','Tanpa QC Lipat, produk cacat baru ketahuan di tahap akhir atau saat customer komplain'],
+    sop:['QC Lipat dilakukan sebelum produk masuk ke proses Koli','LHK Lipat diinput di sistem pada hari yang sama','BS diinput dengan kategori cacat yang jelas'],
+    jobdesk:['Operator Lipat: melipat produk sesuai standar','QC Lipat: pemeriksaan kualitas (rekomendasi baru)','Admin Finishing: input LHK Lipat di sistem dengan referensi SPK'],
+    jurnal:[]},
+
+  proses_koli:{icon:'📦',title:'Proses Koli + QC Koli + LHK Koli',dept:'Finishing - Koli',
+    desc:'Produk yang sudah dilipat masuk ke proses Koli (pengemasan ke kardus). QC Koli (rekomendasi baru) dan LHK Koli dilakukan sebelum produk dinyatakan siap kirim.',
+    poin:['Proses Koli: memasukkan ke polybag/plastik per pcs, kemudian ke kardus sesuai standar packing di SPK','QC Koli: cek kualitas dan quantity - label size benar, label brand, hang tag terpasang, kerapian packing','LHK Koli diinput di sistem - WAJIB terkoneksi dengan SPK','BS Koli diinput untuk data BS rate proses akhir'],
+    warning:['REKOMENDASI AUDIT: QC Koli saat ini belum ada - sangat disarankan untuk diterapkan','Kesalahan labeling (size tertukar) menyebabkan komplain serius dari customer','Quantity per kardus harus sesuai dengan standar di SPK'],
+    sop:['QC Koli dilakukan sebelum kardus ditutup/disegel','LHK Koli diinput di sistem pada hari yang sama','Setiap kardus harus diberi label identifikasi yang lengkap'],
+    jobdesk:['Operator Koli/Packing: mengemas produk sesuai standar','QC Koli: pemeriksaan kualitas dan quantity (rekomendasi baru)','Admin Finishing: input LHK Koli di sistem dengan referensi SPK'],
+    jurnal:['Debit: Persediaan BJ di Area Finishing','Kredit: Persediaan BDP Sewing/Lipat']},
+
+  stbj:{icon:'📋',title:'Admin Finishing Input STBJ + Jadwal Kirim',dept:'Admin Finishing',
+    desc:'Setelah semua LHK selesai, Admin Finishing menginput STBJ (Serah Terima Barang Jadi) di sistem. Stok otomatis berpindah dari Finishing ke Gudang BJ.',
+    poin:['STBJ mencatat: jumlah BJ per ukuran/warna, referensi SPK, referensi SO','Input STBJ otomatis memindahkan stok dari Finishing ke Gudang BJ','Jadwal kirim diinput bersamaan dengan STBJ','STBJ WAJIB terkoneksi dengan SPK dan Sales Order'],
+    warning:['STBJ WAJIB diterbitkan sebelum barang boleh masuk Gudang BJ','Barang yang belum ada STBJ-nya tidak boleh dikirim ke customer'],
+    sop:['STBJ diinput setelah semua LHK proses selesai','Jadwal kirim diinput bersamaan untuk koordinasi Delivery','STBJ diapprove kepala produksi sebelum diproses'],
+    jobdesk:['Admin Finishing: menginput STBJ dan jadwal kirim','Kepala Produksi: approve STBJ','Gudang BJ: menerima barang berdasarkan STBJ yang sudah diinput'],
+    jurnal:['Debit: Persediaan BJ di Gudang BJ','Kredit: Persediaan BJ di Area Finishing']},
+
+  surat_jalan:{icon:'🚚',title:'Delivery Buat Surat Jalan (Connect: SPK + SO)',dept:'Delivery / Gudang BJ',
+    desc:'Bagian Delivery membuat Surat Jalan berdasarkan jadwal kirim dari STBJ. Surat Jalan WAJIB terkoneksi dengan SPK dan Sales Order dan dicetak dari sistem.',
+    poin:['Surat Jalan mencantumkan: nama customer, alamat, detail produk, referensi SPK dan SO','Surat Jalan dicetak dari sistem - tidak boleh manual','Koneksi SPK ke SO memastikan produk yang dikirim sesuai yang dipesan','Satpam sebagai final checkpoint sebelum barang keluar'],
+    warning:['Surat Jalan WAJIB dicetak dari sistem - tanpa SJ dari sistem SPK tidak bisa auto-closing','Pengiriman tanpa Surat Jalan yang valid adalah temuan audit SERIUS'],
+    sop:['Surat Jalan dicetak dari sistem berdasarkan jadwal kirim di STBJ','Surat Jalan diapprove kepala gudang BJ','Satpam: cek fisik barang vs Surat Jalan sebelum barang keluar'],
+    jobdesk:['Admin Delivery: membuat dan mencetak Surat Jalan dari sistem','Kepala Gudang BJ: approve Surat Jalan','Satpam: pemeriksaan akhir kesesuaian fisik vs Surat Jalan'],
+    jurnal:['Debit: Persediaan In Transit','Kredit: Persediaan BJ di Gudang BJ']},
+
+  validasi_keluar:{icon:'🔍',title:'Validasi Gudang BJ: Fisik vs Surat Jalan',dept:'Gudang Barang Jadi',
+    desc:'Gudang BJ melakukan validasi akhir memastikan barang yang akan dikeluarkan sesuai dengan yang tercantum di Surat Jalan.',
+    poin:['Pengecekan fisik: qty per ukuran/warna sesuai Surat Jalan','Pengecekan kondisi: produk baik, packing tidak rusak','Pengecekan label kardus sesuai dengan isi','Satpam final check sebelum kendaraan pengiriman keluar area'],
+    warning:['Barang TIDAK BOLEH keluar sebelum validasi selesai dan Surat Jalan ditandatangani','Satpam harus benar-benar memeriksa - bukan formalitas saja'],
+    sop:['Validasi fisik WAJIB dilakukan sebelum barang dimuat','Surat Jalan ditandatangani petugas gudang sebagai bukti validasi','Satpam mencatat nomor kendaraan dan waktu keluar'],
+    jobdesk:['Staff Gudang BJ: pengecekan fisik vs Surat Jalan','Kepala Gudang BJ: supervisi dan tanda tangan persetujuan','Satpam: pemeriksaan final dan pencatatan'],
+    jurnal:[]},
+
+  kirim_customer:{icon:'🚛',title:'Barang Dikirim ke Customer',dept:'Delivery',
+    desc:'Proses pengiriman produk jadi ke customer. Surat Jalan asli diserahkan ke customer, copy disimpan perusahaan.',
+    poin:['Kurir/ekspedisi mengantarkan barang ke alamat customer sesuai Surat Jalan','Surat Jalan asli ditandatangani dan distempel customer sebagai bukti terima','Copy Surat Jalan yang sudah di-TTD customer dikembalikan ke perusahaan','Konfirmasi penerimaan customer maksimal 1x24 jam setelah pengiriman'],
+    warning:['Surat Jalan yang tidak kembali dengan TTD customer menyulitkan penagihan','Jika ada komplain saat pengiriman (barang rusak/kurang), dokumentasikan segera'],
+    sop:['Konfirmasi penerimaan barang oleh customer dalam 1x24 jam','Surat Jalan yang sudah di-TTD customer dikembalikan ke administrasi/finance'],
+    jobdesk:['Kurir/Driver: mengantar barang dan mendapatkan tanda terima customer','Sales/Marketing: konfirmasi penerimaan dengan customer'],
+    jurnal:[]},
+
+  invoice_penjualan:{icon:'🧾',title:'Terbitkan Invoice Penjualan - Tagih ke Customer',dept:'Finance / Accounting',
+    desc:'Setelah Surat Jalan kembali dengan TTD customer, Finance menerbitkan Invoice Penjualan resmi sebagai tagihan.',
+    poin:['Invoice diterbitkan setelah Surat Jalan kembali dengan TTD customer','Invoice berisi: detail produk, qty, harga sesuai SO, nomor rekening','Term of Payment sesuai kesepakatan di SO','Faktur Pajak diterbitkan bersamaan jika perusahaan PKP'],
+    warning:['Invoice yang salah (harga/qty/nama) harus segera direvisi','Invoice yang tidak di-follow up sesuai jatuh tempo mengganggu arus kas'],
+    sop:['Invoice diterbitkan maksimal 2 hari setelah Surat Jalan kembali','Dikirim via email dan fisik ke customer','Follow-up pembayaran sesuai jadwal jatuh tempo'],
+    jobdesk:['Finance Staff: membuat dan mengirimkan Invoice','Marketing: koordinasi penagihan dengan customer','Finance Manager: monitoring aging piutang'],
+    jurnal:['Debit: Piutang Usaha','Kredit: Penjualan','Debit: HPP Penjualan','Kredit: Persediaan In Transit']},
+
+  incoming_payment:{icon:'💰',title:'Customer Bayar - Input Incoming Payment',dept:'Finance',
+    desc:'Penerimaan pembayaran dari customer. Finance mencatat incoming payment di sistem dan merekonsiliasi dengan Invoice.',
+    poin:['Customer mentransfer sesuai nilai Invoice','Bukti transfer dari customer dikonfirmasi Finance','Incoming Payment diinput di sistem - piutang usaha berkurang','Rekonsiliasi payment vs Invoice dilakukan setiap hari'],
+    warning:['Pembayaran partial harus dicatat dengan benar di sistem','Piutang overdue lebih dari 30 hari harus dieskalasi ke management'],
+    sop:['Setiap penerimaan pembayaran langsung dicatat di sistem hari yang sama','Rekonsiliasi piutang dilakukan setiap minggu'],
+    jobdesk:['Finance Staff: mencatat incoming payment di sistem','Finance Manager: monitoring piutang dan aging report'],
+    jurnal:['Debit: Kas/Bank','Kredit: Piutang Usaha']},
+
+  spk_close:{icon:'✅',title:'SPK CLOSE - Closing Administrasi Produksi',dept:'PPIC / Kepala Produksi',
+    desc:'Proses penutupan SPK setelah seluruh proses PRODUKSI selesai. SPK Close TIDAK perlu menunggu pembayaran — cukup setelah STBJ dibuat dan Surat Jalan diterbitkan. SPK Close BERBEDA dari SO Close.',
+    poin:['SPK Close dilakukan setelah: STBJ dibuat + Surat Jalan diterbitkan (TIDAK perlu tunggu bayar)','SPK Close = administrasi PRODUKSI selesai. SO Close = administrasi PENJUALAN selesai (setelah bayar lunas)','Memisahkan SPK Close dan SO Close memungkinkan PPIC menutup urusan produksi lebih cepat tanpa menunggu proses keuangan','Rekonsiliasi akhir: qty produksi vs order, BS rate per proses, biaya aktual vs anggaran','Analisa SPK: produktivitas, efisiensi bahan, BS rate per proses, profit margin','Dokumentasi SPK disimpan untuk referensi order serupa'],
+    warning:['SPK yang tidak di-close mengganggu akurasi laporan produksi dan data stok WIP','Pastikan semua LHK sudah lengkap dan STBJ sudah dibuat sebelum SPK Close','JANGAN tunggu pembayaran customer untuk close SPK - ini menghambat pelaporan produksi'],
+    sop:['Checklist closing SPK harus dipenuhi sebelum di-close di sistem','Review akhir oleh PPIC dan Finance sebelum closing','Laporan analisa SPK dibuat dalam 3 hari setelah close','Dokumen SPK diarsip minimal 5 tahun'],
+    jobdesk:['PPIC: memverifikasi kelengkapan semua LHK produksi dan menutup SPK di sistem','Kepala Produksi: approve SPK Close setelah semua LHK terkonfirmasi lengkap'],
+    jurnal:['Final reconciliation entries sesuai kondisi aktual']},
+
+  so_close:{icon:'📁',title:'SO CLOSE - Closing Administrasi Penjualan',dept:'Finance / Marketing',
+    desc:'Proses penutupan Sales Order setelah pembayaran customer diterima LUNAS. SO Close adalah proses TERPISAH dari SPK Close dengan timing berbeda.',
+    poin:['SO Close dilakukan SETELAH pembayaran customer diterima lunas','Timeline: SPK Close (setelah SJ) → Invoice diterbitkan → Customer bayar → SO Close','SO Close = administrasi PENJUALAN/KEUANGAN selesai sepenuhnya','Rekonsiliasi: nilai SO vs Invoice vs pembayaran yang diterima'],
+    warning:['SO TIDAK BOLEH di-close jika masih ada piutang yang belum lunas','Pembayaran partial tidak cukup untuk SO Close - harus lunas penuh','Jika ada retur atau komplain customer yang pending, tahan SO Close sampai selesai'],
+    sop:['SO Close dilakukan setelah konfirmasi pembayaran lunas dari Finance','Finance memverifikasi tidak ada outstanding piutang sebelum close','Dokumen SO diarsip setelah Close'],
+    jobdesk:['Finance: memverifikasi pembayaran lunas dan menutup SO di sistem','Marketing: konfirmasi tidak ada pending dispute dengan customer','Manager Finance: review dan approve SO Close'],
+    jurnal:['Debit: Uang Muka Penjualan (jika ada sisa UM)','Kredit: Piutang Usaha (pelunasan final)']},
+
+  data_operator_cutting:{icon:'💻',title:'Operator Data Hasil Cutting',dept:'Operator Cutting',
+    desc:'Operator cutting mendata jumlah komponen/part yang dihasilkan dari setiap proses pemotongan per bundle/lot.',
+    poin:['Operator mendata hasil per komponen dalam satuan pcs','Data dicatat per lot/bundle yang selesai diproses','Data diserahkan ke Admin Cutting untuk diinput ke LHK Cutting di sistem'],
+    warning:['Data yang tidak akurat menyebabkan ketidaksesuaian data sistem vs fisik'],
+    sop:['Data dicatat di form harian operator setiap lot selesai','Diserahkan ke Admin Cutting maksimal di akhir shift'],
+    jobdesk:['Operator Cutting: mendata hasil produksi per komponen','Kepala Shift: memverifikasi data operator'],
+    jurnal:[]},
+  dec_cetak:{icon:'◆',title:'Ada Proses Cetak/Bordir?',dept:'PPIC',
+    desc:'Titik keputusan routing setelah QC Cutting: langsung ke DC WIP atau ke Cetak/Bordir dulu.',
+    poin:['Ada cetak/bordir: mutasi ke Produksi Cetak/Bordir dulu kemudian DC WIP','Tidak ada: mutasi langsung ke DC WIP','Ditentukan berdasarkan spesifikasi SPK'],
+    warning:['Routing yang salah menyebabkan part dikirim ke divisi yang salah'],
+    sop:['PPIC memverifikasi routing berdasarkan SPK','Serah terima antar divisi WAJIB disertai dokumen resmi'],
+    jobdesk:['PPIC: menentukan routing','Admin Cutting: melakukan mutasi sesuai routing'],
+    jurnal:[]},
+  dec_sewing_ok:{icon:'◆',title:'QC Pre-Sewing: SET Lengkap dan Benar?',dept:'QC Sewing',
+    desc:'Titik keputusan di QC Pre-Sewing: apakah SET komponen yang diterima sudah lengkap dan sesuai qty.',
+    poin:['Cek QTY: jumlah SET vs dokumen mutasi DC WIP','Cek kelengkapan: semua komponen termasuk aksesoris','Jika OK: langsung proses Sewing','Jika tidak OK: koordinasi DC WIP untuk perbaikan'],
+    warning:['Jangan mulai Sewing jika SET belum lengkap atau QTY tidak sesuai'],
+    sop:['QC Pre-Sewing dilakukan sebelum mesin Sewing dinyalakan','Temuan dilaporkan ke DC WIP dalam 1x2 jam'],
+    jobdesk:['QC Inspector Sewing: melakukan pemeriksaan','Admin Sewing: melaporkan temuan ke DC WIP'],
+    jurnal:[]},
+  gudang_bj:{icon:'🏪',title:'Gudang Barang Jadi',dept:'Gudang Barang Jadi',
+    desc:'Area penyimpanan produk yang sudah selesai diproduksi dan siap kirim ke customer. Stok masuk berdasarkan STBJ, keluar berdasarkan Surat Jalan dari sistem.',
+    poin:['Stok bertambah setelah STBJ diinput Admin Finishing','Pengeluaran hanya berdasarkan Surat Jalan valid dari sistem','Stock opname GBJ dilakukan berkala'],
+    warning:['Pengeluaran WAJIB berdasarkan Surat Jalan dari sistem','Stok sistem harus selalu sinkron dengan fisik'],
+    sop:['Penerimaan berdasarkan STBJ','Pengeluaran berdasarkan Surat Jalan dari sistem','Stock opname minimal 1x per bulan'],
+    jobdesk:['Admin Gudang BJ: mengelola stok dan administrasi','Staff Gudang BJ: menyiapkan barang untuk pengiriman'],
+    jurnal:[]},
+  input_bs_cutting:{icon:'📊',title:'Input BS Cutting di Sistem',dept:'Admin Cutting / Admin QC',
+    desc:'Pencatatan BS (Barang Sisa/Defect) hasil cutting ke dalam sistem untuk memastikan data stok akurat dan BS rate bisa dimonitor.',
+    poin:['BS: part yang tidak memenuhi standar kualitas','Input BS mencakup: qty BS, kategori cacat, referensi SPK','BS rate = qty BS dibagi total input cutting kali 100%'],
+    warning:['BS yang tidak diinput menyebabkan data stok tidak akurat'],
+    sop:['BS diinput di sistem pada hari yang sama ditemukan','Kepala PPIC memonitor BS rate setiap hari'],
+    jobdesk:['Admin Cutting/QC: menginput data BS','Kepala PPIC: monitoring BS rate dan tindak lanjut'],
+    jurnal:['Debit: Biaya BS Cutting','Kredit: Persediaan BDP Cutting']},
+  koordinasi_dc:{icon:'📞',title:'Koordinasi DC WIP dengan Admin Cutting / Cetak/Bordir',dept:'DC WIP',
+    desc:'Jika DC WIP menemukan ketidaksesuaian, segera koordinasi dengan Admin Cutting dan/atau Admin Cetak/Bordir untuk penyesuaian administrasi dan pembuatan pengganti.',
+    poin:['Koordinasi ke Admin Cutting: untuk part dari proses cutting','Koordinasi ke Admin Cetak/Bordir: untuk part yang sudah melalui cetak/bordir','Administrasi sebelumnya harus disesuaikan','Pengganti dibuat segera sebelum masuk Sewing'],
+    warning:['Jangan lanjutkan proses jika ada selisih qty yang belum diselesaikan','Pengganti HARUS dibuat sebelum masuk Sewing'],
+    sop:['Temuan dilaporkan dalam 1x24 jam','Penyesuaian diselesaikan hari yang sama','Pengganti dibuat segera dengan referensi SPK yang sama'],
+    jobdesk:['Admin DC WIP: melaporkan temuan','Admin Cutting: menyesuaikan LHK Cutting jika dari cutting','Admin Cetak/Bordir: menyesuaikan LHK jika dari cetak/bordir','PPIC: monitoring penyelesaian'],
+    jurnal:[]},
+  koordinasi_sewing:{icon:'📞',title:'Koordinasi Sewing dengan DC WIP',dept:'Sewing / DC WIP',
+    desc:'Jika QC Pre-Sewing menemukan ketidaksesuaian, Sewing segera berkoordinasi dengan DC WIP untuk perbaikan sebelum proses Sewing dimulai.',
+    poin:['Temuan dilaporkan ke DC WIP untuk tindak lanjut segera','DC WIP bertanggung jawab melengkapi SET yang kurang atau mengganti part rusak','Sewing tidak boleh dimulai sampai temuan diselesaikan'],
+    warning:['Jangan mulai Sewing sebelum koordinasi selesai dan SET sudah benar'],
+    sop:['Laporan temuan ke DC WIP dalam 1x2 jam','DC WIP merespons dan menyelesaikan dalam 1x4 jam'],
+    jobdesk:['Admin Sewing: melaporkan temuan ke DC WIP','Admin DC WIP: menindaklanjuti dan melengkapi SET'],
+    jurnal:[]},
+  lhk_cetak_bordir:{icon:'💻',title:'Input LHK Cetak/Bordir',dept:'Admin Cetak/Bordir',
+    desc:'Admin menginput LHK proses cetak/bordir di sistem. WAJIB terkoneksi dengan nomor SPK.',
+    poin:['LHK mencatat: jumlah pcs diproses, jumlah lolos QC, jumlah BS cetak/bordir','WAJIB terkoneksi dengan nomor SPK','BS diinput dengan kategori cacat yang jelas'],
+    warning:['LHK yang tidak terkoneksi SPK menyebabkan data tidak akurat'],
+    sop:['LHK diinput pada hari yang sama proses selesai','Admin melakukan rekonsiliasi input vs fisik sebelum submit'],
+    jobdesk:['Admin Cetak/Bordir: menginput LHK dengan referensi SPK','Kepala Divisi: memverifikasi data LHK'],
+    jurnal:['Debit: Persediaan BDP Cetak/Bordir','Kredit: Persediaan BSJ Cutting']},
+  lhk_koli:{icon:'💻',title:'Input LHK Koli',dept:'Admin Finishing',
+    desc:'Admin Finishing menginput LHK Koli di sistem. WAJIB terkoneksi dengan nomor SPK.',
+    poin:['LHK mencatat: jumlah pcs dikemas, jumlah kardus, qty per kardus, referensi SPK','WAJIB terkoneksi dengan nomor SPK','Data LHK Koli menjadi dasar penerbitan STBJ'],
+    warning:['Jangan menerbitkan STBJ sebelum LHK Koli selesai dan terverifikasi'],
+    sop:['LHK Koli diinput pada hari yang sama','Admin memverifikasi kesesuaian data dengan fisik sebelum submit'],
+    jobdesk:['Admin Finishing: menginput LHK Koli dengan referensi SPK'],
+    jurnal:[]},
+  lhk_lipat:{icon:'💻',title:'Input LHK Lipat',dept:'Admin Finishing',
+    desc:'Admin Finishing menginput LHK Lipat di sistem. WAJIB terkoneksi dengan nomor SPK.',
+    poin:['LHK mencatat: jumlah pcs dilipat, jumlah BS lipat, referensi SPK','WAJIB terkoneksi dengan nomor SPK'],
+    warning:['LHK yang tidak terkoneksi SPK menyebabkan data tidak akurat'],
+    sop:['LHK Lipat diinput pada hari yang sama','BS diinput dengan kategori cacat yang jelas'],
+    jobdesk:['Admin Finishing: menginput LHK Lipat dengan referensi SPK'],
+    jurnal:[]},
+  lhk_sewing:{icon:'💻',title:'Input LHK Sewing',dept:'Admin Sewing',
+    desc:'Admin Sewing menginput LHK Sewing di sistem setiap akhir shift. WAJIB terkoneksi dengan SPK.',
+    poin:['LHK mencatat: jumlah pcs dijahit, jumlah BS sewing, referensi SPK','WAJIB terkoneksi dengan nomor SPK','BS Sewing: cacat jahitan, cacat obras, aksesoris salah'],
+    warning:['LHK yang tidak terkoneksi SPK menyebabkan data tidak akurat'],
+    sop:['LHK Sewing diinput setiap akhir shift','BS diinput segera saat ditemukan'],
+    jobdesk:['Admin Sewing: menginput LHK Sewing dengan referensi SPK'],
+    jurnal:['Debit: Persediaan BDP Sewing','Kredit: Persediaan WIP Sewing']},
+  mutasi_dc_wip:{icon:'📤',title:'Mutasi Hasil Cutting ke DC WIP',dept:'Admin Cutting → DC WIP',
+    desc:'Setelah QC Cutting selesai dan tidak ada cetak/bordir, hasil cutting langsung dimutasikan ke DC WIP.',
+    poin:['Mutasi dicatat di sistem: stok berpindah dari WIP Cutting ke DC WIP','Dokumen serah terima mencantumkan jumlah per komponen, referensi SPK','DC WIP melakukan pengecekan penerimaan setelah mutasi'],
+    warning:['Mutasi tanpa dokumen serah terima adalah temuan audit'],
+    sop:['Mutasi dilakukan setelah QC Cutting selesai dan diapprove','Dokumen serah terima ditandatangani kedua pihak'],
+    jobdesk:['Admin Cutting: melakukan mutasi di sistem','Admin DC WIP: menerima dan memverifikasi mutasi'],
+    jurnal:['Debit: Persediaan BSJ di DC WIP','Kredit: Persediaan BDP Cutting']},
+  penyesuaian_cutting:{icon:'🔧',title:'Penyesuaian Administrasi Cutting / Cetak/Bordir',dept:'Admin Cutting / Cetak/Bordir',
+    desc:'Jika DC WIP menemukan selisih atau BS, Admin Cutting dan/atau Admin Cetak/Bordir melakukan penyesuaian administrasi di LHK terkait.',
+    poin:['Penyesuaian LHK Cutting: jika temuan dari part sebelum cetak/bordir','Penyesuaian LHK Cetak/Bordir: jika temuan dari part setelah cetak/bordir','BS yang ditemukan di DC WIP diinput ke LHK terkait','Stok sistem disesuaikan agar klop dengan kondisi fisik'],
+    warning:['Penyesuaian WAJIB dilakukan sebelum SET dikirim ke Sewing'],
+    sop:['Penyesuaian dilakukan pada hari yang sama temuan dilaporkan','Kepala PPIC memverifikasi penyesuaian sebelum disubmit'],
+    jobdesk:['Admin Cutting: menyesuaikan LHK Cutting jika dari cutting','Admin Cetak/Bordir: menyesuaikan LHK jika dari cetak/bordir'],
+    jurnal:[]},
+  proses_cetak_bordir:{icon:'🖨️',title:'Proses Cetak/Bordir',dept:'Produksi Cetak/Bordir',
+    desc:'Part cutting yang memerlukan cetak/bordir dikirim ke divisi Cetak/Bordir untuk diproses sesuai MAP dan SPK.',
+    poin:['Cetak: DTF, sablon, printing digital sesuai spesifikasi MAP','Bordir: sulaman mesin komputer sesuai desain yang diapprove','Output harus sesuai: warna, posisi, ukuran artwork di MAP'],
+    warning:['Kesalahan setting dapat merusak ratusan pcs sekaligus','Selalu lakukan test print/bordir sebelum produksi massal'],
+    sop:['Test pada sampel kain sebelum produksi massal','Pemeriksaan kualitas setiap batch'],
+    jobdesk:['Operator Cetak/Bordir: menjalankan proses','QC: pemeriksaan hasil','Admin: input LHK di sistem'],
+    jurnal:['Debit: Persediaan BDP Cetak/Bordir','Kredit: Persediaan BSJ Cutting']},
+  qc_cetak_bordir:{icon:'🔍',title:'QC Cetak/Bordir',dept:'QC Cetak/Bordir',
+    desc:'Pemeriksaan kualitas hasil cetak/bordir sebelum part dimutasikan ke DC WIP.',
+    poin:['QC memeriksa: warna sesuai MAP, posisi tepat, ukuran artwork, ketajaman hasil','Sampling QC minimal 10-20% dari total batch','Part tidak lolos QC dikembalikan untuk perbaikan atau dinyatakan BS'],
+    warning:['Part yang tidak lolos QC TIDAK BOLEH dimutasikan ke DC WIP','BS cetak/bordir yang tidak dicatat menyebabkan selisih stok'],
+    sop:['QC dilakukan setelah setiap batch','Form QC diisi dan ditandatangani','Part lolos dimutasikan ke DC WIP; reject diperbaiki atau di-BS'],
+    jobdesk:['QC Inspector: melakukan pemeriksaan','Kepala Divisi: menerima laporan QC dan tindak lanjut'],
+    jurnal:[]},
+  qc_dc_wip:{icon:'🔍',title:'QC DC WIP — Incoming Check',dept:'QC DC WIP',
+    desc:'Pemeriksaan kualitas di DC WIP saat menerima part. Fungsi sebagai safety net untuk menangkap masalah yang lolos dari QC sebelumnya.',
+    poin:['Cek QTY fisik vs dokumen mutasi dari sistem','Cek kualitas: ada cacat yang lolos dari QC Cutting/Cetak/Bordir?','Jika ada temuan: koordinasi segera dengan Admin terkait'],
+    warning:['DC WIP adalah gate TERAKHIR sebelum Sewing — jangan longgarkan pemeriksaan'],
+    sop:['Pengecekan wajib dilakukan saat penerimaan','Temuan dilaporkan dalam 1x24 jam'],
+    jobdesk:['QC DC WIP: melakukan incoming check','Admin DC WIP: melaporkan temuan ke divisi terkait'],
+    jurnal:[]},
+  qc_koli:{icon:'🔍',title:'QC Koli (Rekomendasi)',dept:'QC Finishing',
+    desc:'Pemeriksaan kualitas saat proses Koli. Rekomendasi audit untuk menerapkan IPQC di setiap proses finishing.',
+    poin:['Memeriksa: label size benar, label brand terpasang, hang tag terpasang, kerapian packing','Cek quantity per kardus sesuai standar SPK'],
+    warning:['REKOMENDASI AUDIT: QC Koli saat ini belum ada — sangat disarankan segera diterapkan','Kesalahan labeling size menyebabkan komplain serius dari customer'],
+    sop:['QC sebelum kardus ditutup','Form QC diisi dan ditandatangani'],
+    jobdesk:['QC Inspector Koli: melakukan pemeriksaan (posisi baru — rekomendasi)'],
+    jurnal:[]},
+  qc_lipat:{icon:'🔍',title:'QC Lipat (Rekomendasi)',dept:'QC Finishing',
+    desc:'Pemeriksaan kualitas saat proses Lipat. Rekomendasi audit untuk IPQC di setiap proses.',
+    poin:['Memeriksa: kualitas jahitan final, obras, kelengkapan aksesoris terpasang, kebersihan produk'],
+    warning:['REKOMENDASI AUDIT: QC Lipat saat ini belum ada — sangat disarankan diterapkan'],
+    sop:['QC sebelum produk masuk ke proses Koli'],
+    jobdesk:['QC Inspector Lipat: melakukan pemeriksaan (rekomendasi baru)'],
+    jurnal:[]},
+  qc_sewing:{icon:'🔍',title:'QC In-Process Sewing',dept:'QC Sewing',
+    desc:'Pemeriksaan kualitas secara berkala selama proses Sewing berjalan untuk menangkap masalah jahitan sedini mungkin.',
+    poin:['Sampling QC setiap 50-100 pcs atau setiap jam','Pemeriksaan: kualitas jahitan, obras, kerapian, ukuran sesuai standar SPK','BS Sewing diinput ke sistem segera'],
+    warning:['QC In-Process yang tidak konsisten berpotensi BS massal'],
+    sop:['QC dilakukan setiap 50-100 pcs','Masalah langsung dilaporkan ke Kepala Sewing'],
+    jobdesk:['QC Inspector Sewing: melakukan in-process sampling QC','Admin Sewing: input BS Sewing ke sistem'],
+    jurnal:[]},
+  realisasi_cutting:{icon:'✅',title:'Gudang Realisasi Bahan ke Floor Cutting',dept:'Gudang → Floor Cutting',
+    desc:'Gudang merealisasi permintaan bahan dari Admin Cutting dan memindahkan ke floor produksi cutting.',
+    poin:['Pengeluaran bahan dicatat di sistem dengan referensi SPK','Serah terima disertai dokumen resmi','Stok gudang berkurang, stok WIP cutting bertambah'],
+    warning:['Pengeluaran bahan TANPA dokumen adalah temuan audit serius'],
+    sop:['Realisasi dicatat di sistem bersamaan dengan perpindahan fisik','Dokumen serah terima ditandatangani kedua pihak'],
+    jobdesk:['Staff Gudang: menyiapkan dan menyerahkan bahan','Admin Gudang: mencatat pengeluaran','Admin Cutting: menerima dan memverifikasi'],
+    jurnal:['Debit: Persediaan BDP Cutting','Kredit: Persediaan Bahan Gudang Induk']},
+  req_aksesoris:{icon:'📝',title:'Admin DC WIP Request Aksesoris ke Gudang',dept:'DC WIP → Gudang',
+    desc:'Admin DC WIP mengajukan permintaan aksesoris ke gudang untuk kebutuhan penge-SET-an komponen garmen.',
+    poin:['Permintaan mengacu pada spesifikasi SPK','Aksesoris: kancing, resleting, label brand/size/care, hang tag, benang jahit, dll','Permintaan dicatat di sistem dengan referensi SPK'],
+    warning:['Jangan menggunakan aksesoris yang tidak sesuai spesifikasi SPK'],
+    sop:['Request aksesoris diinput di sistem dengan referensi SPK','Aksesoris yang diterima dicek kesesuaiannya dengan spesifikasi'],
+    jobdesk:['Admin DC WIP: membuat request aksesoris','Admin Gudang: merealisasi request dan mencatat pengeluaran'],
+    jurnal:['Debit: Persediaan Aksesoris di DC WIP','Kredit: Persediaan Aksesoris Gudang']},
+  req_bahan_cutting:{icon:'📋',title:'Admin Cutting Request Bahan ke Gudang',dept:'Admin Cutting → Gudang',
+    desc:'Admin Produksi Cutting mengajukan permintaan bahan ke gudang sesuai kebutuhan SPK berdasarkan daily plan PPIC.',
+    poin:['Permintaan merujuk ke nomor SPK','Jumlah sesuai kebutuhan berdasarkan BOM dan daily plan'],
+    warning:['Permintaan WAJIB merujuk ke nomor SPK'],
+    sop:['Permintaan diinput di sistem dengan referensi SPK'],
+    jobdesk:['Admin Cutting: membuat permintaan di sistem'],
+    jurnal:['Debit: Persediaan BDP Cutting','Kredit: Persediaan Bahan Gudang Induk']},
+  set_lengkap:{icon:'✅',title:'SET Komponen Lengkap — Siap ke Sewing',dept:'DC WIP',
+    desc:'Semua komponen garmen sudah ter-SET lengkap beserta aksesoris. Siap dikirim ke Sewing.',
+    poin:['Checklist kelengkapan SET sudah diisi dan diverifikasi','Setiap SET berisi: semua komponen kain + aksesoris lengkap sesuai SPK','SET dikelompokkan per ukuran dan per warna'],
+    warning:['SET tidak lengkap menghambat proses Sewing'],
+    sop:['Checklist SET wajib diisi sebelum pengiriman ke Sewing'],
+    jobdesk:['Admin DC WIP: memverifikasi kelengkapan SET','Staff DC WIP: menyiapkan SET untuk dikirim ke Sewing'],
+    jurnal:[]},
+  setting_komponen:{icon:'⚙️',title:'Setting Komponen di DC WIP',dept:'DC WIP',
+    desc:'Proses penge-SET-an komponen di DC WIP: menggabungkan semua part menjadi 1 set lengkap per pcs.',
+    poin:['SET = 1 bundle lengkap semua komponen untuk 1 pcs produk jadi','Komponen: badan depan, belakang, lengan, kerah, manset, saku, dll','Setting dilakukan per ukuran dan per warna sesuai SPK'],
+    warning:['Setting tidak teliti menyebabkan komponen tercampur antar ukuran/warna'],
+    sop:['Setting dilakukan dengan checklist','Setiap SET diperiksa ulang sebelum dilanjutkan'],
+    jobdesk:['Staff DC WIP: melakukan setting komponen','Admin DC WIP: memverifikasi hasil setting'],
+    jurnal:[]},
+  surat_jalan_kirim:{icon:'🚚',title:'Surat Jalan Diterbitkan — Barang Siap Kirim',dept:'Delivery / Gudang BJ',
+    desc:'Surat Jalan sudah dicetak dari sistem, validasi gudang BJ selesai, barang siap dikirim ke customer.',
+    poin:['Surat Jalan sudah dicetak dari sistem dengan referensi SPK dan SO','Validasi fisik oleh Gudang BJ sudah selesai','Satpam sudah melakukan final check'],
+    warning:['Pastikan Surat Jalan asli ikut bersama barang'],
+    sop:['Surat Jalan asli ikut bersama pengiriman','Driver mendapatkan TTD customer'],
+    jobdesk:['Driver/Kurir: membawa barang dan mendapatkan TTD customer'],
+    jurnal:[]},
+  terima_customer:{icon:'✅',title:'Customer Menerima Barang + TTD Surat Jalan',dept:'Customer / Delivery',
+    desc:'Customer menerima barang yang dikirim dan menandatangani Surat Jalan sebagai bukti penerimaan resmi.',
+    poin:['Customer memeriksa barang: qty, kondisi, kesesuaian dengan SO','Customer menandatangani Surat Jalan sebagai bukti terima','Copy Surat Jalan kembali ke perusahaan'],
+    warning:['Surat Jalan yang tidak kembali menghambat penerbitan Invoice'],
+    sop:['Driver memastikan customer memeriksa barang sebelum TTD','Copy Surat Jalan dikembalikan hari yang sama atau hari berikutnya'],
+    jobdesk:['Driver/Kurir: mendampingi penerimaan dan mendapatkan TTD','Marketing: konfirmasi penerimaan dengan customer'],
+    jurnal:['Debit: Piutang Usaha','Kredit: Persediaan In Transit']},
+  terima_dc_wip:{icon:'📥',title:'DC WIP Menerima Part dari Cutting / Cetak/Bordir',dept:'DC WIP',
+    desc:'DC WIP menerima part dari Cutting langsung atau dari Cetak/Bordir. Saat penerimaan dilakukan pengecekan qty dan kualitas.',
+    poin:['Part bisa dari 2 sumber: langsung dari Cutting atau dari Cetak/Bordir','Pengecekan qty: jumlah fisik vs dokumen mutasi dari sistem','Pengecekan kualitas: ada cacat yang lolos dari QC sebelumnya?'],
+    warning:['Jangan menerima part tanpa pengecekan qty dan kualitas'],
+    sop:['Pengecekan wajib dilakukan saat penerimaan','Dokumen penerimaan ditandatangani setelah pengecekan selesai'],
+    jobdesk:['Admin DC WIP: pengecekan dan tanda tangan dokumen','QC DC WIP: incoming quality check'],
+    jurnal:['Debit: Persediaan BSJ di DC WIP','Kredit: Persediaan BDP Cutting / BDP Cetak/Bordir']},
+  validasi_sj:{icon:'🔍',title:'Validasi Surat Jalan — Gudang BJ & Satpam',dept:'Gudang BJ / Satpam',
+    desc:'Validasi akhir sebelum barang diizinkan keluar. Gudang BJ memastikan fisik sesuai Surat Jalan, Satpam sebagai final gate.',
+    poin:['Gudang BJ: cek qty fisik vs Surat Jalan per ukuran dan warna','Cek kondisi barang dan packing','Satpam: final check dokumen dan fisik sebelum kendaraan keluar'],
+    warning:['Barang TIDAK BOLEH keluar tanpa Surat Jalan valid dari sistem','Satpam harus benar-benar memeriksa — bukan formalitas'],
+    sop:['Validasi fisik WAJIB sebelum barang dimuat','Satpam mencatat nomor kendaraan dan jam keluar'],
+    jobdesk:['Staff Gudang BJ: pengecekan fisik','Kepala Gudang BJ: tanda tangan persetujuan keluar','Satpam: final gate check'],
+    jurnal:[]}
+});
+
+function openNode(key){
+  const d=N[key]; if(!d) return;
+  document.getElementById('m-icon').textContent=d.icon;
+  document.getElementById('m-title').textContent=d.title;
+  document.getElementById('m-dept').textContent='🏢 '+d.dept;
+  let h='';
+  h+=`<div class="msec"><div class="msec-title">📌 Deskripsi</div><p class="mdesc">${d.desc}</p></div>`;
+  if(d.poin&&d.poin.length) h+=`<div class="msec"><div class="msec-title">⭐ Poin-Poin Penting</div><ul class="mlist">${d.poin.map(p=>`<li data-icon="✔">${p}</li>`).join('')}</ul></div>`;
+  if(d.warning&&d.warning.length) h+=`<div class="msec"><div class="mbox-warn"><div class="mbox-warn-t">⚠️ POTENSI PERMASALAHAN</div><ul>${d.warning.map(w=>`<li>${w}</li>`).join('')}</ul></div></div>`;
+  if(d.sop&&d.sop.length) h+=`<div class="msec"><div class="mbox-sop"><div class="mbox-sop-t">📋 GAMBARAN SOP</div><ul>${d.sop.map(s=>`<li>${s}</li>`).join('')}</ul></div></div>`;
+  if(d.jobdesk&&d.jobdesk.length) h+=`<div class="msec"><div class="mbox-job"><div class="mbox-job-t">👤 JOBDESK TERKAIT</div><ul>${d.jobdesk.map(j=>`<li>${j}</li>`).join('')}</ul></div></div>`;
+  if(d.jurnal&&d.jurnal.length) h+=`<div class="msec"><div class="mbox-jrn"><div class="mbox-jrn-t">📊 JURNAL AKUNTANSI</div><ul>${d.jurnal.map(j=>`<li>${j}</li>`).join('')}</ul></div></div>`;
+  document.getElementById('m-body').innerHTML=h;
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeNode(){document.getElementById('modal').classList.remove('open');document.body.style.overflow='';}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNode();});
+
+// ── EXPORT WORD ──
+function exportWord(){
+  const b64 = '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';
+  const byteChars = atob(b64);
+  const byteNums = new Array(byteChars.length);
+  for(let i=0;i<byteChars.length;i++) byteNums[i]=byteChars.charCodeAt(i);
+  const blob = new Blob([new Uint8Array(byteNums)], {type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'Flow_Garmen_Detail_Fase1-3.docx';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
