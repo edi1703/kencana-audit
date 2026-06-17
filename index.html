@@ -4671,16 +4671,50 @@ function switchCostBSTab(tab){
 }
 
 // ===== MODAL INPUT DATA BULANAN =====
-function openCBSInputModal(){
+function openCBSInputModal(editBulan){
   document.getElementById('cbs-modal-input').style.display='flex';
   document.getElementById('cbs-input-alasan-list').innerHTML='';
   document.getElementById('cbs-input-spk-list').innerHTML='';
-  addCBSAlasanRow();
-  addCBSSpkRow();
-  // default bulan = bulan ini
-  const now = new Date();
-  const ym = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  document.getElementById('cbs-input-bulan').value = ym;
+
+  const existing = editBulan && window._cbsData && window._cbsData.bulanan ? window._cbsData.bulanan[editBulan] : null;
+
+  if(existing){
+    document.getElementById('cbs-input-bulan').value = existing.bulanLabel;
+    document.getElementById('cbs-input-cost').value = existing.totalCostBS;
+    document.getElementById('cbs-input-rate').value = existing.avgBSRate;
+    document.getElementById('cbs-input-overlimit').value = existing.jumlahSpkOverLimit;
+
+    if(existing.topAlasan && existing.topAlasan.length){
+      existing.topAlasan.forEach(a => {
+        addCBSAlasanRow();
+        const rows = document.querySelectorAll('#cbs-input-alasan-list > div');
+        const last = rows[rows.length-1];
+        last.querySelector('.cbs-alasan-nama').value = a.alasan;
+        last.querySelector('.cbs-alasan-jumlah').value = a.count;
+      });
+    } else {
+      addCBSAlasanRow();
+    }
+
+    if(existing.topSpk && existing.topSpk.length){
+      existing.topSpk.forEach(s => {
+        addCBSSpkRow();
+        const rows = document.querySelectorAll('#cbs-input-spk-list > div');
+        const last = rows[rows.length-1];
+        last.querySelector('.cbs-spk-nomor').value = s.spk;
+        last.querySelector('.cbs-spk-nama').value = s.namaSPK;
+        last.querySelector('.cbs-spk-rate').value = s.bsRate;
+      });
+    } else {
+      addCBSSpkRow();
+    }
+  } else {
+    addCBSAlasanRow();
+    addCBSSpkRow();
+    const now = new Date();
+    const ym = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+    document.getElementById('cbs-input-bulan').value = ym;
+  }
 }
 function closeCBSInputModal(){
   document.getElementById('cbs-modal-input').style.display='none';
@@ -4910,7 +4944,10 @@ function renderCostBSDashboard(){
     return `
     <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #F1F5F9;">
       <div style="color:#1E293B;font-size:13px;font-weight:600;">${b}</div>
-      <div style="color:#64748B;font-size:12px;">BS Rate: ${d.avgBSRate.toFixed(2)}% &nbsp;|&nbsp; Cost: ${formatRupiah(d.totalCostBS)}</div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="color:#64748B;font-size:12px;">BS Rate: ${d.avgBSRate.toFixed(2)}% &nbsp;|&nbsp; Cost: ${formatRupiah(d.totalCostBS)}</div>
+        <button onclick="openCBSInputModal('${b}')" style="background:#F1F5F9;color:#374151;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;cursor:pointer;font-weight:600;font-size:11.5px;">✏️ Edit</button>
+      </div>
     </div>`;
   }).join('');
   document.getElementById('cbs-table-riwayat').innerHTML = riwayatHTML || '<div style="color:#64748B;font-size:13px;text-align:center;padding:20px;">Belum ada riwayat</div>';
