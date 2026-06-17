@@ -4194,6 +4194,179 @@ document.body.classList.add('home-active');
     </div>
   </div>
 </div>
+
+<!-- ===== HALAMAN COST & BS PRODUKSI ===== -->
+<div id="page-cost-bs" style="display:none;position:fixed;inset:0;z-index:9998;flex-direction:column;background:#0D1117;font-family:'Plus Jakarta Sans','Segoe UI',sans-serif;">
+
+  <!-- TOP BAR -->
+  <div style="background:linear-gradient(135deg,#7F1D1D 0%,#BE123C 60%,#F97316 100%);color:#fff;padding:0 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;flex-shrink:0;box-shadow:0 4px 20px rgba(190,18,60,0.5);min-height:64px;border-bottom:2px solid rgba(249,115,22,0.3);">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <button onclick="closeCostBS()" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:10px;padding:7px 16px;cursor:pointer;font-weight:700;font-size:13px;transition:background 0.2s;display:flex;align-items:center;gap:6px;" onmouseenter="this.style.background='rgba(255,255,255,0.22)'" onmouseleave="this.style.background='rgba(255,255,255,0.12)'">← Home</button>
+      <div style="width:1px;height:36px;background:rgba(255,255,255,0.2);"></div>
+      <div style="font-size:26px;">💰</div>
+      <div>
+        <div style="font-size:18px;font-weight:800;letter-spacing:0.3px;">Cost &amp; BS Produksi</div>
+        <div style="font-size:11px;opacity:0.75;margin-top:1px;">Monitoring Biaya &amp; Efisiensi Bahan — CV. Kencana Print</div>
+      </div>
+    </div>
+    <!-- TAB SWITCH -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <button id="cbs-tab-btn-monthly" onclick="switchCostBSTab('monthly')" style="background:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:10px;padding:8px 16px;cursor:pointer;font-weight:700;font-size:13px;">📊 Cost BS Bulanan</button>
+      <button id="cbs-tab-btn-pilot" onclick="switchCostBSTab('pilot')" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:10px;padding:8px 16px;cursor:pointer;font-weight:700;font-size:13px;">🧪 Pilot Project</button>
+    </div>
+  </div>
+
+  <!-- ===== TAB 1: COST BS BULANAN ===== -->
+  <div id="cbs-tab-monthly" style="flex:1;overflow-y:auto;padding:28px;background:#0D1117;">
+
+    <!-- ACTION BAR -->
+    <div style="max-width:1200px;margin:0 auto 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+      <div style="font-size:13px;color:#94a3b8;">Input rekap data BS bulanan secara manual berdasarkan hasil olahan dari MANKSI / Excel.</div>
+      <button onclick="openCBSInputModal()" style="background:#F97316;color:#fff;border:none;border-radius:10px;padding:10px 20px;cursor:pointer;font-weight:700;font-size:13px;display:flex;align-items:center;gap:8px;">
+        ➕ Input Data Bulan Ini
+      </button>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div style="max-width:1200px;margin:0 auto 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+      <div style="background:#111827;border-radius:14px;padding:18px 20px;border:1.5px solid #1e2d45;">
+        <div style="font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Total Cost BS Bulan Ini</div>
+        <div id="cbs-stat-cost" style="font-size:26px;font-weight:800;color:#FB923C;">Rp 0</div>
+      </div>
+      <div style="background:#111827;border-radius:14px;padding:18px 20px;border:1.5px solid #1e2d45;">
+        <div style="font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">BS Rate Rata-rata</div>
+        <div id="cbs-stat-rate" style="font-size:26px;font-weight:800;color:#FBBF24;">0%</div>
+      </div>
+      <div style="background:#111827;border-radius:14px;padding:18px 20px;border:1.5px solid #1e2d45;">
+        <div style="font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">SPK dengan BS Rate &gt; 2%</div>
+        <div id="cbs-stat-overlimit" style="font-size:26px;font-weight:800;color:#F87171;">0</div>
+      </div>
+    </div>
+
+    <!-- GRAFIK TREND -->
+    <div style="max-width:1200px;margin:0 auto 24px;background:#111827;border-radius:14px;padding:20px;border:1.5px solid #1e2d45;">
+      <div style="font-size:14px;font-weight:700;color:#e2e8f0;margin-bottom:14px;">📈 Tren BS Rate per Bulan</div>
+      <div id="cbs-chart-trend" style="min-height:220px;"></div>
+    </div>
+
+    <!-- 2 KOLOM: TOP PENYEBAB & TOP SPK -->
+    <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div style="background:#111827;border-radius:14px;padding:20px;border:1.5px solid #1e2d45;">
+        <div style="font-size:14px;font-weight:700;color:#e2e8f0;margin-bottom:14px;">🔍 Top Penyebab BS Bulan Ini</div>
+        <div id="cbs-table-alasan"></div>
+      </div>
+      <div style="background:#111827;border-radius:14px;padding:20px;border:1.5px solid #1e2d45;">
+        <div style="font-size:14px;font-weight:700;color:#e2e8f0;margin-bottom:14px;">⚠️ SPK dengan BS Rate Tertinggi</div>
+        <div id="cbs-table-topspk"></div>
+      </div>
+    </div>
+
+    <!-- RIWAYAT DATA BULANAN -->
+    <div style="max-width:1200px;margin:24px auto 0;background:#111827;border-radius:14px;padding:20px;border:1.5px solid #1e2d45;">
+      <div style="font-size:14px;font-weight:700;color:#e2e8f0;margin-bottom:14px;">🗂️ Riwayat Data Bulanan</div>
+      <div id="cbs-table-riwayat"></div>
+    </div>
+
+  </div>
+
+  <!-- ===== TAB 2: PILOT PROJECT ===== -->
+  <div id="cbs-tab-pilot" style="display:none;flex:1;overflow-y:auto;padding:28px;background:#0D1117;">
+    <div style="max-width:1200px;margin:0 auto 20px;display:flex;justify-content:flex-end;">
+      <button onclick="openCBSPilotModal()" style="background:#10B981;color:#fff;border:none;border-radius:10px;padding:10px 20px;cursor:pointer;font-weight:700;font-size:13px;">➕ Input / Update Pilot Project</button>
+    </div>
+    <div id="cbs-pilot-content" style="max-width:1200px;margin:0 auto;">
+      <div style="text-align:center;padding:60px 20px;color:#64748b;">
+        <div style="font-size:48px;margin-bottom:12px;">🧪</div>
+        <div style="font-size:15px;">Belum ada data Pilot Project. Klik tombol di atas untuk mengisi.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== MODAL INPUT DATA BULANAN ===== -->
+<div id="cbs-modal-input" style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#111827;border-radius:16px;padding:28px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;border:1.5px solid #1e2d45;">
+    <div style="font-size:17px;font-weight:800;color:#e2e8f0;margin-bottom:4px;">📊 Input Data Cost &amp; BS Bulanan</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:20px;">Masukkan rekap hasil olahan dari MANKSI / Excel untuk bulan ini.</div>
+
+    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">Bulan</label>
+    <input id="cbs-input-bulan" type="month" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;margin-bottom:14px;">
+
+    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">Total Cost BS (Rupiah)</label>
+    <input id="cbs-input-cost" type="number" placeholder="contoh: 26888050" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;margin-bottom:14px;">
+
+    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">BS Rate Rata-rata (%)</label>
+    <input id="cbs-input-rate" type="number" step="0.01" placeholder="contoh: 1.02" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;margin-bottom:14px;">
+
+    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">Jumlah SPK dengan BS Rate &gt; 2%</label>
+    <input id="cbs-input-overlimit" type="number" placeholder="contoh: 9" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;margin-bottom:18px;">
+
+    <div style="border-top:1px solid #1e2d45;margin:4px 0 16px;"></div>
+
+    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:8px;">Top Penyebab BS (opsional, maks 3)</label>
+    <div id="cbs-input-alasan-list"></div>
+    <button onclick="addCBSAlasanRow()" style="background:none;border:1px dashed #334155;color:#94a3b8;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;margin-bottom:18px;">+ Tambah Penyebab</button>
+
+    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:8px;">SPK dengan BS Rate Tertinggi (opsional, maks 6)</label>
+    <div id="cbs-input-spk-list"></div>
+    <button onclick="addCBSSpkRow()" style="background:none;border:1px dashed #334155;color:#94a3b8;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;margin-bottom:22px;">+ Tambah SPK</button>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeCBSInputModal()" style="background:#1e2d45;color:#cbd5e1;border:none;border-radius:8px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;">Batal</button>
+      <button onclick="saveCBSMonthlyInput()" style="background:#F97316;color:#fff;border:none;border-radius:8px;padding:9px 20px;cursor:pointer;font-weight:700;font-size:13px;">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL INPUT PILOT PROJECT ===== -->
+<div id="cbs-modal-pilot" style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#111827;border-radius:16px;padding:28px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;border:1.5px solid #1e2d45;">
+    <div style="font-size:17px;font-weight:800;color:#e2e8f0;margin-bottom:4px;">🧪 Input Pilot Project</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:20px;">Data perbandingan sebelum dan selama pilot project berjalan.</div>
+
+    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">Nama Lini / Area Pilot</label>
+    <input id="cbs-pilot-lini" type="text" placeholder="contoh: Lini Produksi P4 - Garmen" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;margin-bottom:14px;">
+
+    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">Periode Pilot</label>
+    <input id="cbs-pilot-periode" type="text" placeholder="contoh: 1 Juni - 30 Juni 2026" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;margin-bottom:14px;">
+
+    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">Status</label>
+    <select id="cbs-pilot-status" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;margin-bottom:14px;">
+      <option value="Berjalan">Berjalan</option>
+      <option value="Selesai">Selesai</option>
+    </select>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+      <div>
+        <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">BS Rate Sebelum (%)</label>
+        <input id="cbs-pilot-rate-before" type="number" step="0.01" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;">
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">BS Rate Selama Pilot (%)</label>
+        <input id="cbs-pilot-rate-after" type="number" step="0.01" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
+      <div>
+        <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">Cost BS Sebelum (Rp)</label>
+        <input id="cbs-pilot-cost-before" type="number" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;">
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">Cost BS Selama Pilot (Rp)</label>
+        <input id="cbs-pilot-cost-after" type="number" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;">
+      </div>
+    </div>
+
+    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">Catatan Kualitatif</label>
+    <textarea id="cbs-pilot-catatan" rows="3" placeholder="Apa yang berubah, kendala, dll" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;margin-bottom:22px;resize:vertical;"></textarea>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeCBSPilotModal()" style="background:#1e2d45;color:#cbd5e1;border:none;border-radius:8px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;">Batal</button>
+      <button onclick="saveCBSPilotInput()" style="background:#10B981;color:#fff;border:none;border-radius:8px;padding:9px 20px;cursor:pointer;font-weight:700;font-size:13px;">💾 Simpan</button>
+    </div>
+  </div>
+</div>
   
 <!-- ===== HALAMAN FLOW BISNIS ===== -->
 <div id="page-flow-bisnis" style="display:none;position:fixed;inset:0;z-index:9998;flex-direction:column;background:#0D1117;font-family:'Plus Jakarta Sans','Segoe UI',sans-serif;">
