@@ -4639,6 +4639,373 @@ function closeFlowBisnis(){
   document.body.classList.add('home-active');
 }
 
+// ===== NAVIGASI COST & BS =====
+function goToCostBS(){
+  const pgHome=document.getElementById('page-home');
+  if(pgHome){ pgHome.classList.remove('active'); pgHome.style.display='none'; }
+  document.getElementById('page-dashboard').style.display='none';
+  const pg=document.getElementById('page-cost-bs');
+  if(pg){ pg.style.display='flex'; }
+  document.body.classList.remove('home-active');
+  if(!window._cbsData) loadCostBSFromFirebase();
+}
+function closeCostBS(){
+  const pg=document.getElementById('page-cost-bs');
+  if(pg){ pg.style.display='none'; }
+  const pgHome=document.getElementById('page-home');
+  if(pgHome){ pgHome.classList.add('active'); pgHome.style.display='flex'; }
+  document.body.classList.add('home-active');
+}
+function switchCostBSTab(tab){
+  const btnMonthly=document.getElementById('cbs-tab-btn-monthly');
+  const btnPilot=document.getElementById('cbs-tab-btn-pilot');
+  const tabMonthly=document.getElementById('cbs-tab-monthly');
+  const tabPilot=document.getElementById('cbs-tab-pilot');
+  if(tab==='monthly'){
+    tabMonthly.style.display='block'; tabPilot.style.display='none';
+    btnMonthly.style.background='rgba(255,255,255,0.25)'; btnPilot.style.background='rgba(255,255,255,0.12)';
+  } else {
+    tabMonthly.style.display='none'; tabPilot.style.display='block';
+    btnMonthly.style.background='rgba(255,255,255,0.12)'; btnPilot.style.background='rgba(255,255,255,0.25)';
+  }
+}
+
+// ===== MODAL INPUT DATA BULANAN =====
+function openCBSInputModal(){
+  document.getElementById('cbs-modal-input').style.display='flex';
+  document.getElementById('cbs-input-alasan-list').innerHTML='';
+  document.getElementById('cbs-input-spk-list').innerHTML='';
+  addCBSAlasanRow();
+  addCBSSpkRow();
+  // default bulan = bulan ini
+  const now = new Date();
+  const ym = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  document.getElementById('cbs-input-bulan').value = ym;
+}
+function closeCBSInputModal(){
+  document.getElementById('cbs-modal-input').style.display='none';
+}
+function addCBSAlasanRow(){
+  const list = document.getElementById('cbs-input-alasan-list');
+  if(list.children.length >= 3) return;
+  const row = document.createElement('div');
+  row.style.display='flex'; row.style.gap='8px'; row.style.marginBottom='8px';
+  row.innerHTML = `
+    <input type="text" placeholder="Nama penyebab (contoh: AKTUAL POTONG)" class="cbs-alasan-nama" style="flex:2;padding:8px 10px;border-radius:7px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:12.5px;">
+    <input type="number" placeholder="Jumlah" class="cbs-alasan-jumlah" style="flex:1;padding:8px 10px;border-radius:7px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:12.5px;">
+    <button onclick="this.parentElement.remove()" style="background:none;border:none;color:#F87171;cursor:pointer;font-size:16px;padding:0 6px;">×</button>
+  `;
+  list.appendChild(row);
+}
+function addCBSSpkRow(){
+  const list = document.getElementById('cbs-input-spk-list');
+  if(list.children.length >= 6) return;
+  const row = document.createElement('div');
+  row.style.display='flex'; row.style.gap='8px'; row.style.marginBottom='8px';
+  row.innerHTML = `
+    <input type="text" placeholder="No. SPK" class="cbs-spk-nomor" style="flex:1.2;padding:8px 10px;border-radius:7px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:12.5px;">
+    <input type="text" placeholder="Nama SPK" class="cbs-spk-nama" style="flex:2;padding:8px 10px;border-radius:7px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:12.5px;">
+    <input type="number" step="0.01" placeholder="BS Rate %" class="cbs-spk-rate" style="flex:1;padding:8px 10px;border-radius:7px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:12.5px;">
+    <button onclick="this.parentElement.remove()" style="background:none;border:none;color:#F87171;cursor:pointer;font-size:16px;padding:0 6px;">×</button>
+  `;
+  list.appendChild(row);
+}
+
+async function saveCBSMonthlyInput(){
+  const bulanLabel = document.getElementById('cbs-input-bulan').value;
+  if(!bulanLabel){ showNotif('❌ Mohon pilih bulan', 'error'); return; }
+
+  const totalCostBS = Number(document.getElementById('cbs-input-cost').value) || 0;
+  const avgBSRate = Number(document.getElementById('cbs-input-rate').value) || 0;
+  const jumlahSpkOverLimit = Number(document.getElementById('cbs-input-overlimit').value) || 0;
+
+  const topAlasan = [];
+  document.querySelectorAll('#cbs-input-alasan-list > div').forEach(row => {
+    const nama = row.querySelector('.cbs-alasan-nama').value.trim();
+    const jumlah = Number(row.querySelector('.cbs-alasan-jumlah').value) || 0;
+    if(nama) topAlasan.push({ alasan: nama, count: jumlah });
+  });
+
+  const topSpk = [];
+  document.querySelectorAll('#cbs-input-spk-list > div').forEach(row => {
+    const spk = row.querySelector('.cbs-spk-nomor').value.trim();
+    const namaSPK = row.querySelector('.cbs-spk-nama').value.trim();
+    const bsRate = Number(row.querySelector('.cbs-spk-rate').value) || 0;
+    if(spk) topSpk.push({ spk, namaSPK, bsRate });
+  });
+  topSpk.sort((a,b) => b.bsRate - a.bsRate);
+
+  if(!window._cbsData) window._cbsData = { bulanan: {} };
+  window._cbsData.bulanan[bulanLabel] = {
+    bulanLabel, totalCostBS, avgBSRate, jumlahSpkOverLimit, topAlasan, topSpk,
+    updatedAt: new Date().toISOString()
+  };
+
+  closeCBSInputModal();
+  renderCostBSDashboard();
+  await saveCostBSToFirebase();
+  showNotif('✅ Data bulan ' + bulanLabel + ' tersimpan!', 'success');
+}
+
+// ===== MODAL INPUT PILOT PROJECT =====
+function openCBSPilotModal(){
+  document.getElementById('cbs-modal-pilot').style.display='flex';
+  const p = (window._cbsData && window._cbsData.pilot) || {};
+  document.getElementById('cbs-pilot-lini').value = p.lini || '';
+  document.getElementById('cbs-pilot-periode').value = p.periode || '';
+  document.getElementById('cbs-pilot-status').value = p.status || 'Berjalan';
+  document.getElementById('cbs-pilot-rate-before').value = p.rateBefore ?? '';
+  document.getElementById('cbs-pilot-rate-after').value = p.rateAfter ?? '';
+  document.getElementById('cbs-pilot-cost-before').value = p.costBefore ?? '';
+  document.getElementById('cbs-pilot-cost-after').value = p.costAfter ?? '';
+  document.getElementById('cbs-pilot-catatan').value = p.catatan || '';
+}
+function closeCBSPilotModal(){
+  document.getElementById('cbs-modal-pilot').style.display='none';
+}
+async function saveCBSPilotInput(){
+  const pilot = {
+    lini: document.getElementById('cbs-pilot-lini').value.trim(),
+    periode: document.getElementById('cbs-pilot-periode').value.trim(),
+    status: document.getElementById('cbs-pilot-status').value,
+    rateBefore: Number(document.getElementById('cbs-pilot-rate-before').value) || 0,
+    rateAfter: Number(document.getElementById('cbs-pilot-rate-after').value) || 0,
+    costBefore: Number(document.getElementById('cbs-pilot-cost-before').value) || 0,
+    costAfter: Number(document.getElementById('cbs-pilot-cost-after').value) || 0,
+    catatan: document.getElementById('cbs-pilot-catatan').value.trim(),
+    updatedAt: new Date().toISOString()
+  };
+  if(!window._cbsData) window._cbsData = { bulanan: {} };
+  window._cbsData.pilot = pilot;
+
+  closeCBSPilotModal();
+  renderCBSPilot();
+  await saveCostBSToFirebase();
+  showNotif('✅ Data Pilot Project tersimpan!', 'success');
+}
+
+function renderCBSPilot(){
+  const container = document.getElementById('cbs-pilot-content');
+  const p = window._cbsData && window._cbsData.pilot;
+  if(!p || !p.lini){
+    container.innerHTML = `<div style="text-align:center;padding:60px 20px;color:#64748b;">
+      <div style="font-size:48px;margin-bottom:12px;">🧪</div>
+      <div style="font-size:15px;">Belum ada data Pilot Project. Klik tombol di atas untuk mengisi.</div>
+    </div>`;
+    return;
+  }
+
+  const rateDiff = p.rateAfter - p.rateBefore;
+  const costDiff = p.costAfter - p.costBefore;
+  const rateColor = rateDiff <= 0 ? '#34D399' : '#F87171';
+  const costColor = costDiff <= 0 ? '#34D399' : '#F87171';
+  const statusColor = p.status === 'Selesai' ? '#34D399' : '#FBBF24';
+
+  const maxBarRate = Math.max(p.rateBefore, p.rateAfter, 1) * 1.2;
+  const maxBarCost = Math.max(p.costBefore, p.costAfter, 1) * 1.2;
+
+  container.innerHTML = `
+    <div style="background:#111827;border-radius:14px;padding:22px;border:1.5px solid #1e2d45;margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+        <div>
+          <div style="font-size:17px;font-weight:800;color:#e2e8f0;">${p.lini}</div>
+          <div style="font-size:12.5px;color:#64748b;margin-top:3px;">Periode: ${p.periode || '-'}</div>
+        </div>
+        <div style="background:${statusColor}22;color:${statusColor};border:1px solid ${statusColor}55;border-radius:8px;padding:5px 14px;font-size:12px;font-weight:700;">${p.status}</div>
+      </div>
+      ${p.catatan ? `<div style="background:#0D1117;border-radius:10px;padding:14px 16px;font-size:13px;color:#cbd5e1;line-height:1.6;">${p.catatan.replace(/\n/g,'<br>')}</div>` : ''}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div style="background:#111827;border-radius:14px;padding:20px;border:1.5px solid #1e2d45;">
+        <div style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:16px;">BS Rate: Sebelum vs Selama Pilot</div>
+        <div style="display:flex;align-items:flex-end;gap:24px;height:160px;padding:0 10px;">
+          <div style="flex:1;text-align:center;">
+            <div style="background:#475569;border-radius:6px 6px 0 0;height:${(p.rateBefore/maxBarRate*130)||4}px;margin-bottom:8px;"></div>
+            <div style="font-size:15px;font-weight:800;color:#94a3b8;">${p.rateBefore.toFixed(2)}%</div>
+            <div style="font-size:11px;color:#64748b;margin-top:2px;">Sebelum</div>
+          </div>
+          <div style="flex:1;text-align:center;">
+            <div style="background:#F97316;border-radius:6px 6px 0 0;height:${(p.rateAfter/maxBarRate*130)||4}px;margin-bottom:8px;"></div>
+            <div style="font-size:15px;font-weight:800;color:#FB923C;">${p.rateAfter.toFixed(2)}%</div>
+            <div style="font-size:11px;color:#64748b;margin-top:2px;">Selama Pilot</div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:12px;font-size:12.5px;font-weight:700;color:${rateColor};">
+          ${rateDiff <= 0 ? '↓' : '↑'} ${Math.abs(rateDiff).toFixed(2)}% ${rateDiff <= 0 ? 'penurunan' : 'kenaikan'}
+        </div>
+      </div>
+
+      <div style="background:#111827;border-radius:14px;padding:20px;border:1.5px solid #1e2d45;">
+        <div style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:16px;">Cost BS: Sebelum vs Selama Pilot</div>
+        <div style="display:flex;align-items:flex-end;gap:24px;height:160px;padding:0 10px;">
+          <div style="flex:1;text-align:center;">
+            <div style="background:#475569;border-radius:6px 6px 0 0;height:${(p.costBefore/maxBarCost*130)||4}px;margin-bottom:8px;"></div>
+            <div style="font-size:13px;font-weight:800;color:#94a3b8;">${formatRupiah(p.costBefore)}</div>
+            <div style="font-size:11px;color:#64748b;margin-top:2px;">Sebelum</div>
+          </div>
+          <div style="flex:1;text-align:center;">
+            <div style="background:#F97316;border-radius:6px 6px 0 0;height:${(p.costAfter/maxBarCost*130)||4}px;margin-bottom:8px;"></div>
+            <div style="font-size:13px;font-weight:800;color:#FB923C;">${formatRupiah(p.costAfter)}</div>
+            <div style="font-size:11px;color:#64748b;margin-top:2px;">Selama Pilot</div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:12px;font-size:12.5px;font-weight:700;color:${costColor};">
+          ${costDiff <= 0 ? '↓' : '↑'} ${formatRupiah(Math.abs(costDiff))} ${costDiff <= 0 ? 'penghematan' : 'kenaikan'}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ===== RENDER DASHBOARD UTAMA =====
+function formatRupiah(n){
+  return 'Rp ' + Math.round(n).toLocaleString('id-ID');
+}
+
+function renderCostBSDashboard(){
+  if(!window._cbsData || !window._cbsData.bulanan) return;
+  const bulanList = Object.keys(window._cbsData.bulanan).sort();
+  if(bulanList.length === 0) return;
+
+  const lastBulan = bulanList[bulanList.length-1];
+  const data = window._cbsData.bulanan[lastBulan];
+
+  document.getElementById('cbs-stat-cost').textContent = formatRupiah(data.totalCostBS);
+  document.getElementById('cbs-stat-rate').textContent = data.avgBSRate.toFixed(2) + '%';
+  document.getElementById('cbs-stat-overlimit').textContent = data.jumlahSpkOverLimit;
+
+  let alasanHTML = '';
+  if(data.topAlasan && data.topAlasan.length > 0){
+    alasanHTML = data.topAlasan.map((a,i) => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;${i<data.topAlasan.length-1?'border-bottom:1px solid #1e2d45;':''}">
+        <div style="color:#cbd5e1;font-size:13px;">${i+1}. ${a.alasan}</div>
+        <div style="color:#FB923C;font-weight:700;font-size:13px;">${a.count}x</div>
+      </div>`).join('');
+  } else {
+    alasanHTML = '<div style="color:#64748b;font-size:13px;text-align:center;padding:20px;">Belum ada data alasan BS</div>';
+  }
+  document.getElementById('cbs-table-alasan').innerHTML = alasanHTML;
+
+  let spkHTML = '';
+  if(data.topSpk && data.topSpk.length > 0){
+    spkHTML = data.topSpk.map((s,i) => {
+      const color = s.bsRate > 5 ? '#F87171' : (s.bsRate > 2 ? '#FBBF24' : '#34D399');
+      return `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;${i<data.topSpk.length-1?'border-bottom:1px solid #1e2d45;':''}">
+        <div style="min-width:0;flex:1;">
+          <div style="color:#e2e8f0;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.spk}</div>
+          <div style="color:#64748b;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.namaSPK||''}</div>
+        </div>
+        <div style="color:${color};font-weight:800;font-size:14px;margin-left:10px;">${s.bsRate.toFixed(2)}%</div>
+      </div>`;
+    }).join('');
+  } else {
+    spkHTML = '<div style="color:#64748b;font-size:13px;text-align:center;padding:20px;">Belum ada data SPK</div>';
+  }
+  document.getElementById('cbs-table-topspk').innerHTML = spkHTML;
+
+  let riwayatHTML = bulanList.slice().reverse().map(b => {
+    const d = window._cbsData.bulanan[b];
+    return `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1e2d45;">
+      <div style="color:#e2e8f0;font-size:13px;font-weight:600;">${b}</div>
+      <div style="color:#94a3b8;font-size:12px;">BS Rate: ${d.avgBSRate.toFixed(2)}% &nbsp;|&nbsp; Cost: ${formatRupiah(d.totalCostBS)}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('cbs-table-riwayat').innerHTML = riwayatHTML || '<div style="color:#64748b;font-size:13px;text-align:center;padding:20px;">Belum ada riwayat</div>';
+
+  renderCostBSTrendChart(bulanList);
+  renderCBSPilot();
+}
+
+function renderCostBSTrendChart(bulanList){
+  const container = document.getElementById('cbs-chart-trend');
+  if(!container) return;
+  if(bulanList.length === 0){
+    container.innerHTML = '<div style="color:#64748b;font-size:13px;text-align:center;padding:40px;">Belum ada data untuk ditampilkan</div>';
+    return;
+  }
+
+  const points = bulanList.map(b => window._cbsData.bulanan[b].avgBSRate);
+  const maxVal = Math.max(...points, 5) * 1.2;
+  const W = 1200, H = 200, padL = 40, padR = 20, padT = 20, padB = 30;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+
+  const stepX = bulanList.length > 1 ? plotW / (bulanList.length - 1) : 0;
+  const coords = points.map((v,i) => {
+    const x = padL + (bulanList.length > 1 ? i * stepX : plotW/2);
+    const y = padT + plotH - (v / maxVal) * plotH;
+    return [x,y];
+  });
+
+  const pathD = coords.map((c,i) => (i===0?'M':'L') + c[0].toFixed(1) + ',' + c[1].toFixed(1)).join(' ');
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:220px;" preserveAspectRatio="none">`;
+  const yLimit2 = padT + plotH - (2/maxVal)*plotH;
+  svg += `<line x1="${padL}" y1="${yLimit2}" x2="${W-padR}" y2="${yLimit2}" stroke="#FBBF24" stroke-width="1" stroke-dasharray="4,4" opacity="0.5"/>`;
+  svg += `<text x="${W-padR}" y="${yLimit2-4}" fill="#FBBF24" font-size="10" text-anchor="end">2%</text>`;
+  svg += `<path d="${pathD}" fill="none" stroke="#F97316" stroke-width="2.5"/>`;
+  coords.forEach((c,i) => {
+    svg += `<circle cx="${c[0]}" cy="${c[1]}" r="4" fill="#F97316"/>`;
+    svg += `<text x="${c[0]}" y="${H-8}" fill="#94a3b8" font-size="10" text-anchor="middle">${bulanList[i].slice(5)}</text>`;
+    svg += `<text x="${c[0]}" y="${c[1]-10}" fill="#FB923C" font-size="11" font-weight="700" text-anchor="middle">${points[i].toFixed(1)}%</text>`;
+  });
+  svg += '</svg>';
+  container.innerHTML = svg;
+}
+
+// ===== FIREBASE: SIMPAN & BACA =====
+async function saveCostBSToFirebase(){
+  if(!window._isAdmin) return;
+  try{
+    const fb = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const ref = fb.doc(window._fbDb, "dashboard", "costBS");
+    await fb.setDoc(ref, {
+      bulanan: window._cbsData.bulanan,
+      pilot: window._cbsData.pilot || null,
+      savedAt: new Date().toISOString(),
+      savedBy: window._currentUser ? window._currentUser.email : 'cost-bs-save'
+    });
+    try{ localStorage.setItem('costbs_data_v1', JSON.stringify(window._cbsData)); }catch(e){}
+  }catch(e){
+    showNotif('❌ Gagal simpan ke server: '+e.message,'error');
+    console.error('saveCostBSToFirebase error:',e);
+  }
+}
+
+async function loadCostBSFromFirebase(){
+  try{
+    const cached = localStorage.getItem('costbs_data_v1');
+    if(cached){ window._cbsData = JSON.parse(cached); renderCostBSDashboard(); }
+  }catch(e){}
+
+  try{
+    const fb = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const ref = fb.doc(window._fbDb, "dashboard", "costBS");
+    const snap = await fb.getDoc(ref);
+    if(snap.exists() && snap.data().bulanan){
+      window._cbsData = { bulanan: snap.data().bulanan, pilot: snap.data().pilot || null };
+      try{ localStorage.setItem('costbs_data_v1', JSON.stringify(window._cbsData)); }catch(e){}
+      renderCostBSDashboard();
+    } else if(!window._cbsData){
+      window._cbsData = { bulanan: {} };
+    }
+
+    fb.onSnapshot(ref, function(snap){
+      if(snap.exists() && snap.data().bulanan){
+        window._cbsData = { bulanan: snap.data().bulanan, pilot: snap.data().pilot || null };
+        try{ localStorage.setItem('costbs_data_v1', JSON.stringify(window._cbsData)); }catch(e){}
+        const pg = document.getElementById('page-cost-bs');
+        if(pg && pg.style.display !== 'none') renderCostBSDashboard();
+      }
+    });
+  }catch(e){
+    console.warn('loadCostBSFromFirebase error:', e);
+    if(!window._cbsData) window._cbsData = { bulanan: {} };
+  }
+}
+  
 // ===== NAVIGASI NOTULEN =====
 function goToNotulen(){
   const pgHome=document.getElementById('page-home');
