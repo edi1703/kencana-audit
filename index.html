@@ -4196,10 +4196,10 @@ document.body.classList.add('home-active');
 </div>
 
 <!-- ===== HALAMAN COST & BS PRODUKSI ===== -->
-<div id="page-cost-bs" style="display:none;position:fixed;inset:0;z-index:9998;flex-direction:column;background:#0D1117;font-family:'Plus Jakarta Sans','Segoe UI',sans-serif;">
+<div id="page-cost-bs" style="display:none;position:fixed;inset:0;z-index:9998;flex-direction:column;background:#F8FAFC;font-family:'Plus Jakarta Sans','Segoe UI',sans-serif;">
 
   <!-- TOP BAR -->
-  <div style="background:linear-gradient(135deg,#7F1D1D 0%,#BE123C 60%,#F97316 100%);color:#fff;padding:0 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;flex-shrink:0;box-shadow:0 4px 20px rgba(190,18,60,0.5);min-height:64px;border-bottom:2px solid rgba(249,115,22,0.3);">
+  <div style="background:linear-gradient(135deg,#7F1D1D 0%,#BE123C 60%,#F97316 100%);color:#fff;padding:0 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;flex-shrink:0;box-shadow:0 4px 20px rgba(190,18,60,0.25);min-height:64px;border-bottom:2px solid rgba(249,115,22,0.3);">
     <div style="display:flex;align-items:center;gap:16px;">
       <button onclick="closeCostBS()" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:10px;padding:7px 16px;cursor:pointer;font-weight:700;font-size:13px;transition:background 0.2s;display:flex;align-items:center;gap:6px;" onmouseenter="this.style.background='rgba(255,255,255,0.22)'" onmouseleave="this.style.background='rgba(255,255,255,0.12)'">← Home</button>
       <div style="width:1px;height:36px;background:rgba(255,255,255,0.2);"></div>
@@ -4217,11 +4217,11 @@ document.body.classList.add('home-active');
   </div>
 
   <!-- ===== TAB 1: COST BS BULANAN ===== -->
-  <div id="cbs-tab-monthly" style="flex:1;overflow-y:auto;padding:28px;background:#0D1117;">
+  <div id="cbs-tab-monthly" style="flex:1;overflow-y:auto;padding:28px;background:#F8FAFC;">
 
     <!-- ACTION BAR -->
     <div style="max-width:1200px;margin:0 auto 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-      <div style="font-size:13px;color:#94a3b8;">Input rekap data BS bulanan secara manual berdasarkan hasil olahan dari MANKSI / Excel.</div>
+      <div style="font-size:13px;color:#64748B;">Input rekap data BS bulanan secara manual berdasarkan hasil olahan dari MANKSI / Excel.</div>
       <button onclick="openCBSInputModal()" style="background:#F97316;color:#fff;border:none;border-radius:10px;padding:10px 20px;cursor:pointer;font-weight:700;font-size:13px;display:flex;align-items:center;gap:8px;">
         ➕ Input Data Bulan Ini
       </button>
@@ -4229,53 +4229,53 @@ document.body.classList.add('home-active');
 
     <!-- STAT CARDS -->
     <div style="max-width:1200px;margin:0 auto 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
-      <div style="background:#111827;border-radius:14px;padding:18px 20px;border:1.5px solid #1e2d45;">
-        <div style="font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Total Cost BS Bulan Ini</div>
+      <div style="background:#fff;border-radius:14px;padding:18px 20px;border:1.5px solid #E2E8F0;">
+        <div style="font-size:11px;color:#64748B;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Total Cost BS Bulan Ini</div>
         <div id="cbs-stat-cost" style="font-size:26px;font-weight:800;color:#FB923C;">Rp 0</div>
       </div>
-      <div style="background:#111827;border-radius:14px;padding:18px 20px;border:1.5px solid #1e2d45;">
-        <div style="font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">BS Rate Rata-rata</div>
+      <div style="background:#fff;border-radius:14px;padding:18px 20px;border:1.5px solid #E2E8F0;">
+        <div style="font-size:11px;color:#64748B;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">BS Rate Rata-rata</div>
         <div id="cbs-stat-rate" style="font-size:26px;font-weight:800;color:#FBBF24;">0%</div>
       </div>
-      <div style="background:#111827;border-radius:14px;padding:18px 20px;border:1.5px solid #1e2d45;">
-        <div style="font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">SPK dengan BS Rate &gt; 2%</div>
+      <div style="background:#fff;border-radius:14px;padding:18px 20px;border:1.5px solid #E2E8F0;">
+        <div style="font-size:11px;color:#64748B;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">SPK dengan BS Rate &gt; 2%</div>
         <div id="cbs-stat-overlimit" style="font-size:26px;font-weight:800;color:#F87171;">0</div>
       </div>
     </div>
 
     <!-- GRAFIK TREND -->
-    <div style="max-width:1200px;margin:0 auto 24px;background:#111827;border-radius:14px;padding:20px;border:1.5px solid #1e2d45;">
-      <div style="font-size:14px;font-weight:700;color:#e2e8f0;margin-bottom:14px;">📈 Tren BS Rate per Bulan</div>
+    <div style="max-width:1200px;margin:0 auto 24px;background:#fff;border-radius:14px;padding:20px;border:1.5px solid #E2E8F0;">
+      <div style="font-size:14px;font-weight:700;color:#1E293B;margin-bottom:14px;">📈 Tren BS Rate per Bulan</div>
       <div id="cbs-chart-trend" style="min-height:220px;"></div>
     </div>
 
     <!-- 2 KOLOM: TOP PENYEBAB & TOP SPK -->
     <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-      <div style="background:#111827;border-radius:14px;padding:20px;border:1.5px solid #1e2d45;">
-        <div style="font-size:14px;font-weight:700;color:#e2e8f0;margin-bottom:14px;">🔍 Top Penyebab BS Bulan Ini</div>
+      <div style="background:#fff;border-radius:14px;padding:20px;border:1.5px solid #E2E8F0;">
+        <div style="font-size:14px;font-weight:700;color:#1E293B;margin-bottom:14px;">🔍 Top Penyebab BS Bulan Ini</div>
         <div id="cbs-table-alasan"></div>
       </div>
-      <div style="background:#111827;border-radius:14px;padding:20px;border:1.5px solid #1e2d45;">
-        <div style="font-size:14px;font-weight:700;color:#e2e8f0;margin-bottom:14px;">⚠️ SPK dengan BS Rate Tertinggi</div>
+      <div style="background:#fff;border-radius:14px;padding:20px;border:1.5px solid #E2E8F0;">
+        <div style="font-size:14px;font-weight:700;color:#1E293B;margin-bottom:14px;">⚠️ SPK dengan BS Rate Tertinggi</div>
         <div id="cbs-table-topspk"></div>
       </div>
     </div>
 
     <!-- RIWAYAT DATA BULANAN -->
-    <div style="max-width:1200px;margin:24px auto 0;background:#111827;border-radius:14px;padding:20px;border:1.5px solid #1e2d45;">
-      <div style="font-size:14px;font-weight:700;color:#e2e8f0;margin-bottom:14px;">🗂️ Riwayat Data Bulanan</div>
+    <div style="max-width:1200px;margin:24px auto 0;background:#fff;border-radius:14px;padding:20px;border:1.5px solid #E2E8F0;">
+      <div style="font-size:14px;font-weight:700;color:#1E293B;margin-bottom:14px;">🗂️ Riwayat Data Bulanan</div>
       <div id="cbs-table-riwayat"></div>
     </div>
 
   </div>
 
   <!-- ===== TAB 2: PILOT PROJECT ===== -->
-  <div id="cbs-tab-pilot" style="display:none;flex:1;overflow-y:auto;padding:28px;background:#0D1117;">
+  <div id="cbs-tab-pilot" style="display:none;flex:1;overflow-y:auto;padding:28px;background:#F8FAFC;">
     <div style="max-width:1200px;margin:0 auto 20px;display:flex;justify-content:flex-end;">
       <button onclick="openCBSPilotModal()" style="background:#10B981;color:#fff;border:none;border-radius:10px;padding:10px 20px;cursor:pointer;font-weight:700;font-size:13px;">➕ Input / Update Pilot Project</button>
     </div>
     <div id="cbs-pilot-content" style="max-width:1200px;margin:0 auto;">
-      <div style="text-align:center;padding:60px 20px;color:#64748b;">
+      <div style="text-align:center;padding:60px 20px;color:#64748B;">
         <div style="font-size:48px;margin-bottom:12px;">🧪</div>
         <div style="font-size:15px;">Belum ada data Pilot Project. Klik tombol di atas untuk mengisi.</div>
       </div>
@@ -4286,34 +4286,34 @@ document.body.classList.add('home-active');
 
 <!-- ===== MODAL INPUT DATA BULANAN ===== -->
 <div id="cbs-modal-input" style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#111827;border-radius:16px;padding:28px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;border:1.5px solid #1e2d45;">
-    <div style="font-size:17px;font-weight:800;color:#e2e8f0;margin-bottom:4px;">📊 Input Data Cost &amp; BS Bulanan</div>
-    <div style="font-size:12px;color:#64748b;margin-bottom:20px;">Masukkan rekap hasil olahan dari MANKSI / Excel untuk bulan ini.</div>
+  <div style="background:#fff;border-radius:16px;padding:28px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;border:1.5px solid #E2E8F0;">
+    <div style="font-size:17px;font-weight:800;color:#1E293B;margin-bottom:4px;">📊 Input Data Cost &amp; BS Bulanan</div>
+    <div style="font-size:12px;color:#64748B;margin-bottom:20px;">Masukkan rekap hasil olahan dari MANKSI / Excel untuk bulan ini.</div>
 
-    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">Bulan</label>
-    <input id="cbs-input-bulan" type="month" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;margin-bottom:14px;">
+    <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:5px;">Bulan</label>
+    <input id="cbs-input-bulan" type="month" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #E2E8F0;background:#F8FAFC;color:#1E293B;font-size:13px;margin-bottom:14px;">
 
-    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">Total Cost BS (Rupiah)</label>
-    <input id="cbs-input-cost" type="number" placeholder="contoh: 26888050" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;margin-bottom:14px;">
+    <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:5px;">Total Cost BS (Rupiah)</label>
+    <input id="cbs-input-cost" type="number" placeholder="contoh: 26888050" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #E2E8F0;background:#F8FAFC;color:#1E293B;font-size:13px;margin-bottom:14px;">
 
-    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">BS Rate Rata-rata (%)</label>
-    <input id="cbs-input-rate" type="number" step="0.01" placeholder="contoh: 1.02" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;margin-bottom:14px;">
+    <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:5px;">BS Rate Rata-rata (%)</label>
+    <input id="cbs-input-rate" type="number" step="0.01" placeholder="contoh: 1.02" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #E2E8F0;background:#F8FAFC;color:#1E293B;font-size:13px;margin-bottom:14px;">
 
-    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">Jumlah SPK dengan BS Rate &gt; 2%</label>
-    <input id="cbs-input-overlimit" type="number" placeholder="contoh: 9" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;margin-bottom:18px;">
+    <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:5px;">Jumlah SPK dengan BS Rate &gt; 2%</label>
+    <input id="cbs-input-overlimit" type="number" placeholder="contoh: 9" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #E2E8F0;background:#F8FAFC;color:#1E293B;font-size:13px;margin-bottom:18px;">
 
-    <div style="border-top:1px solid #1e2d45;margin:4px 0 16px;"></div>
+    <div style="border-top:1px solid #F1F5F9;margin:4px 0 16px;"></div>
 
-    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:8px;">Top Penyebab BS (opsional, maks 3)</label>
+    <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:8px;">Top Penyebab BS (opsional, maks 3)</label>
     <div id="cbs-input-alasan-list"></div>
-    <button onclick="addCBSAlasanRow()" style="background:none;border:1px dashed #334155;color:#94a3b8;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;margin-bottom:18px;">+ Tambah Penyebab</button>
+    <button onclick="addCBSAlasanRow()" style="background:none;border:1px dashed #CBD5E1;color:#64748B;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;margin-bottom:18px;">+ Tambah Penyebab</button>
 
-    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:8px;">SPK dengan BS Rate Tertinggi (opsional, maks 6)</label>
+    <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:8px;">SPK dengan BS Rate Tertinggi (opsional, maks 6)</label>
     <div id="cbs-input-spk-list"></div>
-    <button onclick="addCBSSpkRow()" style="background:none;border:1px dashed #334155;color:#94a3b8;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;margin-bottom:22px;">+ Tambah SPK</button>
+    <button onclick="addCBSSpkRow()" style="background:none;border:1px dashed #CBD5E1;color:#64748B;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;margin-bottom:22px;">+ Tambah SPK</button>
 
     <div style="display:flex;gap:10px;justify-content:flex-end;">
-      <button onclick="closeCBSInputModal()" style="background:#1e2d45;color:#cbd5e1;border:none;border-radius:8px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;">Batal</button>
+      <button onclick="closeCBSInputModal()" style="background:#F1F5F9;color:#374151;border:1px solid #E2E8F0;border-radius:8px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;">Batal</button>
       <button onclick="saveCBSMonthlyInput()" style="background:#F97316;color:#fff;border:none;border-radius:8px;padding:9px 20px;cursor:pointer;font-weight:700;font-size:13px;">💾 Simpan</button>
     </div>
   </div>
@@ -4321,48 +4321,48 @@ document.body.classList.add('home-active');
 
 <!-- ===== MODAL INPUT PILOT PROJECT ===== -->
 <div id="cbs-modal-pilot" style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#111827;border-radius:16px;padding:28px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;border:1.5px solid #1e2d45;">
-    <div style="font-size:17px;font-weight:800;color:#e2e8f0;margin-bottom:4px;">🧪 Input Pilot Project</div>
-    <div style="font-size:12px;color:#64748b;margin-bottom:20px;">Data perbandingan sebelum dan selama pilot project berjalan.</div>
+  <div style="background:#fff;border-radius:16px;padding:28px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;border:1.5px solid #E2E8F0;">
+    <div style="font-size:17px;font-weight:800;color:#1E293B;margin-bottom:4px;">🧪 Input Pilot Project</div>
+    <div style="font-size:12px;color:#64748B;margin-bottom:20px;">Data perbandingan sebelum dan selama pilot project berjalan.</div>
 
-    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">Nama Lini / Area Pilot</label>
-    <input id="cbs-pilot-lini" type="text" placeholder="contoh: Lini Produksi P4 - Garmen" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;margin-bottom:14px;">
+    <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:5px;">Nama Lini / Area Pilot</label>
+    <input id="cbs-pilot-lini" type="text" placeholder="contoh: Lini Produksi P4 - Garmen" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #E2E8F0;background:#F8FAFC;color:#1E293B;font-size:13px;margin-bottom:14px;">
 
-    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">Periode Pilot</label>
-    <input id="cbs-pilot-periode" type="text" placeholder="contoh: 1 Juni - 30 Juni 2026" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;margin-bottom:14px;">
+    <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:5px;">Periode Pilot</label>
+    <input id="cbs-pilot-periode" type="text" placeholder="contoh: 1 Juni - 30 Juni 2026" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #E2E8F0;background:#F8FAFC;color:#1E293B;font-size:13px;margin-bottom:14px;">
 
-    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">Status</label>
-    <select id="cbs-pilot-status" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;margin-bottom:14px;">
+    <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:5px;">Status</label>
+    <select id="cbs-pilot-status" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #E2E8F0;background:#F8FAFC;color:#1E293B;font-size:13px;margin-bottom:14px;">
       <option value="Berjalan">Berjalan</option>
       <option value="Selesai">Selesai</option>
     </select>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
       <div>
-        <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">BS Rate Sebelum (%)</label>
-        <input id="cbs-pilot-rate-before" type="number" step="0.01" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;">
+        <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:5px;">BS Rate Sebelum (%)</label>
+        <input id="cbs-pilot-rate-before" type="number" step="0.01" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #E2E8F0;background:#F8FAFC;color:#1E293B;font-size:13px;">
       </div>
       <div>
-        <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">BS Rate Selama Pilot (%)</label>
-        <input id="cbs-pilot-rate-after" type="number" step="0.01" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;">
+        <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:5px;">BS Rate Selama Pilot (%)</label>
+        <input id="cbs-pilot-rate-after" type="number" step="0.01" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #E2E8F0;background:#F8FAFC;color:#1E293B;font-size:13px;">
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
       <div>
-        <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">Cost BS Sebelum (Rp)</label>
-        <input id="cbs-pilot-cost-before" type="number" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;">
+        <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:5px;">Cost BS Sebelum (Rp)</label>
+        <input id="cbs-pilot-cost-before" type="number" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #E2E8F0;background:#F8FAFC;color:#1E293B;font-size:13px;">
       </div>
       <div>
-        <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">Cost BS Selama Pilot (Rp)</label>
-        <input id="cbs-pilot-cost-after" type="number" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;">
+        <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:5px;">Cost BS Selama Pilot (Rp)</label>
+        <input id="cbs-pilot-cost-after" type="number" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #E2E8F0;background:#F8FAFC;color:#1E293B;font-size:13px;">
       </div>
     </div>
 
-    <label style="display:block;font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:5px;">Catatan Kualitatif</label>
-    <textarea id="cbs-pilot-catatan" rows="3" placeholder="Apa yang berubah, kendala, dll" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:13px;margin-bottom:22px;resize:vertical;"></textarea>
+    <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:5px;">Catatan Kualitatif</label>
+    <textarea id="cbs-pilot-catatan" rows="3" placeholder="Apa yang berubah, kendala, dll" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #E2E8F0;background:#F8FAFC;color:#1E293B;font-size:13px;margin-bottom:22px;resize:vertical;"></textarea>
 
     <div style="display:flex;gap:10px;justify-content:flex-end;">
-      <button onclick="closeCBSPilotModal()" style="background:#1e2d45;color:#cbd5e1;border:none;border-radius:8px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;">Batal</button>
+      <button onclick="closeCBSPilotModal()" style="background:#F1F5F9;color:#374151;border:1px solid #E2E8F0;border-radius:8px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;">Batal</button>
       <button onclick="saveCBSPilotInput()" style="background:#10B981;color:#fff;border:none;border-radius:8px;padding:9px 20px;cursor:pointer;font-weight:700;font-size:13px;">💾 Simpan</button>
     </div>
   </div>
@@ -4691,8 +4691,8 @@ function addCBSAlasanRow(){
   const row = document.createElement('div');
   row.style.display='flex'; row.style.gap='8px'; row.style.marginBottom='8px';
   row.innerHTML = `
-    <input type="text" placeholder="Nama penyebab (contoh: AKTUAL POTONG)" class="cbs-alasan-nama" style="flex:2;padding:8px 10px;border-radius:7px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:12.5px;">
-    <input type="number" placeholder="Jumlah" class="cbs-alasan-jumlah" style="flex:1;padding:8px 10px;border-radius:7px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:12.5px;">
+    <input type="text" placeholder="Nama penyebab (contoh: AKTUAL POTONG)" class="cbs-alasan-nama" style="flex:2;padding:8px 10px;border-radius:7px;border:1.5px solid #E2E8F0;background:#fff;color:#1E293B;font-size:12.5px;">
+    <input type="number" placeholder="Jumlah" class="cbs-alasan-jumlah" style="flex:1;padding:8px 10px;border-radius:7px;border:1.5px solid #E2E8F0;background:#fff;color:#1E293B;font-size:12.5px;">
     <button onclick="this.parentElement.remove()" style="background:none;border:none;color:#F87171;cursor:pointer;font-size:16px;padding:0 6px;">×</button>
   `;
   list.appendChild(row);
@@ -4703,9 +4703,9 @@ function addCBSSpkRow(){
   const row = document.createElement('div');
   row.style.display='flex'; row.style.gap='8px'; row.style.marginBottom='8px';
   row.innerHTML = `
-    <input type="text" placeholder="No. SPK" class="cbs-spk-nomor" style="flex:1.2;padding:8px 10px;border-radius:7px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:12.5px;">
-    <input type="text" placeholder="Nama SPK" class="cbs-spk-nama" style="flex:2;padding:8px 10px;border-radius:7px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:12.5px;">
-    <input type="number" step="0.01" placeholder="BS Rate %" class="cbs-spk-rate" style="flex:1;padding:8px 10px;border-radius:7px;border:1.5px solid #1e2d45;background:#0D1117;color:#e2e8f0;font-size:12.5px;">
+    <input type="text" placeholder="No. SPK" class="cbs-spk-nomor" style="flex:1.2;padding:8px 10px;border-radius:7px;border:1.5px solid #E2E8F0;background:#fff;color:#1E293B;font-size:12.5px;">
+    <input type="text" placeholder="Nama SPK" class="cbs-spk-nama" style="flex:2;padding:8px 10px;border-radius:7px;border:1.5px solid #E2E8F0;background:#fff;color:#1E293B;font-size:12.5px;">
+    <input type="number" step="0.01" placeholder="BS Rate %" class="cbs-spk-rate" style="flex:1;padding:8px 10px;border-radius:7px;border:1.5px solid #E2E8F0;background:#fff;color:#1E293B;font-size:12.5px;">
     <button onclick="this.parentElement.remove()" style="background:none;border:none;color:#F87171;cursor:pointer;font-size:16px;padding:0 6px;">×</button>
   `;
   list.appendChild(row);
@@ -4788,7 +4788,7 @@ function renderCBSPilot(){
   const container = document.getElementById('cbs-pilot-content');
   const p = window._cbsData && window._cbsData.pilot;
   if(!p || !p.lini){
-    container.innerHTML = `<div style="text-align:center;padding:60px 20px;color:#64748b;">
+    container.innerHTML = `<div style="text-align:center;padding:60px 20px;color:#64748B;">
       <div style="font-size:48px;margin-bottom:12px;">🧪</div>
       <div style="font-size:15px;">Belum ada data Pilot Project. Klik tombol di atas untuk mengisi.</div>
     </div>`;
@@ -4805,30 +4805,30 @@ function renderCBSPilot(){
   const maxBarCost = Math.max(p.costBefore, p.costAfter, 1) * 1.2;
 
   container.innerHTML = `
-    <div style="background:#111827;border-radius:14px;padding:22px;border:1.5px solid #1e2d45;margin-bottom:20px;">
+    <div style="background:#fff;border-radius:14px;padding:22px;border:1.5px solid #E2E8F0;margin-bottom:20px;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
         <div>
-          <div style="font-size:17px;font-weight:800;color:#e2e8f0;">${p.lini}</div>
-          <div style="font-size:12.5px;color:#64748b;margin-top:3px;">Periode: ${p.periode || '-'}</div>
+          <div style="font-size:17px;font-weight:800;color:#1E293B;">${p.lini}</div>
+          <div style="font-size:12.5px;color:#64748B;margin-top:3px;">Periode: ${p.periode || '-'}</div>
         </div>
         <div style="background:${statusColor}22;color:${statusColor};border:1px solid ${statusColor}55;border-radius:8px;padding:5px 14px;font-size:12px;font-weight:700;">${p.status}</div>
       </div>
-      ${p.catatan ? `<div style="background:#0D1117;border-radius:10px;padding:14px 16px;font-size:13px;color:#cbd5e1;line-height:1.6;">${p.catatan.replace(/\n/g,'<br>')}</div>` : ''}
+      ${p.catatan ? `<div style="background:#F8FAFC;border-radius:10px;padding:14px 16px;font-size:13px;color:#374151;line-height:1.6;">${p.catatan.replace(/\n/g,'<br>')}</div>` : ''}
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-      <div style="background:#111827;border-radius:14px;padding:20px;border:1.5px solid #1e2d45;">
-        <div style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:16px;">BS Rate: Sebelum vs Selama Pilot</div>
+      <div style="background:#fff;border-radius:14px;padding:20px;border:1.5px solid #E2E8F0;">
+        <div style="font-size:13px;font-weight:700;color:#1E293B;margin-bottom:16px;">BS Rate: Sebelum vs Selama Pilot</div>
         <div style="display:flex;align-items:flex-end;gap:24px;height:160px;padding:0 10px;">
           <div style="flex:1;text-align:center;">
-            <div style="background:#475569;border-radius:6px 6px 0 0;height:${(p.rateBefore/maxBarRate*130)||4}px;margin-bottom:8px;"></div>
-            <div style="font-size:15px;font-weight:800;color:#94a3b8;">${p.rateBefore.toFixed(2)}%</div>
-            <div style="font-size:11px;color:#64748b;margin-top:2px;">Sebelum</div>
+            <div style="background:#94A3B8;border-radius:6px 6px 0 0;height:${(p.rateBefore/maxBarRate*130)||4}px;margin-bottom:8px;"></div>
+            <div style="font-size:15px;font-weight:800;color:#64748B;">${p.rateBefore.toFixed(2)}%</div>
+            <div style="font-size:11px;color:#64748B;margin-top:2px;">Sebelum</div>
           </div>
           <div style="flex:1;text-align:center;">
             <div style="background:#F97316;border-radius:6px 6px 0 0;height:${(p.rateAfter/maxBarRate*130)||4}px;margin-bottom:8px;"></div>
             <div style="font-size:15px;font-weight:800;color:#FB923C;">${p.rateAfter.toFixed(2)}%</div>
-            <div style="font-size:11px;color:#64748b;margin-top:2px;">Selama Pilot</div>
+            <div style="font-size:11px;color:#64748B;margin-top:2px;">Selama Pilot</div>
           </div>
         </div>
         <div style="text-align:center;margin-top:12px;font-size:12.5px;font-weight:700;color:${rateColor};">
@@ -4836,18 +4836,18 @@ function renderCBSPilot(){
         </div>
       </div>
 
-      <div style="background:#111827;border-radius:14px;padding:20px;border:1.5px solid #1e2d45;">
-        <div style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:16px;">Cost BS: Sebelum vs Selama Pilot</div>
+      <div style="background:#fff;border-radius:14px;padding:20px;border:1.5px solid #E2E8F0;">
+        <div style="font-size:13px;font-weight:700;color:#1E293B;margin-bottom:16px;">Cost BS: Sebelum vs Selama Pilot</div>
         <div style="display:flex;align-items:flex-end;gap:24px;height:160px;padding:0 10px;">
           <div style="flex:1;text-align:center;">
-            <div style="background:#475569;border-radius:6px 6px 0 0;height:${(p.costBefore/maxBarCost*130)||4}px;margin-bottom:8px;"></div>
-            <div style="font-size:13px;font-weight:800;color:#94a3b8;">${formatRupiah(p.costBefore)}</div>
-            <div style="font-size:11px;color:#64748b;margin-top:2px;">Sebelum</div>
+            <div style="background:#94A3B8;border-radius:6px 6px 0 0;height:${(p.costBefore/maxBarCost*130)||4}px;margin-bottom:8px;"></div>
+            <div style="font-size:13px;font-weight:800;color:#64748B;">${formatRupiah(p.costBefore)}</div>
+            <div style="font-size:11px;color:#64748B;margin-top:2px;">Sebelum</div>
           </div>
           <div style="flex:1;text-align:center;">
             <div style="background:#F97316;border-radius:6px 6px 0 0;height:${(p.costAfter/maxBarCost*130)||4}px;margin-bottom:8px;"></div>
             <div style="font-size:13px;font-weight:800;color:#FB923C;">${formatRupiah(p.costAfter)}</div>
-            <div style="font-size:11px;color:#64748b;margin-top:2px;">Selama Pilot</div>
+            <div style="font-size:11px;color:#64748B;margin-top:2px;">Selama Pilot</div>
           </div>
         </div>
         <div style="text-align:center;margin-top:12px;font-size:12.5px;font-weight:700;color:${costColor};">
@@ -4878,12 +4878,12 @@ function renderCostBSDashboard(){
   let alasanHTML = '';
   if(data.topAlasan && data.topAlasan.length > 0){
     alasanHTML = data.topAlasan.map((a,i) => `
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;${i<data.topAlasan.length-1?'border-bottom:1px solid #1e2d45;':''}">
-        <div style="color:#cbd5e1;font-size:13px;">${i+1}. ${a.alasan}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;${i<data.topAlasan.length-1?'border-bottom:1px solid #F1F5F9;':''}">
+        <div style="color:#374151;font-size:13px;">${i+1}. ${a.alasan}</div>
         <div style="color:#FB923C;font-weight:700;font-size:13px;">${a.count}x</div>
       </div>`).join('');
   } else {
-    alasanHTML = '<div style="color:#64748b;font-size:13px;text-align:center;padding:20px;">Belum ada data alasan BS</div>';
+    alasanHTML = '<div style="color:#64748B;font-size:13px;text-align:center;padding:20px;">Belum ada data alasan BS</div>';
   }
   document.getElementById('cbs-table-alasan').innerHTML = alasanHTML;
 
@@ -4892,28 +4892,28 @@ function renderCostBSDashboard(){
     spkHTML = data.topSpk.map((s,i) => {
       const color = s.bsRate > 5 ? '#F87171' : (s.bsRate > 2 ? '#FBBF24' : '#34D399');
       return `
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;${i<data.topSpk.length-1?'border-bottom:1px solid #1e2d45;':''}">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;${i<data.topSpk.length-1?'border-bottom:1px solid #F1F5F9;':''}">
         <div style="min-width:0;flex:1;">
-          <div style="color:#e2e8f0;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.spk}</div>
-          <div style="color:#64748b;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.namaSPK||''}</div>
+          <div style="color:#1E293B;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.spk}</div>
+          <div style="color:#64748B;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.namaSPK||''}</div>
         </div>
         <div style="color:${color};font-weight:800;font-size:14px;margin-left:10px;">${s.bsRate.toFixed(2)}%</div>
       </div>`;
     }).join('');
   } else {
-    spkHTML = '<div style="color:#64748b;font-size:13px;text-align:center;padding:20px;">Belum ada data SPK</div>';
+    spkHTML = '<div style="color:#64748B;font-size:13px;text-align:center;padding:20px;">Belum ada data SPK</div>';
   }
   document.getElementById('cbs-table-topspk').innerHTML = spkHTML;
 
   let riwayatHTML = bulanList.slice().reverse().map(b => {
     const d = window._cbsData.bulanan[b];
     return `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1e2d45;">
-      <div style="color:#e2e8f0;font-size:13px;font-weight:600;">${b}</div>
-      <div style="color:#94a3b8;font-size:12px;">BS Rate: ${d.avgBSRate.toFixed(2)}% &nbsp;|&nbsp; Cost: ${formatRupiah(d.totalCostBS)}</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #F1F5F9;">
+      <div style="color:#1E293B;font-size:13px;font-weight:600;">${b}</div>
+      <div style="color:#64748B;font-size:12px;">BS Rate: ${d.avgBSRate.toFixed(2)}% &nbsp;|&nbsp; Cost: ${formatRupiah(d.totalCostBS)}</div>
     </div>`;
   }).join('');
-  document.getElementById('cbs-table-riwayat').innerHTML = riwayatHTML || '<div style="color:#64748b;font-size:13px;text-align:center;padding:20px;">Belum ada riwayat</div>';
+  document.getElementById('cbs-table-riwayat').innerHTML = riwayatHTML || '<div style="color:#64748B;font-size:13px;text-align:center;padding:20px;">Belum ada riwayat</div>';
 
   renderCostBSTrendChart(bulanList);
   renderCBSPilot();
@@ -4923,7 +4923,7 @@ function renderCostBSTrendChart(bulanList){
   const container = document.getElementById('cbs-chart-trend');
   if(!container) return;
   if(bulanList.length === 0){
-    container.innerHTML = '<div style="color:#64748b;font-size:13px;text-align:center;padding:40px;">Belum ada data untuk ditampilkan</div>';
+    container.innerHTML = '<div style="color:#64748B;font-size:13px;text-align:center;padding:40px;">Belum ada data untuk ditampilkan</div>';
     return;
   }
 
@@ -4948,7 +4948,7 @@ function renderCostBSTrendChart(bulanList){
   svg += `<path d="${pathD}" fill="none" stroke="#F97316" stroke-width="2.5"/>`;
   coords.forEach((c,i) => {
     svg += `<circle cx="${c[0]}" cy="${c[1]}" r="4" fill="#F97316"/>`;
-    svg += `<text x="${c[0]}" y="${H-8}" fill="#94a3b8" font-size="10" text-anchor="middle">${bulanList[i].slice(5)}</text>`;
+    svg += `<text x="${c[0]}" y="${H-8}" fill="#64748B" font-size="10" text-anchor="middle">${bulanList[i].slice(5)}</text>`;
     svg += `<text x="${c[0]}" y="${c[1]-10}" fill="#FB923C" font-size="11" font-weight="700" text-anchor="middle">${points[i].toFixed(1)}%</text>`;
   });
   svg += '</svg>';
