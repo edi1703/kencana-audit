@@ -4249,16 +4249,44 @@ document.body.classList.add('home-active');
       <div id="cbs-chart-trend" style="min-height:220px;"></div>
     </div>
 
-    <!-- 2 KOLOM: TOP PENYEBAB & TOP SPK -->
+    <!-- 2 KOLOM: TOP KATEGORI BS & TOP SPK -->
     <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:20px;">
       <div style="background:#fff;border-radius:14px;padding:20px;border:1.5px solid #E2E8F0;">
-        <div style="font-size:14px;font-weight:700;color:#1E293B;margin-bottom:14px;">🔍 Top Penyebab BS Bulan Ini</div>
+        <div style="font-size:14px;font-weight:700;color:#1E293B;margin-bottom:4px;">🔍 Top Kategori BS (dari PO Ganti BS)</div>
+        <div style="font-size:11px;color:#94A3B8;margin-bottom:14px;">Berdasarkan kata kunci di Keterangan PO Internal</div>
         <div id="cbs-table-alasan"></div>
+        <div id="cbs-note-belum-klasifikasi" style="margin-top:10px;font-size:11px;color:#DC2626;background:#FEF2F2;border-radius:8px;padding:8px 10px;"></div>
       </div>
       <div style="background:#fff;border-radius:14px;padding:20px;border:1.5px solid #E2E8F0;">
         <div style="font-size:14px;font-weight:700;color:#1E293B;margin-bottom:14px;">⚠️ SPK dengan BS Rate Tertinggi</div>
         <div id="cbs-table-topspk"></div>
       </div>
+    </div>
+
+    <!-- SECTION: KETERTIBAN PO INTERNAL GANTI BS -->
+    <div style="max-width:1200px;margin:24px auto 0;background:#fff;border-radius:14px;padding:20px;border:1.5px solid #E2E8F0;">
+      <div style="font-size:14px;font-weight:700;color:#1E293B;margin-bottom:4px;">📋 Ketertiban PO Internal Ganti BS</div>
+      <div style="font-size:11px;color:#94A3B8;margin-bottom:16px;">SPK yang punya BS, dicek apakah sudah diajukan PO Internal Ganti BS yang sesuai</div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;">
+        <div style="background:#FEF2F2;border-radius:12px;padding:14px 16px;border:1px solid #FECACA;">
+          <div style="font-size:10.5px;color:#991B1B;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:4px;">% Tidak Tertib Bulan Ini</div>
+          <div id="cbs-stat-po-tidaktertib" style="font-size:22px;font-weight:800;color:#DC2626;">0%</div>
+        </div>
+        <div style="background:#FFF7ED;border-radius:12px;padding:14px 16px;border:1px solid #FED7AA;">
+          <div style="font-size:10.5px;color:#9A3412;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:4px;">SPK Tidak Ada PO Sama Sekali</div>
+          <div id="cbs-stat-po-tidakada" style="font-size:22px;font-weight:800;color:#EA580C;">0</div>
+        </div>
+        <div style="background:#FEFCE8;border-radius:12px;padding:14px 16px;border:1px solid #FEF08A;">
+          <div style="font-size:10.5px;color:#854D0E;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:4px;">SPK PO Kurang dari BS Aktual</div>
+          <div id="cbs-stat-po-kurang" style="font-size:22px;font-weight:800;color:#CA8A04;">0</div>
+        </div>
+      </div>
+
+      <div style="font-size:13px;font-weight:700;color:#1E293B;margin-bottom:10px;">Tren Ketertiban per Bulan</div>
+      <div id="cbs-chart-po-trend" style="min-height:180px;margin-bottom:16px;"></div>
+
+      <div id="cbs-table-po-bulanan"></div>
     </div>
 
     <!-- RIWAYAT DATA BULANAN -->
@@ -4304,9 +4332,21 @@ document.body.classList.add('home-active');
 
     <div style="border-top:1px solid #F1F5F9;margin:4px 0 16px;"></div>
 
-    <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:8px;">Top Penyebab BS (opsional, maks 3)</label>
+    <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:5px;">Total SPK Punya BS Bulan Ini</label>
+    <input id="cbs-input-po-totalspk" type="number" placeholder="contoh: 69" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #E2E8F0;background:#F8FAFC;color:#1E293B;font-size:13px;margin-bottom:14px;">
+
+    <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:5px;">SPK Tidak Ada PO Sama Sekali</label>
+    <input id="cbs-input-po-tidakada" type="number" placeholder="contoh: 52" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #E2E8F0;background:#F8FAFC;color:#1E293B;font-size:13px;margin-bottom:14px;">
+
+    <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:5px;">SPK Ada PO Tapi Kurang dari BS</label>
+    <input id="cbs-input-po-kurang" type="number" placeholder="contoh: 6" style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #E2E8F0;background:#F8FAFC;color:#1E293B;font-size:13px;margin-bottom:18px;">
+
+    <div style="border-top:1px solid #F1F5F9;margin:4px 0 16px;"></div>
+
+    <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:8px;">Top Kategori BS (opsional, maks 4)</label>
+    <div style="font-size:11px;color:#94A3B8;margin-bottom:8px;">Dari kata kunci di PO Ganti BS: BS Sewing, BS Sablon/Cetak, BS Kain, Belum Terklasifikasi</div>
     <div id="cbs-input-alasan-list"></div>
-    <button onclick="addCBSAlasanRow()" style="background:none;border:1px dashed #CBD5E1;color:#64748B;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;margin-bottom:18px;">+ Tambah Penyebab</button>
+    <button onclick="addCBSAlasanRow()" style="background:none;border:1px dashed #CBD5E1;color:#64748B;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;margin-bottom:18px;">+ Tambah Kategori</button>
 
     <label style="display:block;font-size:12px;color:#64748B;font-weight:700;margin-bottom:8px;">SPK dengan BS Rate Tertinggi (opsional, maks 6)</label>
     <div id="cbs-input-spk-list"></div>
@@ -4683,6 +4723,9 @@ function openCBSInputModal(editBulan){
     document.getElementById('cbs-input-cost').value = existing.totalCostBS;
     document.getElementById('cbs-input-rate').value = existing.avgBSRate;
     document.getElementById('cbs-input-overlimit').value = existing.jumlahSpkOverLimit;
+    document.getElementById('cbs-input-po-totalspk').value = existing.poTotalSpk || '';
+    document.getElementById('cbs-input-po-tidakada').value = existing.poTidakAda || '';
+    document.getElementById('cbs-input-po-kurang').value = existing.poKurang || '';
 
     if(existing.topAlasan && existing.topAlasan.length){
       existing.topAlasan.forEach(a => {
@@ -4725,7 +4768,7 @@ function addCBSAlasanRow(){
   const row = document.createElement('div');
   row.style.display='flex'; row.style.gap='8px'; row.style.marginBottom='8px';
   row.innerHTML = `
-    <input type="text" placeholder="Nama penyebab (contoh: AKTUAL POTONG)" class="cbs-alasan-nama" style="flex:2;padding:8px 10px;border-radius:7px;border:1.5px solid #E2E8F0;background:#fff;color:#1E293B;font-size:12.5px;">
+    <input type="text" placeholder="Kategori (contoh: BS Sablon/Cetak)" class="cbs-alasan-nama" style="flex:2;padding:8px 10px;border-radius:7px;border:1.5px solid #E2E8F0;background:#fff;color:#1E293B;font-size:12.5px;">
     <input type="number" placeholder="Jumlah" class="cbs-alasan-jumlah" style="flex:1;padding:8px 10px;border-radius:7px;border:1.5px solid #E2E8F0;background:#fff;color:#1E293B;font-size:12.5px;">
     <button onclick="this.parentElement.remove()" style="background:none;border:none;color:#F87171;cursor:pointer;font-size:16px;padding:0 6px;">×</button>
   `;
@@ -4753,6 +4796,10 @@ async function saveCBSMonthlyInput(){
   const avgBSRate = Number(document.getElementById('cbs-input-rate').value) || 0;
   const jumlahSpkOverLimit = Number(document.getElementById('cbs-input-overlimit').value) || 0;
 
+  const poTotalSpk = Number(document.getElementById('cbs-input-po-totalspk').value) || 0;
+  const poTidakAda = Number(document.getElementById('cbs-input-po-tidakada').value) || 0;
+  const poKurang = Number(document.getElementById('cbs-input-po-kurang').value) || 0;
+
   const topAlasan = [];
   document.querySelectorAll('#cbs-input-alasan-list > div').forEach(row => {
     const nama = row.querySelector('.cbs-alasan-nama').value.trim();
@@ -4772,6 +4819,7 @@ async function saveCBSMonthlyInput(){
   if(!window._cbsData) window._cbsData = { bulanan: {} };
   window._cbsData.bulanan[bulanLabel] = {
     bulanLabel, totalCostBS, avgBSRate, jumlahSpkOverLimit, topAlasan, topSpk,
+    poTotalSpk, poTidakAda, poKurang,
     updatedAt: new Date().toISOString()
   };
 
@@ -4910,16 +4958,30 @@ function renderCostBSDashboard(){
   document.getElementById('cbs-stat-overlimit').textContent = data.jumlahSpkOverLimit;
 
   let alasanHTML = '';
+  let notedBelumKlasifikasi = '';
   if(data.topAlasan && data.topAlasan.length > 0){
-    alasanHTML = data.topAlasan.map((a,i) => `
+    const totalKejadian = data.topAlasan.reduce((s,a)=>s+a.count,0);
+    const belumKlasifikasi = data.topAlasan.find(a => a.alasan.toUpperCase().includes('BELUM TERKLASIFIKASI'));
+    alasanHTML = data.topAlasan.map((a,i) => {
+      const isBelum = a.alasan.toUpperCase().includes('BELUM TERKLASIFIKASI');
+      const color = isBelum ? '#DC2626' : '#374151';
+      const countColor = isBelum ? '#DC2626' : '#FB923C';
+      return `
       <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;${i<data.topAlasan.length-1?'border-bottom:1px solid #F1F5F9;':''}">
-        <div style="color:#374151;font-size:13px;">${i+1}. ${a.alasan}</div>
-        <div style="color:#FB923C;font-weight:700;font-size:13px;">${a.count}x</div>
-      </div>`).join('');
+        <div style="color:${color};font-size:13px;${isBelum?'font-weight:600;':''}">${i+1}. ${a.alasan}</div>
+        <div style="color:${countColor};font-weight:700;font-size:13px;">${a.count}x</div>
+      </div>`;
+    }).join('');
+    if(belumKlasifikasi && totalKejadian > 0){
+      const pct = (belumKlasifikasi.count/totalKejadian*100).toFixed(0);
+      notedBelumKlasifikasi = `⚠️ ${pct}% dari PO Ganti BS belum mencantumkan kategori jenis BS secara spesifik di Keterangan.`;
+    }
   } else {
-    alasanHTML = '<div style="color:#64748B;font-size:13px;text-align:center;padding:20px;">Belum ada data alasan BS</div>';
+    alasanHTML = '<div style="color:#64748B;font-size:13px;text-align:center;padding:20px;">Belum ada data kategori BS</div>';
   }
   document.getElementById('cbs-table-alasan').innerHTML = alasanHTML;
+  document.getElementById('cbs-note-belum-klasifikasi').textContent = notedBelumKlasifikasi;
+  document.getElementById('cbs-note-belum-klasifikasi').style.display = notedBelumKlasifikasi ? 'block' : 'none';
 
   let spkHTML = '';
   if(data.topSpk && data.topSpk.length > 0){
@@ -4953,7 +5015,89 @@ function renderCostBSDashboard(){
   document.getElementById('cbs-table-riwayat').innerHTML = riwayatHTML || '<div style="color:#64748B;font-size:13px;text-align:center;padding:20px;">Belum ada riwayat</div>';
 
   renderCostBSTrendChart(bulanList);
+  renderCBSPOSection(bulanList);
   renderCBSPilot();
+}
+
+function renderCBSPOSection(bulanList){
+  if(bulanList.length === 0) return;
+  const lastBulan = bulanList[bulanList.length-1];
+  const data = window._cbsData.bulanan[lastBulan];
+
+  const totalSpk = data.poTotalSpk || 0;
+  const tidakAda = data.poTidakAda || 0;
+  const kurang = data.poKurang || 0;
+  const pctTidakTertib = totalSpk > 0 ? ((tidakAda + kurang) / totalSpk * 100) : 0;
+
+  const elPct = document.getElementById('cbs-stat-po-tidaktertib');
+  const elTidakAda = document.getElementById('cbs-stat-po-tidakada');
+  const elKurang = document.getElementById('cbs-stat-po-kurang');
+  if(elPct) elPct.textContent = pctTidakTertib.toFixed(1) + '%';
+  if(elTidakAda) elTidakAda.textContent = tidakAda;
+  if(elKurang) elKurang.textContent = kurang;
+
+  // Grafik tren bulanan (SVG, sama pola dengan trend BS Rate)
+  const container = document.getElementById('cbs-chart-po-trend');
+  if(container){
+    const bulanDenganPO = bulanList.filter(b => window._cbsData.bulanan[b].poTotalSpk > 0);
+    if(bulanDenganPO.length === 0){
+      container.innerHTML = '<div style="color:#94A3B8;font-size:13px;text-align:center;padding:30px;">Belum ada data ketertiban PO untuk ditampilkan</div>';
+    } else {
+      const points = bulanDenganPO.map(b => {
+        const d = window._cbsData.bulanan[b];
+        const t = d.poTotalSpk || 0;
+        return t > 0 ? ((d.poTidakAda||0)+(d.poKurang||0))/t*100 : 0;
+      });
+      const maxVal = Math.max(...points, 10) * 1.2;
+      const W = 1200, H = 170, padL = 40, padR = 20, padT = 20, padB = 28;
+      const plotW = W - padL - padR, plotH = H - padT - padB;
+      const stepX = bulanDenganPO.length > 1 ? plotW / (bulanDenganPO.length - 1) : 0;
+      const coords = points.map((v,i) => {
+        const x = padL + (bulanDenganPO.length > 1 ? i * stepX : plotW/2);
+        const y = padT + plotH - (v / maxVal) * plotH;
+        return [x,y];
+      });
+      const pathD = coords.map((c,i) => (i===0?'M':'L') + c[0].toFixed(1) + ',' + c[1].toFixed(1)).join(' ');
+      let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:180px;" preserveAspectRatio="none">`;
+      svg += `<path d="${pathD}" fill="none" stroke="#DC2626" stroke-width="2.5"/>`;
+      coords.forEach((c,i) => {
+        svg += `<circle cx="${c[0]}" cy="${c[1]}" r="4" fill="#DC2626"/>`;
+        svg += `<text x="${c[0]}" y="${H-8}" fill="#94A3B8" font-size="10" text-anchor="middle">${bulanDenganPO[i].slice(5)}</text>`;
+        svg += `<text x="${c[0]}" y="${c[1]-10}" fill="#DC2626" font-size="11" font-weight="700" text-anchor="middle">${points[i].toFixed(0)}%</text>`;
+      });
+      svg += '</svg>';
+      container.innerHTML = svg;
+    }
+  }
+
+  // Tabel ringkas per bulan
+  const tableEl = document.getElementById('cbs-table-po-bulanan');
+  if(tableEl){
+    const bulanDenganPO = bulanList.filter(b => window._cbsData.bulanan[b].poTotalSpk > 0);
+    if(bulanDenganPO.length === 0){
+      tableEl.innerHTML = '<div style="color:#94A3B8;font-size:13px;text-align:center;padding:20px;">Belum ada data</div>';
+    } else {
+      let rows = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:8px;padding:8px 0;border-bottom:2px solid #E2E8F0;font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;">
+        <div>Bulan</div><div style="text-align:center;">Total SPK</div><div style="text-align:center;">Tidak Ada PO</div><div style="text-align:center;">PO Kurang</div><div style="text-align:center;">% Tertib</div>
+      </div>`;
+      bulanDenganPO.slice().reverse().forEach(b => {
+        const d = window._cbsData.bulanan[b];
+        const t = d.poTotalSpk || 0;
+        const ta = d.poTidakAda || 0;
+        const kr = d.poKurang || 0;
+        const tertib = t > 0 ? ((t-ta-kr)/t*100) : 0;
+        const tertibColor = tertib >= 50 ? '#16A34A' : (tertib >= 25 ? '#CA8A04' : '#DC2626');
+        rows += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:8px;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:13px;">
+          <div style="color:#1E293B;font-weight:600;">${b}</div>
+          <div style="text-align:center;color:#374151;">${t}</div>
+          <div style="text-align:center;color:#DC2626;">${ta}</div>
+          <div style="text-align:center;color:#CA8A04;">${kr}</div>
+          <div style="text-align:center;color:${tertibColor};font-weight:700;">${tertib.toFixed(0)}%</div>
+        </div>`;
+      });
+      tableEl.innerHTML = rows;
+    }
+  }
 }
 
 function renderCostBSTrendChart(bulanList){
